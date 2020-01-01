@@ -4,7 +4,7 @@
 |:---------------------------------------:|
 | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
 
-**Diagonalizations.jl** is a [**Julia**](https://julialang.org/) package implements the following closed form and iterative diagonalization procedures:
+**Diagonalizations.jl** is a [**Julia**](https://julialang.org/) package implementing the following closed form and iterative diagonalization procedures:
 
 | Acronym   | Full Name | Datasets ( *m* ) | Observations ( *k* ) |
 |:----------|:---------:|:---------:|:---------:|
@@ -19,7 +19,7 @@
 | AJD | Approximate Joint Diagonalization | 1 | >1 |
 | mAJD | multiple AJD | >1 | >1 |
 
-For example, the PCA diagonalizes a single covariance matrix, as shown in this figure:
+For example, the PCA finds a matrix ``F`` diagonalizing a single covariance matrix ``C``, as shown in this figure:
 
 ![](/docs/src/assets/FigPCA.png)
 
