@@ -6,7 +6,7 @@
 
 ![](/docs/src/assets/FiggMCA.png)
 
-**Diagonalizations.jl** is a [**Julia**](https://julialang.org/) signal processing package implementing the following *closed form* and *iterative* diagonalization procedures:
+**Diagonalizations.jl** is a [**Julia**](https://julialang.org/) signal processing package implementing several *closed form* and *iterative* diagonalization procedures:
 
 | Acronym   | Full Name | Datasets ( *m* ) | Observations ( *k* ) |
 |:----------|:---------:|:---------:|:---------:|
