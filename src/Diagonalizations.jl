@@ -1,5 +1,5 @@
 #   Main Module of the Diagonalization.jl Package for Julia language
-#   v 0.0.1 - last update 15th of December 2019
+#   v 0.1.0 - last update 1st of January 2020
 
 #   MIT License
 #   Copyright (c) 2019,
