@@ -53,11 +53,11 @@ pX=pca(X)
 # compute the covariance matrix
 C=Symmetric((X*X')/t)
 
-# the following is an equivalent method
+# the following is an equivalent constructor
 pC=pca(C)
 
-@test C≈pC.F*pC.D*pC.F'
-@test pX≈pC
+@test C≈pC.F*pC.D*pC.F'  
+@test pX==pC # the output of two constructors is equivalent
 ```
 
 ## About the Authors
