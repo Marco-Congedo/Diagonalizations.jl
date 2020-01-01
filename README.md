@@ -4,7 +4,7 @@
 |:---------------------------------------:|
 | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
 
-![](/docs/src/assets/FiggMCA.png)
+![](/docs/src/assets/FigMCA.png)
 
 **Diagonalizations.jl** is a [**Julia**](https://julialang.org/) signal processing package implementing several *closed form* and *iterative* diagonalization procedures:
 
