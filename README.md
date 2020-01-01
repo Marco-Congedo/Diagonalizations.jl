@@ -23,11 +23,11 @@
 
 As compared to [MultivariateStats.jl](https://github.com/JuliaStats/MultivariateStats.jl)
 this package supports :
-- the `dims` keyword
+- the `dims` keyword like in the [StatsBase.jl](https://github.com/JuliaStats/StatsBase.jl) package
 - shrinkage covariance matrix estimations throught package [CovarianceEstimation](https://github.com/mateuszbaran/CovarianceEstimation.jl)
 - average covariance estimations using metrics for the manifold of positive definite matrices using the [PosDefManifold](https://github.com/Marco-Congedo/PosDefManifold.jl) package
 - facilities to set the subspace dimension upon construction
-- diagonalization procedures for the case ``m≥2`` and ``k≥2``.
+- diagonalization procedures for the case *m≥2* and *k≥2*.
 
 ## Installation
 
