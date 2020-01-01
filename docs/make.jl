@@ -8,10 +8,7 @@ makedocs(
    pages =
    [
       "index.md",
-      "Tutorial" => "tutorial.md",
       "Main Module" => "Diagonalizations.md",
-      "Tools" => "tools.md",
-
       "Filters" => Any[
          "One dataset (m=1)" => Any[
             "PCA" => "pca.md",
@@ -27,8 +24,9 @@ makedocs(
          "Several datasets (m>2)" => Any[
             "gMCA" => "gmca.md",
             "gCCA" => "gcca.md",
-            "mAJD" => "majd.md",            
+            "mAJD" => "majd.md",
          ],
+      "Tools" => "tools.md",   
       ],
    ]
 )
