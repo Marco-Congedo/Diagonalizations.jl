@@ -4,7 +4,9 @@
 |:---------------------------------------:|
 | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
 
-**Diagonalizations.jl** is a [**Julia**](https://julialang.org/) package implementing the following *closed form* and *iterative* diagonalization procedures:
+![](/docs/src/assets/FiggMCA.png)
+
+**Diagonalizations.jl** is a [**Julia**](https://julialang.org/) signal processing package implementing the following *closed form* and *iterative* diagonalization procedures:
 
 | Acronym   | Full Name | Datasets ( *m* ) | Observations ( *k* ) |
 |:----------|:---------:|:---------:|:---------:|
@@ -18,10 +20,6 @@
 | CSTP | Common Spatio-Temporal Pattern | 1 | >1 |
 | AJD | Approximate Joint Diagonalization | 1 | >1 |
 | mAJD | multiple AJD | >1 | >1 |
-
-For example, the PCA finds a matrix ``F`` diagonalizing a single covariance matrix ``C``, as shown in this figure:
-
-![](/docs/src/assets/FigPCA.png)
 
 As compared to [MultivariateStats.jl](https://github.com/JuliaStats/MultivariateStats.jl)
 this package supports :
