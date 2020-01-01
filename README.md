@@ -4,8 +4,6 @@
 |:---------------------------------------:|
 | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
 
-![](/docs/src/assets/FigMCA.png)
-
 **Diagonalizations.jl** is a [**Julia**](https://julialang.org/) signal processing package implementing several *closed form* and *iterative* diagonalization procedures:
 
 | Acronym   | Full Name | Datasets ( *m* ) | Observations ( *k* ) |
@@ -20,6 +18,10 @@
 | CSTP | Common Spatio-Temporal Pattern | 1 | >1 |
 | AJD | Approximate Joint Diagonalization | 1 | >1 |
 | mAJD | multiple AJD | >1 | >1 |
+
+For example the MCA diagonalizes a cross-covariance matrix, like in this figure:
+
+![](/docs/src/assets/FigMCA.png)
 
 As compared to [MultivariateStats.jl](https://github.com/JuliaStats/MultivariateStats.jl)
 this package supports :
