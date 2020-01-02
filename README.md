@@ -64,8 +64,7 @@ pC=pca(C)
 
 ## About the Authors
 
-[Marco Congedo](https://sites.google.com/site/marcocongedo), corresponding
-author, is a research scientist of [CNRS](http://www.cnrs.fr/en) (Centre National de la Recherche Scientifique), working in [UGA](https://www.univ-grenoble-alpes.fr/english/) (University of Grenoble Alpes). **contact**: marco *dot* congedo *at* gmail *dot* com
+[Marco Congedo](https://sites.google.com/site/marcocongedo), is a research scientist of [CNRS](http://www.cnrs.fr/en) (Centre National de la Recherche Scientifique), working in [UGA](https://www.univ-grenoble-alpes.fr/english/) (University of Grenoble Alpes). **contact**: marco *dot* congedo *at* gmail *dot* com
 
 | **Documentation**  | 
 |:---------------------------------------:|
