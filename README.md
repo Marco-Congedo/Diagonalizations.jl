@@ -60,6 +60,11 @@ pC=pca(Symmetric((X*X')/t))
 
 @test C≈pC.F*pC.D*pC.F'  
 
+# get only the first p eigenvectors, where p is the smallest integer
+# explaining at least 75% of the variance
+
+pX=pca(X; eVar=0.75) 
+
 Y=genDataMatrix(n, t)
 
 # maximum covariance analysis
