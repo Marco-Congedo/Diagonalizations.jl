@@ -10,6 +10,11 @@ To install the package execute the following command in Julia's REPL:
 
     ]add CovarianceEstimation PosDefManifold Diagonalizations
 
+### Quick Start
+
+Copy and execute the examples .jl units
+provided in the [examples](https://github.com/Marco-Congedo/Diagonalizations.jl/tree/master/examples) folder.
+
 ### Reviewers
 
 Independent reviewers for both the code and the documentation are welcome.
