@@ -13,7 +13,8 @@ To install the package execute the following command in Julia's REPL:
 ### Quick Start
 
 Copy and execute the examples .jl units
-provided in the [examples](https://github.com/Marco-Congedo/Diagonalizations.jl/tree/master/examples) folder.
+provided in the [examples](https://github.com/Marco-Congedo/Diagonalizations.jl/tree/master/examples) folder or walk throught the documentation
+and run the examples you will find there.
 
 ### Reviewers
 
