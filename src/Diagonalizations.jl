@@ -41,13 +41,9 @@ export
    ajd,
    gmca,
    gcca,
-   majd,
+   majd
 
-   OJoB,   # take it out!
-   _permute!,   # take it out!
-   _scaleAndPermute!,   # take it out!
-   _crossCov  # make public!
-
+   #OJoB,
 
 # Consts
 const 📌            = "Diagonalizations.jl"
