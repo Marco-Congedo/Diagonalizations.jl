@@ -1,7 +1,5 @@
 # Diagonalizations.jl
 
-This is the main unit containing the **Diagonalizations** *module*.
-
 ## dependencies
 
 | standard Julia packages |     external packages    |
@@ -9,8 +7,6 @@ This is the main unit containing the **Diagonalizations** *module*.
 | [LinearAlgebra](https://bit.ly/2W5Wq8W) |  [CovarianceEstimation](https://github.com/mateuszbaran/CovarianceEstimation.jl)|
 | [Statistics](https://bit.ly/2Oem3li) | [PosDefManifold](https://github.com/Marco-Congedo/PosDefManifold.jl) |
 | [StatsBase](https://github.com/JuliaStats/StatsBase.jl) |  |
-
-The main module does not contain functions.
 
 ## types
 
