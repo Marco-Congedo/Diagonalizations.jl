@@ -50,16 +50,26 @@ n, t=10, 100
 # generate an nxt data matrix
 X=genDataMatrix(n, t)
 
+# principal component analysis
 pX=pca(X)
 
-# compute the covariance matrix
-C=Symmetric((X*X')/t)
+# the following is an equivalent constructor taking the covariance matrix as input
+pC=pca(Symmetric((X*X')/t))
 
-# the following is an equivalent constructor
-pC=pca(C)
+@test pX==pC # the output of the two constructors above is equivalent
 
 @test C≈pC.F*pC.D*pC.F'  
-@test pX==pC # the output of two constructors is equivalent
+
+Y=genDataMatrix(n, t)
+
+# maximum covariance analysis
+mXY=mca(X, Y) 
+
+# canonical correlation analysis
+cXY=cca(X, Y)
+
+# etc., etc.
+
 ```
 
 ## About the Authors
