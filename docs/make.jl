@@ -26,8 +26,8 @@ makedocs(
             "gCCA" => "gcca.md",
             "mAJD" => "majd.md",
          ],
-      "Tools" => "tools.md",   
       ],
+      "Tools" => "tools.md",
    ]
 )
 

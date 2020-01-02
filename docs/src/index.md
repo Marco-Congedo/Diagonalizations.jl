@@ -8,7 +8,7 @@
 
 To install the package execute the following command in Julia's REPL:
 
-    ]add Diagonalizations
+    ]add CovarianceEstimation PosDefManifold Diagonalizations
 
 ### Reviewers
 

@@ -93,11 +93,12 @@ Return 0.0 (zero) if `P` is a real of complex number.
 using Diagonalizations, PosDefManifold
 # create 20 random commuting matrices
 # they all have the same eigenvectors
-𝐂=randP(3, 20; eigvalsSNR=Inf, commuting=true)
+Cset=randP(3, 20; eigvalsSNR=Inf, commuting=true)
 # estimate the approximate joint diagonalizer (ajd)
-a=ajd(𝐂)
-# the ajd must be equivalent to the eigenvector matrix of any of the matrices in 𝐂
-spForm(a.F'*eigvecs(𝐂[1]))+1.0≈1.0 ? println(" ⭐ ") : println(" ⛔ ")
+a=ajd(Cset)
+# the ajd must be equivalent to the eigenvector matrix of
+# any of the matrices in Cset
+spForm(a.F'*eigvecs(Cset[1]))+1.0≈1.0 ? println(" ⭐ ") : println(" ⛔ ")
 ```
 
 """
