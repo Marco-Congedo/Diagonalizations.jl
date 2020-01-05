@@ -1,7 +1,7 @@
 name = "Diagonalizations"
 uuid = "9cd687f3-b62d-43f3-8fd3-ffcd9e581047"
 authors = ["Marco-Congedo <marco.congedo@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 CovarianceEstimation = "587fd27a-f159-11e8-2dae-1979310e6154"
@@ -12,8 +12,8 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 CovarianceEstimation = "0.2.3"
+PosDefManifold = "0.4.4"
 StatsBase = "0.32.0"
-PosDefManifold = "0.4.3"
 julia = "1"
 
 [extras]

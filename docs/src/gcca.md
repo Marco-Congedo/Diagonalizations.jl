@@ -74,6 +74,10 @@ There is no closed-form solution to the gCCA problem in general.
 |:----------|:----------|:----------|
 | OJoB | ``F`` orthogonal | Congedo et al (2011, 2012); Congedo (2013)|
 
+Note that solving algorithm constraining the solution
+to the general linear group, like *NoJoB* do not suit
+gCCA as they do not encure constraint [gcca.2].
+
 
 **Constructors**
 

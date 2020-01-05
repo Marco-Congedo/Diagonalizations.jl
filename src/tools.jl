@@ -135,7 +135,7 @@ end
 # -------------------------------------------------------- #
 
 
-# EigenDecomposition with covariance matrix as input
+# EigenDecomposition with a covariance matrix as input
 function _getEVD(C :: Union{Hermitian, Symmetric, Mat}, eVar::TeVaro,
                  eVarMeth::Function, simple::Bool)
 
@@ -149,13 +149,13 @@ function _getEVD(C :: Union{Hermitian, Symmetric, Mat}, eVar::TeVaro,
 end
 
 
-# EigenDecomposition with data as input
+# EigenDecomposition with a data matrix as input
 _getEVD(X::Mat, covEst::StatsBase.CovarianceEstimator, dims::Int64,
         mean::Tmean, w::Tw, eVar::TeVaro, eVarMeth::Function, simple::Bool) =
   _getEVD(_cov(X, covEst, dims, mean, w), eVar, eVarMeth, simple)
 
 
-# Whitening with covariance matrix as input
+# Whitening with a covariance matrix as input
 function _getWhi(C :: Union{Hermitian, Symmetric, Mat}, eVar::TeVaro,
                  eVarMeth::Function, simple::Bool)
 
@@ -164,7 +164,7 @@ function _getWhi(C :: Union{Hermitian, Symmetric, Mat}, eVar::TeVaro,
            (U*D^-0.5, D^0.5*Uⁱ, D, eVar, λ, arev)
 end
 
-# Whitening with data as input
+# Whitening with a data matrix as input
 _getWhi(X::Mat, covEst::StatsBase.CovarianceEstimator, dims::Int64,
         mean::Tmean, w::Tw, eVar::TeVaro, eVarMeth::Function, simple::Bool) =
    _getWhi(_cov(X, covEst, dims, mean, w), eVar, eVarMeth, simple)
@@ -176,7 +176,7 @@ function _convert_mean(mean::Tmean, dims::Int, argName::String)
   return dims==1 ? Matrix(mean') : mean
 end
 
-
+# return `X` or `X` with the mean subtracted, depending on `meanX`
 function _deMean(X::Mat, dims::Int, meanX::Tmean)
    if       meanX isa Int
             return X
@@ -195,7 +195,7 @@ function _deMean(X::Mat, dims::Int, meanX::Tmean)
    return X.-meanX_
 end
 
-# check arguments and rewrite `mean` if necessary
+# check arguments for one data matrix input
 function _check_data(X::Mat, dims::Int64, meanX::Tmean, wX::Tw)
    dims ∈ (1, 2) || throw(ArgumentError(📌*", _check-data internal function: Argument `dims` may be 1 or 2. dims=$dims"))
    wX≠○ && lenght(wX)≠size(X, dims) && throw(ArgumentError(📌*", _check-data internal function: The size of `wX` does not fit input matrix `X` with `dims`=$dims"))
@@ -207,7 +207,7 @@ function _check_data(X::Mat, dims::Int64, meanX::Tmean, wX::Tw)
    return true
 end
 
-
+# check arguments for two data matrices input
 function _check_data(X::Mat, Y::Mat, dims::Int64, meanX::Tmean, meanY::Tmean, wXY::Tw)
    dims ∈ (1, 2) || throw(ArgumentError(📌*", _check-data internal function: Argument `dims` may be 1 or 2. dims=$dims"))
    size(X, dims)==size(Y, dims) || throw(ArgumentError(📌*", _check-data internal function: The `dims` dimension of argument `X` and `Y` must be the same"))
@@ -231,7 +231,7 @@ function _cov(X::Matrix{R},
                    T(cov(covEst, X_, wX; dims=dims, mean=0)) # "
 end
 
-
+# as before for a vector of data matrices at once
 function _cov(𝐗::VecMat;
               covEst   :: StatsBase.CovarianceEstimator = SCM,
               dims     :: Int64 = 1,
@@ -263,7 +263,8 @@ function _cov(X::Matrix{R}, Y::Matrix{R},
                     ( dims==1 ? ((wXY'.*X_')*Y_)/wXY.sum : ((wXY'.*X_)*Y_')/wXY.sum )
 end
 
-
+# The same as above, for 2 vectors of data matrices at once
+# the cross-covariance if computed for all corresponding pairs
 function _cov(𝐗::VecMat, 𝐘::VecMat;
               dims     :: Int64 = 1,
               meanX    :: Into = 0,
@@ -276,7 +277,26 @@ function _cov(𝐗::VecMat, 𝐘::VecMat;
    return 𝐂
 end
 
+# trace normalize and/or apply weights. Accept a function for computing weights
+# only for m=1
+function _Normalize!(𝐂::Vector{Hermitian},
+                     trace1::Bool=false, w::Union{Tw, Function}=○)
+   !trace1 && w===○ && return
+   k=length(𝐂)
 
+   if trace1
+      @inbounds for κ=1:k 𝐂[κ] = tr1(𝐂[κ]) end
+   end
+   if w isa Function
+      w=[w(𝐂[κ]) for κ=1:k]
+   end
+   if w ≠ ○
+      @inbounds for κ=1:k 𝐂[κ] *= w[κ] end
+   end
+end
+
+# trace normalize and/or apply weights. Accept a function for computing weights
+# m>=1, k>=1. 𝒞 is a 3-D Array of matrices (k, i, j), i, j=1:m
 function _Normalize!(𝒞::AbstractArray, m::Int, k::Int,
                      trace1::Bool=false, w::Union{Tw, Function}=○)
    !trace1 && w===○ && return
@@ -371,18 +391,19 @@ function _getssd!(eVar::TeVaro, λ::Vec, r::Int64, eVarMeth::Function)
    return (eVar isa Int64 ? clamp(eVar, 1, r) : clamp(eVarMeth(arev, eVar), 1, r), arev)
 end
 
+#see PCA and Whitening
 function _ssd!(eVar::TeVaro, λ::Vec, U::Mat, r::Int64, eVarMeth::Function)
    p, arev = _getssd!(eVar, λ, r, eVarMeth)
    return p==r ? 1. : arev[p], Diagonal(λ[1:p]), U[:, 1:p], p, arev
 end
 
-
+#see PMCA and CCA
 function _ssdxy!(eVar::TeVaro, λ::Vec, U1::Mat, U2::Mat, r::Int64, eVarMeth::Function)
    p, arev = _getssd!(eVar, λ, r, eVarMeth)
    return p==r ? 1. : arev[p], Diagonal(λ[1:p]), U1[:, 1:p], U2[:, 1:p], p, arev
 end
 
-
+# see CSP
 function _ssdcsp!(eVar::TeVaro, λ::Vec, U::Mat, r::Int64, eVarMeth::Function, selMeth::Symbol)
    ratio = λ./(1.0.-λ)
    d = (log.(ratio)).^2
@@ -403,7 +424,7 @@ function _ssdcsp!(eVar::TeVaro, λ::Vec, U::Mat, r::Int64, eVarMeth::Function, s
    return p==r ? 1. : arev[p], Diagonal(λ[h[1:p]]), U[:, h[1:p]], p, arev
 end
 
-
+# see CSTP
 function _ssdcstp!(eVar::TeVaro, λ::Vec, U::Mat, V::Mat, r::Int64, eVarMeth::Function)
    arev = accumulate(+, λ./sum(λ))
    if     eVar isa Int
@@ -440,3 +461,126 @@ _minDim(C1::SorH, C2::SorH) = min(size(C1, 1), size(C2, 1))
 _minDim(𝐗::VecMat) = minimum(minimum(size(X)) for X ∈ 𝐗)
 _minDim(𝐗::VecMat, 𝐘::VecMat) = min(_minDim(𝐗), _minDim(𝐘))
 _minDim(𝑿::VecVecMat) = minimum((minimum(minimum(size(X)) for X ∈ 𝑿[i]) for i=1:length(𝑿)))
+
+
+### tools for AJD Algorithms ###
+
+# try to resolve the permutation for the output of AJD algorithms
+# for the case m=1
+# return a vector holding the n 'average eigenvalues' λ1,...,λn,
+# arranging them in average descending order,
+# where λη=𝛍_i=1:k(Di[η, η])
+function _permute!(U::AbstractArray, D::Diagonal, n::Int)
+   type=eltype(D)
+
+   function flipcol!(U::AbstractArray, η::Int, e::Int)
+      temp=U[:, e]
+      U[:, e]=U[:, η]
+      U[:, η]=temp
+   end
+
+   for e=1:n  # for all variables # find the position of the absolute maximum
+      p, max=e, zero(type)
+      for η=e:n
+           absd=abs(D[η, η])
+           if  absd > max
+               max = absd
+               p=η
+           end
+      end
+
+      # Bring the maximum from position η on top (current e)
+      if p≠e
+           flipcol!(U, p, e)
+           d=D[p, p]
+           D[p, p]=D[e, e]
+           D[e, e]=d
+      end
+   end
+   return diag(D)
+end
+
+
+function _permute!(U::AbstractArray, 𝐗::AbstractArray,
+                   k::Int, input::Symbol;
+    covEst   :: StatsBase.CovarianceEstimator=SCM,
+    dims     :: Int64 = 1,
+    meanX    :: Tmean = 0,
+    trace1   :: Bool = false)
+    # if n==t the input is assumed to be the covariance matrices
+    input==:d ? 𝒞=_crossCov(𝐗, 1, k;
+                    covEst=covEst, dims=dims, meanX=meanX, trace1=trace1) :
+                𝒞=𝐗
+    n=size(𝒞[1, 1, 1], 1)
+
+    D=𝛍(𝔻([U[:, η]'*𝒞[l, 1, 1]*U[:, η] for η=1:n]) for l=1:k)
+
+    return _permute!(U, D, n)
+end # function _Permute!
+
+
+
+# try to resolve scaling and permutation for the output of mAJD algorithms
+# for the case m>1
+# return a vector holding the n 'average eigenvalues' λ1,...,λn,
+# trying to make them all positive and in descending order as much as possible,
+# where λη=𝛍_i≠j=1:m(Dij[η, η])
+function _scaleAndPermute!( 𝐔::AbstractArray, 𝐗::AbstractArray,
+                            m::Int, k::Int, input::Symbol;
+                            covEst   :: StatsBase.CovarianceEstimator=SCM,
+                            dims     :: Int64 = 1,
+                            meanX    :: Tmean = 0,
+                            trace1   :: Bool = false)
+    # if input ≠ :d the input is assumed to be the covariance matrices
+    input==:d ? 𝒞=_crossCov(𝐗, m, k;
+                    covEst=covEst, dims=dims, meanX=meanX, trace1=trace1) :
+                𝒞=𝐗
+    n=size(𝒞[1, 1, 1], 1)
+
+    𝑫=𝔻Vector₂(undef, m)
+    for i=1:m 𝑫[i]=𝔻Vector([𝛍(𝔻([𝐔[i][:, η]'*𝒞[l, i, j]*𝐔[j][:, η] for η=1:n]) for l=1:k) for j=1:m]) end
+    p, type=(1, 1, 1), eltype(𝑫[1][1])
+
+    function flipcol!(𝐔::AbstractArray, m::Int, η::Int, e::Int)
+        for i=1:m
+            temp=𝐔[i][:, e]
+            𝐔[i][:, e]=𝐔[i][:, η]
+            𝐔[i][:, η]=temp
+        end
+    end
+
+    for e=1:n  # for all variables  (e.g., electrodes)
+        # find the position of the absolute maximum
+        max=zero(type)
+        for i=1:m-1, j=i+1:m, η=e:n
+            absd=abs(𝑫[i][j][η, η])
+            if  absd > max
+                max = absd
+                p=(i, j, η)
+            end
+        end
+
+        # flip sign of 𝐔[j][η, η] if abs max is negative
+        i=p[1]; j=p[2]; η=p[3]
+        if 𝑫[i][j][η, η]<0
+            𝐔[j][:, η] *= -one(type)
+        end
+
+        # flip sign of 𝐔[j] for all j≠i:1:m if their corresponding element is negative
+        for x=1:m
+            if x≠j
+                if 𝑫[i][x][η, η]<0
+                    𝐔[x][:, η] *= -one(type)
+                end
+            end
+        end
+
+        # Bring the maximum from position η on top (current e)
+        if η≠e flipcol!(𝐔, m, η, e) end
+
+        # compute 𝑫 again
+        for i=1:m 𝑫[i]=𝔻Vector([𝛍(𝔻([𝐔[i][:, η]'*𝒞[l, i, j]*𝐔[j][:, η] for η=1:n]) for l=1:k) for j=1:m]) end
+    end
+
+    return diag(𝛍(𝑫[i][j] for i=1:m for j=1:m if i≠j))
+end # function _scaleAndPermute!

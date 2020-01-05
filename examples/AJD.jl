@@ -1,14 +1,16 @@
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
+# generate data
 t, n, k=50, 10, 4
 A=randn(n, n) # mixing matrix in model x=As
 Xset = [genDataMatrix(t, n) for i = 1:k]
 Xfixed=randn(t, n)./1
 for i=1:length(Xset) Xset[i]+=Xfixed end
-Cset = _crossCov(Xset, 1, k; dims=1)
-Cset = ℍVector([ℍ(Cset[l]) for l=1:k])
+Cset = ℍVector([ℍ((Xset[s]'*Xset[s])/t) for s=1:k])
+
 # method (1)
 aC=ajd(Cset; simple=true)
+
 # method (2)
 aX=ajd(Xset; simple=true)
 @test aX≈aC
@@ -16,8 +18,10 @@ aX=ajd(Xset; simple=true)
 # create 20 random commuting matrices
 # they all have the same eigenvectors
 Cset2=randP(3, 20; eigvalsSNR=Inf, commuting=true)
+
 # estimate the approximate joint diagonalizer (ajd)
-a=ajd(Cset2)
+a=ajd(Cset2; algorithm=:OJoB)
+
 # the ajd must be equivalent to the eigenvector matrix of any of the matrices in Cset
 @test spForm(a.F'*eigvecs(Cset2[1]))+1.0≈1.0
 

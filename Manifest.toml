@@ -16,9 +16,9 @@ version = "1.1.0"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "a1b652fb77ae8ca7ea328fa7ba5aa151036e5c10"
+git-tree-sha1 = "f784254f428fb8fd7ac15982e5862a38a44523d3"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.17.6"
+version = "0.17.7"
 
 [[Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
@@ -56,9 +56,9 @@ version = "1.1.0"
 
 [[PosDefManifold]]
 deps = ["LinearAlgebra", "Statistics"]
-git-tree-sha1 = "a1789840822e0bd84da29ba903df36cf248e0b2c"
+git-tree-sha1 = "3f36a782687a3696be77165ff7d4e9dca1442d9d"
 uuid = "f45a3650-5c51-11e9-1e9a-133aa5e309cf"
-version = "0.4.3"
+version = "0.4.4"
 
 [[Printf]]
 deps = ["Unicode"]
