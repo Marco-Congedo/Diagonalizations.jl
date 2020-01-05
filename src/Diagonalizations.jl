@@ -8,7 +8,6 @@
 
 # TODO
 # - svd full or not?
-# - do not overwrite demeaned data
 
 module Diagonalizations
 
@@ -168,10 +167,10 @@ function ==(f::LF, g::LF)
    eVarOK=(f.eVar≠○ && g.eVar≠○) ? f.eVar≈g.eVar   : true
    DOK   =(f.D≠○ && g.D≠○)       ? f.D≈g.D         : true
    if f.F isa Matrix
-      FOK   = (spForm(f.iF*g.F)+spForm(g.iF*f.F))<0.01
+      FOK   = ((spForm(f.iF*g.F)+spForm(g.iF*f.F))/2)<0.01
    else
       FOK   = (mean(spForm(f.iF[i]*g.F[i]) for i=1:length(g.F)) +
-               mean(spForm(g.iF[i]*f.F[i]) for i=1:length(f.F))) <0.01
+               mean(spForm(g.iF[i]*f.F[i]) for i=1:length(f.F)))/2 <0.01
    end
    f.name==g.name && arevOK && evOK && eVarOK && DOK && FOK
 end

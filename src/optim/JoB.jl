@@ -10,20 +10,24 @@
 #   (Congedo et al., 2012)
 
 # """
-#  Orthogonal Joint Blond Source Separation (OJoB) iterative algorithm
+#  Orthogonal Joint Blond Source Separation (OJoB) iterative algorithm and
+#  Nonorthogonal Joint Blond Source Separation (NoJoB) iterative algorithm:
 #  'Orthogonal and Non-Orthogonal Joint Blind Source Separation in the
 #  Least-Squares Sense'
 #  by Marco Congedo, Ronald Phlypo, Jonas Chatel-Goldman, EUSIPCO 2012
 #  https://hal.archives-ouvertes.fr/hal-00737835/document
 #
-#  This algorithm handles several use cases corresponding to several
+# if `algo` is :OJoB, runs the OJoB algorithm
+# if `algo` is :NoJoB, runs the NoJoB algorithm
+
+#  These algorithms handle several use cases corresponding to several
 #  combinations of the number of datasets (m) and number of observations (k):
 #  1) m=1, k>2
 #  2) m>1, k=1
 #  3) m>1, k>1
 #
-#  It takes as input either the data matrices or the covariance and cross-
-#  covariance matrices. Argument `input` tells the algo to take as input
+#  They take as input either the data matrices or the covariance and cross-
+#  covariance matrices. Argument `input` tells the algos to take as input
 #  data matrices (`input=:d`) or cov/cross-cov matrices (`input=:d`)
 #
 #                                   INPUT
@@ -43,21 +47,32 @@
 #  The covariance is maximized rotating each data matrix as: U_i' X_κi,
 #  for all i=1:m and κ=1:k.
 #
+#  NoJoB seeks m non-singular matrices 𝐔=U_1,...,U_m with vectors
+#  u_qi, for all i=1:n scaled such that the sum u_qi'(𝒞(κj)u_qju_qj^H𝒞(κj)^H)u_qi=1
+#  where the sum is over κ=1:k and j=1:m, separetedly for all q=1:m
+#  The covariance is maximized transforming each data matrix as: U_i' X_κi,
+#  for all i=1:m and κ=1:k.
+#
 #  if `fullModel=true` is passed as optional keyword argument,
 #  then also the sum of the squares of the diagonal part of matrices
 #  U_i'𝒞(κij)U_j is maximized for all ``i=1:m`` and ``κ=1:k``.
 #  This amounts to require the intra-covariance to be diagonalized as well.
 #
 #  if `whitening` = true is passed as optional keyword argument,
-#  then the 𝐔=U_1,...,U_m are no longer constrained to be orthogonal;
-#  instead they will be invertible and a scaling constraint is imposed on them
-#  so as to satisfy mean_κ=1:k U_i'𝒞(κii)U_j=I for all i=1:m.
-#  Given m whitening matrices W_i, the covariance matrices will be transformed
+#  for OJoB:
+#       the 𝐔=U_1,...,U_m are no longer constrained to be orthogonal;
+#       instead they will be invertible and a scaling constraint is imposed on them
+#       so as to satisfy mean_κ=1:k U_i'𝒞(κii)U_j=I for all i=1:m.
+#  for NoJoB:
+#       The same constraint is imposed
+#
+#  For both algorithms, given m whitening matrices W_i,
+#  the covariance matrices will be transformed
 #  as 𝒢(κij) = W_i'𝒞(κij)W_j, for all i,j=1:m and κ=1:k.
-#  Then, the OJoB algo will be run on the set 𝒢(κij) and the final solutions
-#  will be given by U_iW_i, for all i=1:m
-#  This amounts to requiring a generalized Canonical Correlation Analysis
-#  instead of a generalized Maximum Covariance Analysis.
+#  Then, the OJoB or NoJob algos will be run on the set 𝒢(κij)
+#  and the final solutions will be given by U_iW_i, for all i=1:m
+#  Using OjOB, this amounts to requiring a generalized Canonical Correlation
+#  Analysis instead of a generalized Maximum Covariance Analysis.
 #  By this pre-whitening the dimension of the problem can be reduced
 #  requesting matrices W_i to be rectangular. This is achieved using
 #  argument `eVar`. If eVar is an integer p, the matrices in 𝒢(κij) will all
@@ -85,11 +100,11 @@
 #  if `verbose`=true, the convergence attained at each iteration and other
 #  information will be printed.
 #
-#  This algorithm is not multi_threaded, instead it heavely uses BLAS.
+#  These algorithms are not multi_threaded, instead they heavely use BLAS.
 #  Before running this function you may want to set:
 #  `BLAS.set_num_threads(Sys.CPU_THREADS)`
 # """
-function OJoB(𝐗 :: AbstractArray, m::Int, k::Int, input::Symbol, type;
+function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, type;
               covEst   :: StatsBase.CovarianceEstimator=SCM,
               dims     :: Int64 = 1,
               meanX    :: Tmean = 0,
@@ -108,10 +123,9 @@ function OJoB(𝐗 :: AbstractArray, m::Int, k::Int, input::Symbol, type;
     k<3 && m<2 && throw(ArgumentError("Either `k` must be equal to at least 3 or `m` must be equal to at least 2"))
     #if m==1 fullModel=false end
 
-    # if n==t the input is supposed to be the cross-covariance matrices
+    # if input ≠:d the input is supposed to be the cross-covariance matrices
     input==:d ? 𝒞=_crossCov(𝐗, m, k;
-                    covEst=covEst, dims=dims, meanX=meanX, trace1=false, w=○) :
-                𝒞=𝐗
+                            covEst=covEst, dims=dims, meanX=meanX) : 𝒞=𝐗
 
     if trace1 || w ≠ ○ _Normalize!(𝒞, m, k, trace1, w) end
 
@@ -161,22 +175,29 @@ function OJoB(𝐗 :: AbstractArray, m::Int, k::Int, input::Symbol, type;
     ggt(κ::Int, i::Int, j::Int) = BLAS.gemm('N', 'T', 𝒢[κ, i, j], 𝒢[κ, i, j])
     if m>1 #gmca, gcca, majd
         if init === nothing
-            if fullModel
-                𝐔 = [eigvecs(𝛍(ggt(κ, i, j) for j=1:m, κ=1:k)) for i=1:m]
+            if algo==:NoJoB
+                𝐔 = [Matrix{type}(I, n, n) for i=1:m]
             else
-                𝐔 = [eigvecs(𝛍(ggt(κ, i, j) for j=1:m, κ=1:k if j≠i)) for i=1:m]
+                if fullModel
+                    𝐔 = [eigvecs(𝛍(ggt(κ, i, j) for j=1:m, κ=1:k)) for i=1:m]
+                else
+                    𝐔 = [eigvecs(𝛍(ggt(κ, i, j) for j=1:m, κ=1:k if j≠i)) for i=1:m]
+                end
             end
         else
             𝐔 = init
         end
     else  #ajd
         if init === nothing
-            𝐔 = [eigvecs(𝛍(ggt(κ, 1, 1) for κ=1:k))]
+            if algo==:NoJoB
+                𝐔 = [Matrix{type}(I, n, n)]
+            else
+                𝐔 = [eigvecs(𝛍(ggt(κ, 1, 1) for κ=1:k))]
+            end
         else
             𝐔 = [init]
         end
     end
-
 
     function updateR!(η, i, j)  # 𝐑[η] += (𝒢[κ, i, j] * 𝐔[j][:, η]) times its transpose
         #println("k, i, j ", k, " ", i, " ", j)
@@ -189,38 +210,74 @@ function OJoB(𝐗 :: AbstractArray, m::Int, k::Int, input::Symbol, type;
     𝐑 = [Matrix{type}(undef, n, n) for η=1:n]
     Ω = Matrix{type}(undef, n, k)
 
-    verbose && @info("Iterating OJoB algorithm...")
-    while true
-        conv_ =0.
-        for i=1:m # m optimizations for updating 𝐔[1]...𝐔[m]
-            for η=1:n
-                fill!(𝐑[η], type(0))
-                if m==1
-                    updateR!(η, 1, 1)
-                else
-                    for j=1:m i≠j ? updateR!(η, i, j) : nothing end # j ≠ i
-                    fullModel ? updateR!(η, i, i) : nothing         # j = i
+    if algo==:OJoB
+        verbose && @info("Iterating OJoB algorithm...")
+        while true
+            conv_ =0.
+            @inbounds for i=1:m # m optimizations for updating 𝐔[1]...𝐔[m]
+                for η=1:n
+                    fill!(𝐑[η], type(0))
+                    if m==1
+                        updateR!(η, 1, 1)
+                    else
+                        for j=1:m i≠j ? updateR!(η, i, j) : nothing end # j ≠ i
+                        fullModel ? updateR!(η, i, i) : nothing         # j = i
+                    end
+                    # power iteration
+                    𝐔[i][:, η] = BLAS.gemv('N', 𝐑[η], 𝐔[i][:, η])
                 end
-                # power iteration
-                𝐔[i][:, η] = BLAS.gemv('N', 𝐑[η], 𝐔[i][:, η])
+                conv_ += PosDefManifold.ss(𝐔[i])/n # square of the norms of power iteration vectors
+
+                # Lodwin Orthogonalization and update 𝐔[i]<-UV', with svd(𝐔[i])=UwV'
+                𝐔[i] = PosDefManifold.nearestOrth(𝐔[i])
             end
-            conv_  += PosDefManifold.ss(𝐔[i])/n # square of the norms of power iteration vectors
 
-            # Lodwin Orthogonalization and update 𝐔[i]<-UV', with svd(𝐔[i])=UwV'
-            𝐔[i] = PosDefManifold.nearestOrth(𝐔[i])
-        end
+            conv_ =sqrt(conv_ /m)
+            iter==1 ? conv=1. : conv = abs((conv_-oldconv)/oldconv)  # relative change
 
-        conv_ =sqrt(conv_ /m)
-        #iter==1 ? conv=1. : conv = (conv_-oldconv)/oldconv  # relative change
-        iter==1 ? conv=1. : conv = abs((conv_-oldconv)/oldconv)  # relative change
+            verbose && println("iteration: ", iter, "; convergence: ", conv)
+            (diverging = conv < 0) && verbose && @warn("OJoB diverged at:", iter)
+            (overRun = iter == maxiter) && @warn("OJoB: reached the max number of iterations before convergence:", iter)
+            (converged = 0. <= conv <= tolerance) || overRun==true ? break : nothing
+            oldconv=conv_
+            iter += 1
+        end # while
+    else
+        verbose && @info("Iterating NoJoB algorithm...")
+        while true
+            conv_ =0.
+            @inbounds for e2=1:2, i=1:m # m optimizations for updating 𝐔[1]...𝐔[m]
+                for η=1:n      # double loop to avoid oscillating convergence
+                    fill!(𝐑[η], type(0))
+                    if m==1
+                        updateR!(η, 1, 1)
+                    else
+                        for j=1:m i≠j ? updateR!(η, i, j) : nothing end # j ≠ i
+                        fullModel ? updateR!(η, i, i) : nothing         # j = i
+                    end
+                end
 
-        verbose && println("iteration: ", iter, "; convergence: ", conv)
-        (diverging = conv < 0) && verbose && @warn("OJoB diverged at:", iter)
-        (overRun = iter == maxiter) && @warn("OJoB: reached the max number of iterations before convergence:", iter)
-        (converged = 0. <= conv <= tolerance) || overRun==true ? break : nothing
-        oldconv=conv_
-        iter += 1
-    end # while
+                cho=cholesky(sum(𝐑)) # Cholesky LL'of 𝐑[1]+...+𝐑[n]
+                for η=1:n
+                    # solve Lx=𝐑[η]*𝐔[i][:, η] for x and L'y=x for y
+                    y=cho.U\(cho.L\(𝐑[η]*𝐔[i][:, η]))
+                    # 𝐔[i][:, η] <- y/sqrt(y'𝐑[η]t)
+                    𝐔[i][:, η]=y*inv(sqrt(quadraticForm(y, 𝐑[η])))
+                end
+                conv_+=PosDefManifold.ss(𝐔[i])
+            end
+
+            conv_=conv_/(2*n^2*m) # 2 because of the double loop
+            iter==1 ? conv=1. : conv = abs((conv_-oldconv)/oldconv)  # relative change
+
+            verbose && println("iteration: ", iter, "; convergence: ", conv)
+            (diverging = conv < 0) && verbose && @warn("NoJoB diverged at:", iter)
+            (overRun = iter == maxiter) && @warn("NoJoB: reached the max number of iterations before convergence:", iter)
+            (converged = 0. <= conv <= tolerance) || overRun==true ? break : nothing
+            oldconv=conv_
+            iter += 1
+        end # while
+    end
 
     verbose ? (converged ? @info("Convergence has been attained.\n") : @warn("Convergence has not been attained.")) : nothing
     verbose && println("")
@@ -234,124 +291,13 @@ function OJoB(𝐗 :: AbstractArray, m::Int, k::Int, input::Symbol, type;
     end
 
     if preWhite
-        𝐕=[𝐔[i]'*𝑾[i].iF for i=1:m]
+        algo==:OJoB ? 𝐕=[𝐔[i]'*𝑾[i].iF for i=1:m] :
+                      𝐕=[pinv(𝐔[i])*𝑾[i].iF for i=1:m]
         for i=1:m 𝐔[i] = 𝑾[i].F * 𝐔[i] end
     else
-        𝐕=[Matrix(𝐔[i]') for i=1:m]
+        algo==:OJoB ? 𝐕=[Matrix(𝐔[i]') for i=1:m] :
+                      𝐕=[pinv(𝐔[i]) for i=1:m]
     end
 
     return m>1 ? (𝐔, 𝐕, λ, iter, conv) : (𝐔[1], 𝐕[1], λ, iter, conv)
 end
-
-
-# try to resolve the permutation for the output of the above OJoB algorithm
-# for the case m=1
-# return a vector holding the n 'average eigenvalues' λ1,...,λn,
-# arranging them in average descending order,
-# where λη=𝛍_i=1:k(Di[η, η])
-function _permute!(U, 𝐗, k, input::Symbol;
-    covEst   :: StatsBase.CovarianceEstimator=SCM,
-    dims     :: Int64 = 1,
-    meanX    :: Tmean = 0,
-    trace1   :: Bool = false)
-    # if n==t the input is assumed to be the covariance matrices
-    input==:d ? 𝒞=_crossCov(𝐗, 1, k;
-                    covEst=covEst, dims=dims, meanX=meanX, trace1=trace1) :
-                𝒞=𝐗
-    n=size(𝒞[1, 1, 1], 1)
-
-    D=𝛍(𝔻([U[:, η]'*𝒞[l, 1, 1]*U[:, η] for η=1:n]) for l=1:k)
-    type=eltype(D)
-
-    function flipcol!(U, η, e)
-        temp=U[:, e]
-        U[:, e]=U[:, η]
-        U[:, η]=temp
-    end
-
-    for e=1:n  # for all variables # find the position of the absolute maximum
-        p, max=e, zero(type)
-        for η=e:n
-            absd=abs(D[η, η])
-            if  absd > max
-                max = absd
-                p=η
-            end
-        end
-
-        # Bring the maximum from position η on top (current e)
-        if p≠e
-            flipcol!(U, p, e)
-            d=D[p, p]
-            D[p, p]=D[e, e]
-            D[e, e]=d
-        end
-    end
-    return diag(D)
-end # function _Permute!
-
-
-
-# try to resolve scaling and permutation for the output of the above OJoB algorithm
-# forthe case m>1
-# return a vector holding the n 'average eigenvalues' λ1,...,λn,
-# trying to make them all positive and in descending order as much as possible,
-# where λη=𝛍_i≠j=1:m(Dij[η, η])
-function _scaleAndPermute!( 𝐔, 𝐗, m, k, input::Symbol;
-                            covEst   :: StatsBase.CovarianceEstimator=SCM,
-                            dims     :: Int64 = 1,
-                            meanX    :: Tmean = 0,
-                            trace1   :: Bool = false)
-    # if n==t the input is assumed to be the covariance matrices
-    input==:d ? 𝒞=_crossCov(𝐗, m, k;
-                    covEst=covEst, dims=dims, meanX=meanX, trace1=trace1) :
-                𝒞=𝐗
-    n=size(𝒞[1, 1, 1], 1)
-
-    𝑫=𝔻Vector₂(undef, m)
-    for i=1:m 𝑫[i]=𝔻Vector([𝛍(𝔻([𝐔[i][:, η]'*𝒞[l, i, j]*𝐔[j][:, η] for η=1:n]) for l=1:k) for j=1:m]) end
-    p, type=(1, 1, 1), eltype(𝑫[1][1])
-
-    function flipcol!(𝐔, m, η, e)
-        for i=1:m
-            temp=𝐔[i][:, e]
-            𝐔[i][:, e]=𝐔[i][:, η]
-            𝐔[i][:, η]=temp
-        end
-    end
-
-    for e=1:n  # for all variables  (e.g., electrodes)
-        # find the position of the absolute maximum
-        max=zero(type)
-        for i=1:m-1, j=i+1:m, η=e:n
-            absd=abs(𝑫[i][j][η, η])
-            if  absd > max
-                max = absd
-                p=(i, j, η)
-            end
-        end
-
-        # flip sign of 𝐔[j][η, η] if abs max is negative
-        i=p[1]; j=p[2]; η=p[3]
-        if 𝑫[i][j][η, η]<0
-            𝐔[j][:, η] *= -one(type)
-        end
-
-        # flip sign of 𝐔[j] for all j≠i:1:m if their corresponding element is negative
-        for x=1:m
-            if x≠j
-                if 𝑫[i][x][η, η]<0
-                    𝐔[x][:, η] *= -one(type)
-                end
-            end
-        end
-
-        # Bring the maximum from position η on top (current e)
-        if η≠e flipcol!(𝐔, m, η, e) end
-
-        # compute 𝑫 again
-        for i=1:m 𝑫[i]=𝔻Vector([𝛍(𝔻([𝐔[i][:, η]'*𝒞[l, i, j]*𝐔[j][:, η] for η=1:n]) for l=1:k) for j=1:m]) end
-    end
-
-    return diag(𝛍(𝑫[i][j] for i=1:m for j=1:m if i≠j))
-end # function _scaleAndPermute!

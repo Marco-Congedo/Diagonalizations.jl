@@ -20,7 +20,7 @@ we want to achieve
 ``F^HC_lF≈Λ_l``, for all ``l∈[1...k]``. ``\hspace{1cm}`` [ajd.1]
 
 In some algorithm, such as *OJoB*, ``F`` is constrained to be orthogonal,
-in others, only to be non-singular.
+in others, like *NoJoB* only to be non-singular.
 
 #### pre-whitening for AJD
 
@@ -87,6 +87,7 @@ There is no closed-form solution to the AJD problem in general.
 | Algorithm   | Constraint | Reference |
 |:----------|:----------|:----------|
 | OJoB | ``F`` orthogonal | Congedo et al (2011, 2012); Congedo (2013)|
+| NoJoB | ``F`` non-singular | Congedo et al (2011, 2012); Congedo (2013)|
 
 
 **Constructors**

@@ -135,8 +135,8 @@ end
 
     ## method (3)
     w=whitening(𝐗; covEst=SCM, simple=true, metric=logEuclidean)
-     G=PosDefManifold.mean(logEuclidean, 𝐂x)
-     @test w.F'*G*w.F≈I
+    G=PosDefManifold.mean(logEuclidean, 𝐂x)
+    @test w.F'*G*w.F≈I
 end
 
 
@@ -217,16 +217,15 @@ end
     Xfixed=randn(t, n)./1
     for i=1:length(𝐗) 𝐗[i]+=Xfixed end
     aX=ajd(𝐗)
-    𝐂 = _crossCov(𝐗, 1, k; dims=1)
-    𝐂 = ℍVector([ℍ(𝐂[l]) for l=1:k])
+    𝐂 = ℍVector([ℍ((𝐗[s]'*𝐗[s])/t) for s=1:k])
     aC=ajd(𝐂)
     @test aX≈aC
 
     # create 20 random commuting matrices
     # they all have the same eigenvectors
     𝐂=randP(3, 20; eigvalsSNR=Inf, commuting=true)
-    # estimate the approximate joint diagonalizer (ajd)
-    a=ajd(𝐂)
+    # estimate the approximate joint diagonalizer (ajd) using the OJoB solver
+    a=ajd(𝐂; algorithm=:OJoB)
     # the ajd must be equivalent to the eigenvector matrix of any of the matrices in 𝐂
     @test spForm(a.F'*eigvecs(𝐂[1]))+1.0≈1.0
 end

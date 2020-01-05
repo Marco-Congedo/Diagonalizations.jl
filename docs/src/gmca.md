@@ -78,7 +78,11 @@ There is no closed-form solution to the gMCA problem in general.
 | Algorithm   | Constraint | Reference |
 |:----------|:----------|:----------|
 | OJoB | ``F`` orthogonal | Congedo et al (2011, 2012); Congedo (2013)|
+| NoJoB | ``F`` non-singular | Congedo et al (2011, 2012); Congedo (2013)|
 
+Note that the solution of the MCA are orthogonal matrices.
+In order to mimic this in gMCA use *OJoB*. Using *NoJoB*
+will constraint the solution only in the general linear group.
 
 **Constructors**
 

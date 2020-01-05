@@ -84,6 +84,7 @@ There is no closed-form solution to the MAJD problem in general.
 | Algorithm   | Constraint | Reference |
 |:----------|:----------|:----------|
 | OJoB | ``F`` orthogonal | Congedo et al (2011, 2012); Congedo (2013)|
+| NoJoB | ``F`` non-singular | Congedo et al (2011, 2012); Congedo (2013)|
 
 
 **Constructors**

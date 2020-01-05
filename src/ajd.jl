@@ -14,7 +14,7 @@
 function ajd(𝐂::ℍVector;
              trace1    :: Bool   = false,
              w         :: Union{Tw, Function} = ○,
-          algorithm :: Symbol = :OJoB,
+          algorithm :: Symbol = :NoJoB,
           preWhite  :: Bool   = false,
           sort      :: Bool   = true,
           init      :: Mato   = ○,
@@ -33,7 +33,7 @@ function ajd(𝐗::VecMat;
              meanX      :: Into = 0,
           trace1     :: Bool = false,
           w          :: Union{Tw, Function} = ○,
-       algorithm :: Symbol = :OJoB,
+       algorithm :: Symbol = :NoJoB,
        preWhite  :: Bool = false,
        sort      :: Bool = true,
        init      :: Mato = ○,
@@ -52,7 +52,7 @@ Return a [LinearFilter](@ref) object:
 **(1) Approximate joint diagonalization** of the set of ``k``
 symmetric or Hermitian matrices `𝐂`, of type
 [ℍVector](https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#%E2%84%8DVector-type-1)
-using the given solving `algorithm` (*OJoB* by default).
+using the given solving `algorithm` (*NoJoB* by default).
 
 If `trace1` is true, all matrices in the set
 `𝐂` are normalized so as to have trace equal to 1.
@@ -84,13 +84,14 @@ here above in [permutation for AJD](@ref), otherwise they will be in arbitrary o
 
 A matrix can be passed with the `init` argument in order to initialize
 the matrix ``F`` to be found by the AJD algorithm.
-If `nothing` is passed (default), following
-Congedo et al. (2011)[🎓](@ref) ``F`` is initialized with the
-eigevector matrix of
+If `nothing` is passed (default), ``F`` is initialized as per this table:
 
-``\\frac{1}{k}\\sum_{l=1}^kC_k^2``.
+| Algorithm   | Initialization of ``F``|
+|:----------|:----------|
+| OJoB | eigevector matrix of ``\\frac{1}{k}\\sum_{l=1}^kC_k^2`` (Congedo et al., 2011)|
+| NoJoB | identity matrix |
 
-``tol`` is the tolerance for convergence of the solving algorithm.
+`tol` is the tolerance for convergence of the solving algorithm.
 By default it is set to the square root of `Base.eps` of the nearest real type of the data
 input. This corresponds to requiring the relative change across two successive
 iterations of the average squared norm of the column vectors of ``F`` to vanish for
@@ -138,30 +139,33 @@ remaining arguments of method (2).
 ```
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
+# generate data
 t, n, k=50, 10, 4
 A=randn(n, n) # mixing matrix in model x=As
 Xset = [genDataMatrix(t, n) for i = 1:k]
 Xfixed=randn(t, n)./1
 for i=1:length(Xset) Xset[i]+=Xfixed end
-Cset = _crossCov(Xset, 1, k; dims=1)
-Cset = ℍVector([ℍ(Cset[l]) for l=1:k])
+Cset = ℍVector([ℍ((Xset[s]'*Xset[s])/t) for s=1:k])
+
 # method (1)
 aC=ajd(Cset; simple=true)
+
 # method (2)
 aX=ajd(Xset; simple=true)
 @test aX≈aC
 
-# create 20 random commuting matrices;
+# create 20 random commuting matrices
 # they all have the same eigenvectors
 Cset2=randP(3, 20; eigvalsSNR=Inf, commuting=true)
+
 # estimate the approximate joint diagonalizer (ajd)
-a=ajd(Cset2)
-# the ajd must be equivalent to the eigenvector matrix
-# of any of the matrices in Cset2
+a=ajd(Cset2; algorithm=:OJoB)
+
+# the ajd must be equivalent to the eigenvector matrix of any of the matrices in Cset
 @test spForm(a.F'*eigvecs(Cset2[1]))+1.0≈1.0
 
 # normalize the trace of input matrices,
-# give them weights according to the `nonDiagonality` function,
+# give them weights according to the `nonDiagonality` function
 # apply pre-whitening and limit the explained variance both
 # at the pre-whitening level and at the level of final vector selection
 a=ajd(Cset; trace1=true, w=nonD, preWhite=true, eVarC=10, eVar=0.99)
@@ -176,7 +180,8 @@ CMax=maximum(maximum(abs.(C)) for C ∈ Cset);
  h2 = heatmap(Cset[2], clim=(-CMax, CMax), title="C2", yflip=true, c=:bluesreds);
  h3 = heatmap(Cset[3], clim=(-CMax, CMax), title="C3", yflip=true, c=:bluesreds);
  h4 = heatmap(Cset[4], clim=(-CMax, CMax), title="C4", yflip=true, c=:bluesreds);
- 📈=plot(h1, h2, h3, h4, size=(700,300))
+ 📈=plot(h1, h2, h3, h4, size=(700,400))
+# savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigAJD1.png")
 
 Dset=[a.F'*C*a.F for C ∈ Cset];
  DMax=maximum(maximum(abs.(D)) for D ∈ Dset);
@@ -184,7 +189,8 @@ Dset=[a.F'*C*a.F for C ∈ Cset];
  h6 = heatmap(Dset[2], clim=(-DMax, DMax), title="F'*C2*F", yflip=true, c=:bluesreds);
  h7 = heatmap(Dset[3], clim=(-DMax, DMax), title="F'*C3*F", yflip=true, c=:bluesreds);
  h8 = heatmap(Dset[4], clim=(-DMax, DMax), title="F'*C4*F", yflip=true, c=:bluesreds);
- 📉=plot(h5, h6, h7, h8, size=(700,300))
+ 📉=plot(h5, h6, h7, h8, size=(700,400))
+# savefig(📉, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigAJD2.png")
 
 ```
 
@@ -196,7 +202,7 @@ Dset=[a.F'*C*a.F for C ∈ Cset];
 function ajd(𝐂::ℍVector;
              trace1    :: Bool   = false,
              w         :: Union{Tw, Function} = ○,
-          algorithm :: Symbol = :OJoB,
+          algorithm :: Symbol = :NoJoB,
           preWhite  :: Bool   = false,
           sort      :: Bool   = true,
           init      :: Mato   = ○,
@@ -211,12 +217,18 @@ function ajd(𝐂::ℍVector;
    args=("Approximate Joint Diagonalization", false)
    k, n=length(𝐂), size(𝐂[1], 1)
 
-   if algorithm == :OJoB
-      U, V, λ, iter, conv=OJoB(reshape(𝕄Vector(𝐂), (k, 1, 1)), 1, k, :c, eltype(𝐂[1]);
+   if     algorithm ∈(:OJoB, :NoJoB)
+          U, V, λ, iter, conv=JoB(reshape(𝕄Vector(𝐂), (k, 1, 1)), 1, k, :c, algorithm, eltype(𝐂[1]);
                trace1=trace1, w=w, preWhite=preWhite, sort=sort,
                   init=init, tol=tol, maxiter=maxiter, verbose=verbose,
                eVar=eVarC, eVarMeth=eVarMeth)
-   # elseif...
+   elseif algorithm==:JADE
+          U, V, λ, iter, conv=JADE(𝐂, :c;
+               trace1=trace1, w=w, preWhite=preWhite, sort=sort,
+                  init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+               eVar=eVarC, eVarMeth=eVarMeth)
+   else
+      throw(ArgumentError(📌*", ajd constructor: invalid `algorithm` argument: $algorithm"))
    end
 
    simple ? LF(U, V, Diagonal(λ), ○, ○, ○, args...) :
@@ -233,7 +245,7 @@ function ajd(𝐗::VecMat;
              meanX      :: Into = 0,
           trace1     :: Bool = false,
           w          :: Union{Tw, Function} = ○,
-       algorithm :: Symbol = :OJoB,
+       algorithm :: Symbol = :NoJoB,
        preWhite  :: Bool   = false,
        sort      :: Bool   = true,
        init      :: Mato   = ○,
@@ -249,13 +261,20 @@ function ajd(𝐗::VecMat;
    (n, t)=dims==1 ? reverse(size(𝐗[1])) : size(𝐗[1])
    args=("Approximate Joint Diagonalization", false)
 
-   if algorithm == :OJoB
-      U, V, λ, iter, conv=OJoB(𝐗, 1, length(𝐗), :d, eltype(𝐗[1]);
+   if     algorithm ∈(:OJoB, :NoJoB, :JADE)
+          U, V, λ, iter, conv=JoB(𝐗, 1, length(𝐗), :d, algorithm, eltype(𝐗[1]);
                covEst=covEst, dims=dims, meanX=meanX,
                trace1=trace1, preWhite=preWhite, sort=sort,
                   init=init, tol=tol, maxiter=maxiter, verbose=verbose,
                eVar=eVarC, eVarMeth=eVarMeth)
-   # elseif...
+   elseif algorithm==:JADE
+          U, V, λ, iter, conv=JADE(𝐗, :d;
+               covEst=covEst, dims=dims, meanX=meanX,
+               trace1=trace1, w=w, preWhite=preWhite, sort=sort,
+                  init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+               eVar=eVarC, eVarMeth=eVarMeth)
+   else
+      throw(ArgumentError(📌*", ajd constructor: invalid `algorithm` argument"))
    end
 
    simple ? LF(U, V, Diagonal(λ), ○, ○, ○, args...) :
@@ -273,7 +292,7 @@ function majd(𝑿::VecVecMat;
               covEst     :: StatsBase.CovarianceEstimator = SCM,
               dims       :: Into    = ○,
               meanX      :: Into    = 0,
-          algorithm :: Symbol    = :OJoB,
+          algorithm :: Symbol    = :NoJoB,
           fullModel :: Bool      = false,
           preWhite  :: Bool      = false,
           sort      :: Bool      = true,
@@ -292,7 +311,7 @@ Return a [LinearFilter](@ref) object.
 
 **Multiple Approximate Joint Diagonalization** of the ``k`` sets
 of ``m`` data matrices `𝐗`
-using the given solving `algorithm` (*OJoB* by default).
+using the given solving `algorithm` (*NoJoB* by default).
 
 If `fullModel` is true, the [gmca.3] problem here above is solved,
 otherwise (default), the [gmca.2] problem here above is solved.
@@ -313,18 +332,17 @@ otherwise they will have arbitrary sign and will be in arbitrary order.
 
 A vector of matrices can be passed with the `init` argument in order
 to initialize the matrices ``F_1,...,F_m`` to be found by the MAJD algorithm.
-If `nothing` is passed (default), following Congedo et al. (2011)[🎓](@ref)
-matrices ``F_i`` are initialized with the eigevector matrix of
+If `nothing` is passed (default), ``F_i`` is initialized as per this table:
 
-``\\frac{1}{m}\\sum_{l=1}^k\\sum_{j=1}^m C_{lij}C_{lij}^H``
+| Algorithm   | `fullModel` | Initialization of ``F_i``|
+|:----------|:----------|:----------|
+| OJoB | true | eigevector matrix of ``\\frac{1}{m}\\sum_{l=1}^k\\sum_{j=1}^m C_{lij}C_{lij}^H``
+ (Congedo et al., 2011)|
+| OJoB | false | eigevector matrix of ``\\frac{1}{m}\\sum_{l=1}^k\\sum_{j≠i, j=1}^m C_{lij}C_{lij}^H``
+ (Congedo et al., 2011)|
+| NoJoB | true or false | identity matrix |
 
-if `fullModel` is true,
-
-``\\frac{1}{m}\\sum_{l=1}^k\\sum_{j≠i, j=1}^m C_{lij}C_{lij}^H``
-
-if `fullModel` is false.
-
-``tol`` is the tolerance for convergence of the solving algorithm.
+`tol` is the tolerance for convergence of the solving algorithm.
 By default it is set to the square root of `Base.eps` of the nearest real
 type of the data input. This corresponds to requiring the relative
 change across two successive iterations of the average squared norm
@@ -452,7 +470,7 @@ function majd(𝑿::VecVecMat;
               covEst     :: StatsBase.CovarianceEstimator = SCM,
               dims       :: Into    = ○,
               meanX      :: Into    = 0,
-          algorithm :: Symbol    = :OJoB,
+          algorithm :: Symbol    = :NoJoB,
           fullModel :: Bool      = false,
           preWhite  :: Bool      = false,
           sort      :: Bool      = true,
@@ -471,13 +489,15 @@ function majd(𝑿::VecVecMat;
    m=length(𝑿[1])
    args=("Multiple Approximate Joint Diagonalization", false)
 
-   if algorithm == :OJoB
-      𝐔, 𝐕, λ, iter, conv=OJoB(𝑿, m, k, :d, eltype(𝑿[1][1]);
+   if algorithm ∈(:OJoB, :NoJoB)
+      𝐔, 𝐕, λ, iter, conv=JoB(𝑿, m, k, :d, algorithm, eltype(𝑿[1][1]);
                covEst=covEst, dims=dims, meanX=meanX,
                fullModel=fullModel, preWhite=preWhite, sort=sort,
                   init=init, tol=tol, maxiter=maxiter, verbose=verbose,
                eVar=eVarC, eVarMeth=eVarMeth)
    # elseif...
+   else
+      throw(ArgumentError(📌*", majd constructor: invalid `algorithm` argument"))
    end
 
    simple ? LF(𝐔, 𝐕, Diagonal(λ), ○, ○, ○, args...) :

@@ -43,13 +43,14 @@ otherwise they will have arbitrary sign and will be in arbitrary order.
 
 A vector of matrices can be passed with the `init` argument in order
 to initialize the matrices ``F_1,...,F_m`` to be found by the gMCA algorithm.
-If `nothing` is passed (default), matrices ``F_i`` is initialized,
-following Congedo et al. (2011)[🎓](@ref),
-with the eigevector matrix of
+If `nothing` is passed (default), ``F_i`` is initialized as per this table:
 
-``\\frac{1}{m}\\sum_{j=1}^m C_{ij}C_{ij}^H``.
+| Algorithm   | Initialization of ``F_i``|
+|:----------|:----------|
+| OJoB | eigevector matrix of ``\\frac{1}{m}\\sum_{j=1}^m C_{ij}C_{ij}^H`` (Congedo et al., 2011)|
+| NoJoB | identity matrix |
 
-``tol`` is the tolerance for convergence of the solving algorithm.
+`tol` is the tolerance for convergence of the solving algorithm.
 By default it is set to the square root of `Base.eps` of the nearest real
 type of the data input. This corresponds to requiring the relative
 change across two successive iterations of the average squared norm
@@ -197,13 +198,16 @@ function gmca(𝐗::VecMat;
    m=length(𝐗)
    args=("generalized Maximum Covariance Analysis", false)
 
-   if algorithm == :OJoB
-      𝐔, 𝐕, λ, iter, conv=OJoB(𝐗, m, 1, :d, eltype(𝐗[1]);
+
+   if algorithm ∈(:OJoB, :NoJoB)
+      𝐔, 𝐕, λ, iter, conv=JoB(𝐗, m, 1, :d, algorithm, eltype(𝐗[1]);
                covEst=covEst, dims=dims, meanX=meanX,
                fullModel=fullModel, sort=sort,
                   init=init, tol=tol, maxiter=maxiter, verbose=verbose,
                eVar=eVar, eVarMeth=eVarMeth)
    # elseif...
+   else
+      throw(ArgumentError(📌*", gmca constructor: invalid `algorithm` argument"))
    end
 
    simple ? LF(𝐔, 𝐕, Diagonal(λ), ○, ○, ○, args...) :
@@ -246,13 +250,13 @@ otherwise they will have arbitrary sign and will be in arbitrary order.
 A vector of matrices can be passed with the `init` argument in order
 to initialize the matrices ``F_1,...,F_m`` to be found by the gCCA algorithm.
 This matrices should be orthogonal/unitary.
-If `nothing` is passed (default), matrices ``F_i`` is initialized,
-following Congedo et al. (2011)[🎓](@ref),
-with the eigevector matrix of
+If `nothing` is passed (default), ``F_i`` is initialized as per this table:
 
-``\\frac{1}{m}\\sum_{j=1}^m C_{ij}C_{ij}^H``.
+| Algorithm   | Initialization of ``F_i``|
+|:----------|:----------|
+| OJoB | eigevector matrix of ``\\frac{1}{m}\\sum_{j=1}^m C_{ij}C_{ij}^H`` (Congedo et al., 2011)|
 
-``tol`` is the tolerance for convergence of the solving algorithm.
+`tol` is the tolerance for convergence of the solving algorithm.
 By default it is set to the square root of `Base.eps` of the nearest real
 type of the data input. This corresponds to requiring the relative
 change across two successive iterations of the average squared norm
@@ -402,13 +406,17 @@ function gcca(𝐗::VecMat;
    m=length(𝐗)
    args=("generalized Canonical Correlation Analysis", false)
 
-   if algorithm == :OJoB
-      𝐔, 𝐕, λ, iter, conv=OJoB(𝐗, m, 1, :d, eltype(𝐗[1]);
+
+   if algorithm ==:OJoB #∈(:OJoB)
+      𝐔, 𝐕, λ, iter, conv=JoB(𝐗, m, 1, :d, algorithm, eltype(𝐗[1]);
                covEst=covEst, dims=dims, meanX=meanX,
                fullModel=false, preWhite=true, sort=sort,
                   init=init, tol=tol, maxiter=maxiter, verbose=verbose,
                eVar=eVar, eVarMeth=eVarMeth)
    # elseif...
+   else
+      if algorithm == :NoJoB @warn "The NoJoB algorithm does not suit gCCA." end
+      throw(ArgumentError(📌*", gcca constructor: invalid `algorithm` argument"))
    end
 
    simple ? LF(𝐔, 𝐕, Diagonal(λ), ○, ○, ○, args...) :
