@@ -338,7 +338,7 @@ function _Normalize!(𝒞::AbstractArray, m::Int, k::Int,
                      trace1::Bool=false, w::Union{Tw, Function}=○)
    !trace1 && w===○ && return
 
-   for κ=1:k println(tr(𝒞[κ, 1, 1])) end
+   #for κ=1:k println(tr(𝒞[κ, 1, 1])) end
 
    if m==1
       if trace1

@@ -202,21 +202,14 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
 
     function updateR!(η, i, j)  # 𝐑[η] += (𝒢[κ, i, j] * 𝐔[j][:, η]) times its transpose
         #println("k, i, j ", k, " ", i, " ", j)
-        # don't use BLAS for complex data
-        if type<:Real
-            @inbounds for κ=1:k
-                Ω[:, κ] = BLAS.gemv('N', 𝒢[κ, i, j], 𝐔[j][:, η])
-            end
-            𝐑[η] += Hermitian(BLAS.gemm('N', 'T', Ω, Ω)) # (Ω * Ω')
-        else
-            @inbounds for κ=1:k
-                Ω[:, κ] = 𝒢[κ, i, j] * 𝐔[j][:, η]
-            end
-            𝐑[η] += Hermitian(Ω * Ω') # (Ω * Ω')
+        # both gemv and gemm supports complex input
+        @inbounds for κ=1:k
+            Ω[:, κ] = BLAS.gemv('N', 𝒢[κ, i, j], 𝐔[j][:, η])
         end
+        𝐑[η] += BLAS.gemm('N', 'T', Ω, Ω) # (Ω * Ω')
     end
 
-    𝐑 = HermitianVector([Hermitian(zeros(type, n, n)) for η=1:n])
+    𝐑 = [Matrix{type}(undef, n, n) for η=1:n]
     Ω = Matrix{type}(undef, n, k)
 
     if algo==:OJoB
@@ -233,7 +226,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
                         fullModel ? updateR!(η, i, i) : nothing         # j = i
                     end
                     # 1 power iteration
-                    𝐔[i][:, η] = 𝐑[η] * 𝐔[i][:, η]
+                    𝐔[i][:, η] = BLAS.gemv('N', 𝐑[η], 𝐔[i][:, η])
                 end
                 conv_ += PosDefManifold.ss(𝐔[i])/n # square of the norms of power iteration vectors
 
@@ -267,12 +260,12 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
                 end
 
                 #1 power iteration
-                cho=cholesky(sum(𝐑)) # Cholesky LL'of 𝐑[1]+...+𝐑[n]
+                cho=cholesky(Hermitian(sum(𝐑))) # Cholesky LL'of 𝐑[1]+...+𝐑[n]
                 for η=1:n
                     # solve Lx=𝐑[η]*𝐔[i][:, η] for x and L'y=x for y
                     y=cho.U\(cho.L\(𝐑[η]*𝐔[i][:, η]))
                     # 𝐔[i][:, η] <- y/sqrt(y'𝐑[η]t)
-                    𝐔[i][:, η]=y*inv(sqrt(PosDefManifold.quadraticForm(y, 𝐑[η])))
+                    𝐔[i][:, η]=y*inv(sqrt(quadraticForm(y, 𝐑[η])))
                 end
                 conv_+=PosDefManifold.ss(𝐔[i])
             end
