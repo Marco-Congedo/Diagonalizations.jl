@@ -172,6 +172,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
 
     # initialization of 𝐔[i], i=1:m, as the eigenvectors of sum_k,j(𝒢_k,i,j*𝒢_k,i,j')
     # see Eq. 17 of Congedo, Phlypo and Pham, 2011, or with the provided matrices
+    # note: gemm supports complex matrices
     ggt(κ::Int, i::Int, j::Int) = BLAS.gemm('N', 'T', 𝒢[κ, i, j], 𝒢[κ, i, j])
     if m>1 #gmca, gcca, majd
         if init === nothing
@@ -201,6 +202,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
 
     function updateR!(η, i, j)  # 𝐑[η] += (𝒢[κ, i, j] * 𝐔[j][:, η]) times its transpose
         #println("k, i, j ", k, " ", i, " ", j)
+        # both gemv and gemm supports complex input
         @inbounds for κ=1:k
             Ω[:, κ] = BLAS.gemv('N', 𝒢[κ, i, j], 𝐔[j][:, η])
         end
@@ -223,7 +225,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
                         for j=1:m i≠j ? updateR!(η, i, j) : nothing end # j ≠ i
                         fullModel ? updateR!(η, i, i) : nothing         # j = i
                     end
-                    # power iteration
+                    # 1 power iteration
                     𝐔[i][:, η] = BLAS.gemv('N', 𝐑[η], 𝐔[i][:, η])
                 end
                 conv_ += PosDefManifold.ss(𝐔[i])/n # square of the norms of power iteration vectors
@@ -257,7 +259,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
                     end
                 end
 
-                cho=cholesky(sum(𝐑)) # Cholesky LL'of 𝐑[1]+...+𝐑[n]
+                cho=cholesky(Hermitian(sum(𝐑))) # Cholesky LL'of 𝐑[1]+...+𝐑[n]
                 for η=1:n
                     # solve Lx=𝐑[η]*𝐔[i][:, η] for x and L'y=x for y
                     y=cho.U\(cho.L\(𝐑[η]*𝐔[i][:, η]))
@@ -282,6 +284,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
     verbose ? (converged ? @info("Convergence has been attained.\n") : @warn("Convergence has not been attained.")) : nothing
     verbose && println("")
 
+    # auto-sort the eigenvectors
     if sort
         λ = m==1 ? _permute!(𝐔[1], 𝒢, k, :c) :
                    _scaleAndPermute!(𝐔, 𝒢, m, k, :c)

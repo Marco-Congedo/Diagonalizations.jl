@@ -136,7 +136,7 @@ By default, the arithmetic mean is computed.
 ```
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
-# Method (1)
+# Method (1) real
 t, n=50, 10
 X1=genDataMatrix(n, t)
 X2=genDataMatrix(n, t)
@@ -151,8 +151,23 @@ Dx2=cC.F'*Cx2*cC.F
 @test cC.F'*C*cC.F≈I
 @test norm(Dx1-(I-Dx2))+1≈1.
 
+# Method (1) complex
+t, n=50, 10
+X1c=genDataMatrix(ComplexF64, n, t)
+X2c=genDataMatrix(ComplexF64, n, t)
+Cx1c=Hermitian((X1c*X1c')/t)
+Cx2c=Hermitian((X2c*X2c')/t)
+Cc=Cx1c+Cx2c
+cCc=csp(Cx1c, Cx2c; simple=true)
+Dx1c=cCc.F'*Cx1c*cCc.F
+@test norm(Dx1c-Diagonal(Dx1c))+1. ≈ 1.
+Dx2c=cCc.F'*Cx2c*cCc.F
+@test norm(Dx2c-Diagonal(Dx2c))+1. ≈ 1.
+@test cCc.F'*Cc*cCc.F≈I
+@test norm(Dx1c-(I-Dx2c))+1. ≈ 1.
 
-# Method (2)
+
+# Method (2) real
 c12=csp(X1, X2, simple=true)
 Dx1=c12.F'*Cx1*c12.F
 @test norm(Dx1-Diagonal(Dx1))+1≈1.
@@ -160,27 +175,36 @@ Dx2=c12.F'*Cx2*c12.F
 @test norm(Dx2-Diagonal(Dx2))+1≈1.
 @test c12.F'*C*c12.F≈I
 @test norm(Dx1-(I-Dx2))+1≈1.
-
 @test cC==c12
 
+# Method (2) complex
+c12c=csp(X1c, X2c, simple=true)
+Dx1c=c12c.F'*Cx1c*c12c.F
+@test norm(Dx1c-Diagonal(Dx1c))+1. ≈ 1.
+Dx2c=c12c.F'*Cx2c*c12c.F
+@test norm(Dx2c-Diagonal(Dx2c))+1. ≈ 1.
+@test c12c.F'*Cc*c12c.F≈I
+@test norm(Dx1c-(I-Dx2c))+1. ≈ 1.
+@test cCc==c12c
 
+
+# Method (3) real
+# CSP of the average covariance matrices
 k=10
 Xset=[genDataMatrix(n, t) for i=1:k]
 Yset=[genDataMatrix(n, t) for i=1:k]
 
-# Method (3)
-# CSP of the average covariance matrices
 c=csp(Xset, Yset)
 
-# ... selecting subspace dimension allowing an explained variance = 0.5
-c=csp(Xset, Yset; eVar=0.5)
+# ... selecting subspace dimension allowing an explained variance = 0.9
+c=csp(Xset, Yset; eVar=0.9)
 
 # ... subtracting the mean from the matrices in Xset and Yset
-c=csp(Xset, Yset; meanX₁=nothing, meanX₂=nothing, eVar=0.5)
+c=csp(Xset, Yset; meanX₁=nothing, meanX₂=nothing, eVar=0.9)
 
 # csp on the average of the covariance and cross-covariance matrices
 # computed along dims 1
-c=csp(Xset, Yset; dims=1, eVar=0.5)
+c=csp(Xset, Yset; dims=1, eVar=0.9)
 
 # name of the filter
 c.name
@@ -203,6 +227,7 @@ plot(c.arev)
  h5 = heatmap(C, clim=(-CMax, CMax), title="Cx1+Cx2", yflip=true, c=:bluesreds);
  h6 = heatmap(cC.F'*C*cC.F, clim=(0, 1), title="F'*(Cx1+Cx2)*F", yflip=true, c=:amp);
  📈=plot(h1, h3, h5, h2, h4, h6, size=(800,400))
+# savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigCSP1.png")
 ```
 
  ![Figure CSP1](assets/FigCSP1.png)
@@ -220,11 +245,34 @@ plot(c.arev)
  h5 = heatmap(C, clim=(-CMax, CMax), title="Cx1+Cx2", yflip=true, c=:bluesreds);
  h6 = heatmap(cC.F'*C*cC.F, clim=(0, 1), title="F'*(Cx1+Cx2)*F", yflip=true, c=:amp);
  📉=plot(h1, h3, h5, h2, h4, h6, size=(800,400))
+# savefig(📉, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigCSP2.png")
 
 ```
 
  ![Figure CSP2](assets/FigCSP2.png)
 
+```
+# Method (3) complex
+# CSP of the average covariance matrices
+k=10
+Xsetc=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+Ysetc=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+
+cc=csp(Xsetc, Ysetc)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+cc=csp(Xsetc, Ysetc; eVar=0.9)
+
+# ... subtracting the mean from the matrices in Xset and Yset
+cc=csp(Xsetc, Ysetc; meanX₁=nothing, meanX₂=nothing, eVar=0.9)
+
+# csp on the average of the covariance and cross-covariance matrices
+# computed along dims 1
+cc=csp(Xsetc, Ysetc; dims=1, eVar=0.9)
+
+# name of the filter
+cc.name
+```
 """
 function csp(C₁ :: SorH, C₂ :: SorH;
              eVar     :: TeVaro = ○,
@@ -237,25 +285,12 @@ function csp(C₁ :: SorH, C₂ :: SorH;
   size(C₁, 1)==size(C₁, 2) || throw(ArgumentError(📌*", csp function: Matrix `C₁` must be square"))
   size(C₂, 1)==size(C₂, 2) || throw(ArgumentError(📌*", csp function: Matrix `C₂` must be square"))
   size(C₁)==size(C₂) || throw(ArgumentError(📌*", csp function: Matrices `C₁` and `C₂` must have the same size"))
-  #(eVar isa Int && isodd(eVar)) && throw(ArgumentError("If you pass an Integer as `eVar` parameter, it must be en even integer"))
-#  cspMeth isa Symbol && cspMeth ∉ (:gevd, :twoSteps) && throw(ArgumentError("`:gevd` and `:twoSteps` are the only accepted symbols as argument `cspMeth`"))
-
-  #r=size(C₁, 1)÷2 # ???
-#=
-  if !simple && eVar===○
-     if selMeth==:extremal
-        eVar=0.66
-     else
-        t=tr(C₁)
-        eVar=t/(t+tr(C₂))
-     end
-  end
-=#
 
   args=("Common Spatial Pattern", false)
 
   if eVarC≠○ && eVarC≈0. # use gevd, which also actually whitens C1+C2
      λ, U = eig(C₁, C₁+C₂)
+     λ = _checkλ(λ) # make sure no imaginary noise is present (fro complex data)
 
      simple ? LF(U, inv(U), Diagonal(λ), ○, ○, ○, args...) :
      begin
@@ -265,7 +300,9 @@ function csp(C₁ :: SorH, C₂ :: SorH;
   else
      w=whitening(C₁+C₂; eVar=eVarC, eVarMeth=eVarMeth, simple=true)
 
-     λ, U = eig(w.F'*C₁*w.F) # get evd of whitened C1
+     λ, U = eig(Hermitian(w.F'*C₁*w.F)) # get evd of whitened C1
+     # Hermitian is necessary for complex data
+     λ = _checkλ(λ) # make sure no imaginary noise is present (fro complex data)
 
      simple ? LF(w.F*U, U'*w.iF, Diagonal(λ), ○, ○, ○, args...) :
      begin
@@ -434,6 +471,7 @@ function cstp( X :: Mat, C₍₁₎ :: SorH, C₍₂₎ :: SorH;
    s=whitening(C₍₂₎; kwargs...)
 
    U, λ, V = svd(s.F'*X*t.F; full=true)
+   λ = _checkλ(λ) # make sure no imaginary noise is present (fro complex data)
 
    simple ? LF([s.F*U, t.F*V], [U'*s.iF, V'*t.iF], Diagonal(λ), ○, ○, ○, args...) :
    begin
@@ -464,14 +502,15 @@ function cstp( 𝐗::VecMat;
    covEst==SCM && metric ∉ (Euclidean, Wasserstein) && throw(ArgumentError(📌*", cstp function: Only the Euclidean and Wasserstein `metric` can be used if the covariance estimator is `SCM`"))
    𝐂₍₁₎=_cov(𝐗; covEst=covEst, dims = 1, meanX = meanX)
    𝐂₍₂₎=_cov(𝐗; covEst=covEst, dims = 2, meanX = meanX)
-   cstp(fVec(mean, Vector{Matrix}(𝐗)), # multi-threaded Euclidean mean in PosDefManifold.jl
+
+   cstp(PosDefManifold.fVec(mean, Vector{Matrix}(𝐗)), # multi-threaded Euclidean mean
         mean(metric, 𝐂₍₁₎;
              w = w, ✓w = ✓w,
-             init = init1===○ ? ○ : Hermitian(init1), #just init here when you upfate PodDefManifold
+             init = init1===○ ? ○ : Hermitian(init1), #just init here when you update PodDefManifold
              tol = tol, verbose = verbose),
         mean(metric, 𝐂₍₂₎;
              w = w, ✓w = ✓w,
-             init = init2===○ ? ○ : Hermitian(init2), #just init here when you upfate PodDefManifold.jl
+             init = init2===○ ? ○ : Hermitian(init2), #just init here when you update PodDefManifold.jl
              tol = tol, verbose = verbose),
         eVar     = eVar,
         eVarC    = eVarC,

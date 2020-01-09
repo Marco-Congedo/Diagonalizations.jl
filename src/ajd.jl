@@ -222,17 +222,22 @@ function ajd(𝐂::ℍVector;
                trace1=trace1, w=w, preWhite=preWhite, sort=sort,
                   init=init, tol=tol, maxiter=maxiter, verbose=verbose,
                eVar=eVarC, eVarMeth=eVarMeth)
+   #=
    elseif algorithm==:JADE
           U, V, λ, iter, conv=JADE(𝐂, :c;
                trace1=trace1, w=w, preWhite=preWhite, sort=sort,
                   init=init, tol=tol, maxiter=maxiter, verbose=verbose,
                eVar=eVarC, eVarMeth=eVarMeth)
+   =#
    else
       throw(ArgumentError(📌*", ajd constructor: invalid `algorithm` argument: $algorithm"))
    end
 
+   λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
+
    simple ? LF(U, V, Diagonal(λ), ○, ○, ○, args...) :
    begin
+      # println(λ)
       p, arev = _getssd!(eVar, λ, n, eVarMeth) # find subspace
       LF(U[:, 1:p], V[1:p, :], Diagonal(λ[1:p]), arev[p], λ, arev, args...)
    end
@@ -276,6 +281,8 @@ function ajd(𝐗::VecMat;
    else
       throw(ArgumentError(📌*", ajd constructor: invalid `algorithm` argument"))
    end
+
+   λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
 
    simple ? LF(U, V, Diagonal(λ), ○, ○, ○, args...) :
    begin
@@ -499,6 +506,8 @@ function majd(𝑿::VecVecMat;
    else
       throw(ArgumentError(📌*", majd constructor: invalid `algorithm` argument"))
    end
+
+   λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
 
    simple ? LF(𝐔, 𝐕, Diagonal(λ), ○, ○, ○, args...) :
    begin

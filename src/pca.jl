@@ -46,9 +46,10 @@ function pca(𝐗::VecMat;
 Return a [LinearFilter](@ref) object:
 
 **(1) Principal component analysis**
-with covariance matrix `C` as input.
+with real or complex covariance matrix `C` as input.
 
-`C` must be flagged as `Symmetric` or `Hermitian`, see [data input](@ref).
+`C` must be flagged as `Symmetric`, if real, or `Hermitian`,
+if either real or complex, see [data input](@ref).
 
 `eVar` and `evarMeth` are keyword optional arguments for defining the
 [subspace dimension](@ref) ``p`` using the `.arev` vector given by Eq. [pca.6].
@@ -62,9 +63,7 @@ This option is provided for low-level work when you don't need to define
 a subspace dimension or you want to define it by your own methods.
 
 **(2) Principal component analysis**
-with a data matrix `X` as input.
-
-`X` is a real or complex data matrix.
+with a real or complex data matrix `X` as input.
 
 `CovEst`, `dims`, `meanX`, `wX` are optional keyword arguments to
 regulate the estimation of the covariance matrix of `X`.
@@ -73,9 +72,8 @@ See [covariance matrix estimations](@ref).
 Once the covariance matrix estimated, method (1) is invoked
 with optional keyword arguments `eVar`, `eVarMeth` and `simple`.
 
-
 **(3) Principal component analysis**
-with a vector of data matrix `𝐗` as input.
+with a vector of real or complex data matrices `𝐗` as input.
 
 `CovEst`, `dims` and `meanX` are optional keyword arguments to
 regulate the estimation of the covariance matrices for
@@ -95,7 +93,7 @@ with optional keyword arguments `eVar`, `eVarMeth` and `simple`.
 ```
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
-# Method (1)
+# Method (1) real
 n, t=10, 100
 X=genDataMatrix(n, t)
 C=(X*X')/t
@@ -103,13 +101,26 @@ pC=pca(Hermitian(C); simple=true)
 # or, shortly
 pC=pca(ℍ(C); simple=true)
 
-# Method (2)
+# Method (1) complex
+Xc=genDataMatrix(ComplexF64, n, t)
+Cc=(Xc*Xc')/t
+pCc=pca(Hermitian(Cc); simple=true)
+
+
+# Method (2) real
 pX=pca(X; simple=true)
 @test C≈pC.F*pC.D*pC.iF
 @test C≈pC.F*pC.D*pC.F'
 @test pX≈pC
 
-# Method (3)
+# Method (2) complex
+pXc=pca(Xc; simple=true)
+@test Cc≈pCc.F*pCc.D*pCc.iF
+@test Cc≈pCc.F*pCc.D*pCc.F'
+@test pXc≈pCc
+
+
+# Method (3) real
 k=10
 Xset=[genDataMatrix(n, t) for i=1:k]
 
@@ -148,10 +159,41 @@ plot(p.arev)
  Dmax=maximum(abs.(D));
  h2 = heatmap(D, clim=(0, Dmax), yflip=true, c=:amp, title="F'*C*F");
  📈=plot(h1, h2, size=(700, 300))
-
+# savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigPCA.png")
 ```
 
  ![Figure PCA](assets/FigPCA.png)
+
+```
+# Method (3) complex
+k=10
+Xcset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+
+# pca on the average covariance matrix
+pc=pca(Xcset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.5
+pc=pca(Xcset; eVar=0.5)
+
+# ... averaging the covariance matrices using the logEuclidean metric
+pc=pca(Xcset; metric=logEuclidean, eVar=0.5)
+
+# ... giving weights `w` to the covariance matrices
+pc=pca(Xcset; metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# ... subtracting the mean
+pc=pca(Xcset; meanX=nothing, metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# pca on the average of the covariance matrices computed along dims 1
+pc=pca(Xcset; dims=1)
+
+# explained variance
+pc.eVar
+
+# name of the filter
+pc.name
+```
+
 
 """
 function pca(C :: SorH;
@@ -162,6 +204,7 @@ function pca(C :: SorH;
    args=("Principal Component Analysis", false)
 
    λ, U = eig(C) # get evd
+   λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
 
    simple ? LF(U, Matrix(U'), Diagonal(λ), ○, ○, ○, args...) :
    begin
@@ -255,9 +298,10 @@ function whitening(𝐗::VecMat;
 Return a [LinearFilter](@ref) object:
 
 **(1) Whitening**
-with covariance matrix `C` as input.
+with real or complex covariance matrix `C` as input.
 
-`C` must be flagged as `Symmetric` or `Hermitian`, see [data input](@ref).
+`C` must be flagged as `Symmetric`, if real or `Hermitian`,
+if real or complex, see [data input](@ref).
 
 `eVar` and `evarMeth` are keyword optional arguments for defining the
 [subspace dimension](@ref) ``p`` using the `.arev` vector given by Eq. [pca.6],
@@ -272,9 +316,7 @@ This option is provided for low-level work when you don't need to define
 a subspace dimension or you want to define it by your own methods.
 
 **(2) Whitening**
-with a data matrix `X` as input.
-
-`X` is a real or complex data matrix.
+with a real or complex data matrix `X` as input.
 
 `CovEst`, `dims`, `meanX`, `wX` are optional keyword arguments to
 regulate the estimation of the covariance matrix of `X`.
@@ -284,7 +326,7 @@ Once the covariance matrix estimated, method (1) is invoked
 with optional keyword arguments `eVar`, `eVarMeth` and `simple`.
 
 **(3) Whitening**
-with a vector of data matrix `𝐗` as input.
+with a vector of real or complex data matrices `𝐗` as input.
 
 `CovEst`, `dims` and `meanX` are optional keyword arguments to
 regulate the estimation of the covariance matrices for
@@ -304,7 +346,7 @@ with optional keyword arguments `eVar`, `eVarMeth` and `simple`.
 ```
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
-# Method (1)
+# Method (1) real
 n, t=10, 100
 X=genDataMatrix(n, t)
 C=(X*X')/t
@@ -312,11 +354,26 @@ wC=whitening(Hermitian(C); simple=true)
 # or, shortly
 wC=whitening(ℍ(C); simple=true)
 
-# Method (2)
-pX=whitening(X; simple=true)
-@test wC.F'*C*wC.F≈I
+# Method (1) complex
+Xc=genDataMatrix(ComplexF64, n, t)
+Cc=(Xc*Xc')/t
+wCc=whitening(Hermitian(Cc); simple=true)
 
-# Method (3)
+
+# Method (2) real
+wX=whitening(X; simple=true)
+@test wC.F'*C*wC.F≈I
+@test wX.F'*C*wX.F≈I
+@test wX≈wC
+
+# Method (2) complex
+wXc=whitening(Xc; simple=true)
+@test wCc.F'*Cc*wCc.F≈I
+@test wXc.F'*Cc*wXc.F≈I
+@test wXc≈wCc
+
+
+# Method (3) real
 k=10
 Xset=[genDataMatrix(n, t) for i=1:k]
 
@@ -354,9 +411,41 @@ plot(w.arev)
  D=wC.F'*C*wC.F;
  h2 = heatmap(D, clim=(0, 1), yflip=true, c=:amp, title="F'*C*F");
  📈=plot(h1, h2, size=(700, 300))
+# savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigWhitening.png")
 ```
 
  ![Figure Whitening](assets/FigWhitening.png)
+
+```
+
+# Method (3) complex
+k=10
+Xcset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+
+# whitening on the average covariance matrix
+wc=whitening(Xcset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.5
+wc=whitening(Xcset; eVar=0.5)
+
+# ... averaging the covariance matrices using the logEuclidean metric
+wc=whitening(Xcset; metric=logEuclidean, eVar=0.5)
+
+# ... giving weights `w` to the covariance matrices
+wc=whitening(Xset; metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# ... subtracting the mean
+wc=whitening(Xcset; meanX=nothing, metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# whitening on the average of the covariance matrices computed along dims 1
+wc=whitening(Xcset; dims=1)
+
+# explained variance
+wc.eVar
+
+# name of the filter
+wc.name
+```
 
 """
 function whitening(C :: SorH;
@@ -367,6 +456,7 @@ function whitening(C :: SorH;
    args=("Whitening", false)
 
    λ, U = eig(C) # get evd
+   λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
 
    if simple
      D=Diagonal(λ)

@@ -198,7 +198,6 @@ function gmca(𝐗::VecMat;
    m=length(𝐗)
    args=("generalized Maximum Covariance Analysis", false)
 
-
    if algorithm ∈(:OJoB, :NoJoB)
       𝐔, 𝐕, λ, iter, conv=JoB(𝐗, m, 1, :d, algorithm, eltype(𝐗[1]);
                covEst=covEst, dims=dims, meanX=meanX,
@@ -209,6 +208,8 @@ function gmca(𝐗::VecMat;
    else
       throw(ArgumentError(📌*", gmca constructor: invalid `algorithm` argument"))
    end
+
+   λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
 
    simple ? LF(𝐔, 𝐕, Diagonal(λ), ○, ○, ○, args...) :
    begin
@@ -406,7 +407,6 @@ function gcca(𝐗::VecMat;
    m=length(𝐗)
    args=("generalized Canonical Correlation Analysis", false)
 
-
    if algorithm ==:OJoB #∈(:OJoB)
       𝐔, 𝐕, λ, iter, conv=JoB(𝐗, m, 1, :d, algorithm, eltype(𝐗[1]);
                covEst=covEst, dims=dims, meanX=meanX,
@@ -418,6 +418,8 @@ function gcca(𝐗::VecMat;
       if algorithm == :NoJoB @warn "The NoJoB algorithm does not suit gCCA." end
       throw(ArgumentError(📌*", gcca constructor: invalid `algorithm` argument"))
    end
+
+   λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
 
    simple ? LF(𝐔, 𝐕, Diagonal(λ), ○, ○, ○, args...) :
    begin

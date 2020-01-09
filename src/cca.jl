@@ -41,8 +41,8 @@ function mca(𝐗::VecMat, 𝐘::VecMat;
 
 Return a [LinearFilter](@ref) object:
 
-**(1) Maximum covariance analysis** with covariance matrix `Cxy` of dimension
-``n_x⋅n_y`` as input.
+**(1) Maximum covariance analysis** with real or complex covariance matrix
+`Cxy` of dimension ``n_x⋅n_y`` as input.
 
 Differently from [PCA](@ref) and [Whitening](@ref), `Cxy`
 is a generic `Matrix` object since it is not symmetric/Hermitian,
@@ -61,9 +61,7 @@ This option is provided for low-level work when you don't need to define
 a subspace dimension or you want to define it by your own methods.
 
 **(2) Maximum covariance analysis**
-with data matrices `X` and `Y` as input.
-
-`X` and `Y` are real or complex data matrices.
+with real or complex data matrices `X` and `Y` as input.
 
 `dims`, `meanX`, `meanY` and `wXY` are optional keyword arguments to
 regulate the estimation of the cross-covariance matrix ``C_{xy}``.
@@ -79,7 +77,7 @@ See method (1) for details.
 
 
 **(3) Maximum covariance analysis**
-with two vectors of data matrices
+with two vectors of real or complex data matrices
 `𝐗` and `𝐘` as input. `𝐗` and `𝐘` must hold the same number of matrices
 and corresponding pairs of matrices therein must comprise the same
 number of samples.
@@ -101,32 +99,49 @@ See method (1) for details.
 ```
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
+# Method (1) real
 n, t=10, 100
 X=genDataMatrix(n, t)
 Y=genDataMatrix(n, t)
-
 Cx=Symmetric((X*X')/t)
 Cy=Symmetric((Y*Y')/t)
 Cxy=(X*Y')/t
-
-# Method (1)
 mC=mca(Cxy, simple=true)
 @test Cxy≈mC.F[1]*mC.D*mC.F[2]'
 D=mC.F[1]'Cxy*mC.F[2]
-@test norm(D-Diagonal(D))+1≈1.
+@test norm(D-Diagonal(D))+1. ≈ 1.
 
-# Method (2)
+# Method (1) complex
+Xc=genDataMatrix(ComplexF64, n, t)
+Yc=genDataMatrix(ComplexF64, n, t)
+Cxc=Symmetric((Xc*Xc')/t)
+Cyc=Symmetric((Yc*Yc')/t)
+Cxyc=(Xc*Yc')/t
+mCc=mca(Cxyc, simple=true)
+@test Cxyc≈mCc.F[1]*mCc.D*mCc.F[2]'
+Dc=mCc.F[1]'Cxyc*mCc.F[2]
+@test norm(Dc-Diagonal(Dc))+1. ≈ 1.
+
+
+# Method (2) real
 mXY=mca(X, Y, simple=true)
 D=mXY.F[1]'*Cxy*mXY.F[2]
 @test norm(D-Diagonal(D))+1≈1.
 @test mXY==mC
 
+# Method (2) complex
+mXYc=mca(Xc, Yc, simple=true)
+Dc=mXYc.F[1]'*Cxyc*mXYc.F[2]
+@test norm(Dc-Diagonal(Dc))+1. ≈ 1.
+@test mXYc==mCc
+
+
+# Method (3) real
+# maximum covariance analysis of the average covariance and cross-covariance
 k=10
 Xset=[genDataMatrix(n, t) for i=1:k]
 Yset=[genDataMatrix(n, t) for i=1:k]
 
-# Method (3)
-# maximum covariance analysis of the average covariance and cross-covariance
 m=mca(Xset, Yset)
 
 # ... selecting subspace dimension allowing an explained variance = 0.5
@@ -154,9 +169,34 @@ plot(m.arev)
  Dmax=maximum(abs.(D));
  h2 = heatmap(D, clim=(0, Dmax), yflip=true, c=:amp, title="F[1]'*Cxy*F[2]");
  📈=plot(h1, h2, size=(700,300))
+# savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigMCA.png")
 ```
 
  ![Figure MCA](assets/FigMCA.png)
+
+```
+# Method (3) complex
+# maximum covariance analysis of the average covariance and cross-covariance
+
+k=10
+Xcset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+Ycset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+
+mc=mca(Xcset, Ycset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.5
+mc=mca(Xcset, Ycset; eVar=0.5)
+
+# ... subtracting the mean from the matrices in Xset and Yset
+mc=mca(Xcset, Ycset; meanX=nothing, meanY=nothing, eVar=0.5)
+
+# mca on the average of the covariance and cross-covariance matrices
+# computed along dims 1
+mc=mca(Xcset, Ycset; dims=1, eVar=0.5)
+
+# name of the filter
+mc.name
+```
 
 """
 function mca(Cxy :: Mat;
@@ -167,6 +207,8 @@ function mca(Cxy :: Mat;
   args=("Maximum Covariance Anaysis", false)
   M=Matrix
   U, λ, V = svd(Cxy; full=true)
+  λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
+
   # typecast V, U', V' U1' and U2' as `Matrix` since they are of the Adjoint type
   simple ? LF([U, M(V)], [M(U'), M(V')], Diagonal(λ), ○, ○, ○, args...) :
   begin
@@ -206,7 +248,7 @@ function mca(𝐗::VecMat, 𝐘::VecMat;
 
    𝐂=_cov(𝐗, 𝐘; dims=dims, meanX=meanX, meanY=meanY)
 
-   mca(fVec(mean, Vector{Matrix}(𝐂)),
+   mca(PosDefManifold.fVec(mean, Vector{Matrix}(𝐂)),
        eVar=eVar, eVarMeth=eVarMeth, simple=simple)
 end
 
@@ -261,13 +303,13 @@ function cca(𝐗::VecMat, 𝐘::VecMat;
 Return a [LinearFilter](@ref) object:
 
 **(1) Canonical correlation analysis**
-with covariance matrix `Cx` of dimension
-``n_x⋅n_x``, covariance matrix `Cy` of dimension
-``n_y⋅n_y`` and cross-covariance matrix `Cxy` of dimension
-``n_x⋅n_y`` as input.
+with, as input, real or complex:
+- covariance matrix `Cx` of dimension ``n_x⋅n_x``,
+- covariance matrix `Cy` of dimension ``n_y⋅n_y`` and
+- cross-covariance matrix `Cxy` of dimension ``n_x⋅n_y``.
 
-`Cx` and `Cy` must be flagged as `Symmetric` or `Hermitian`,
-see [data input](@ref). Instead `Cxy`
+`Cx` and `Cy` must be flagged as `Symmetric`, if real or `Hermitian`,
+if real or complex, see [data input](@ref). Instead `Cxy`
 is a generic `Matrix` object since it is not symmetric/Hermitian,
 left alone square.
 
@@ -292,9 +334,7 @@ This option is provided for low-level work when you don't need to define
 a subspace dimension or you want to define it by your own methods.
 
 **(2) Canonical correlation analysis**
-with data matrices `X` and `Y` as input.
-
-`X` and `Y` are real or complex data matrices.
+with real or complex data matrices `X` and `Y` as input.
 
 `covEst`, `dims`, `meanX`, `meanY`,  `wX`, `wY` and `wXY` are optional
 keyword arguments to regulate the estimation of the
@@ -313,7 +353,7 @@ with optional keyword arguments `eVar`, `eVarCx`, `eVarCy`,
 `eVarMeth` and `simple`. See method (1) for details.
 
 **(3) Canonical correlation analysis**
-with two vectors of data matrices
+with two vectors of real or complex data matrices
 `𝐗` and `𝐘` as input. `𝐗` and `𝐘` must hold the same number of matrices
 and corresponding pairs of matrices therein must comprise the same
 number of samples.
@@ -349,47 +389,66 @@ See method (1) for details.
 ```
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
+# Method (1) real
 n, t=10, 100
 X=genDataMatrix(n, t)
 Y=genDataMatrix(n, t)
-
 Cx=Symmetric((X*X')/t)
 Cy=Symmetric((Y*Y')/t)
 Cxy=(X*Y')/t
-
-# Method (1)
 cC=cca(Cx, Cy, Cxy, simple=true)
 @test cC.F[1]'*Cx*cC.F[1]≈I
 @test cC.F[2]'*Cy*cC.F[2]≈I
 D=cC.F[1]'*Cxy*cC.F[2]
-@test norm(D-Diagonal(D))+1≈1.
+@test norm(D-Diagonal(D))+1. ≈ 1.
 
-# Method (2)
+# Method (1) complex
+Xc=genDataMatrix(ComplexF64, n, t)
+Yc=genDataMatrix(ComplexF64, n, t)
+Cxc=Hermitian((Xc*Xc')/t)
+Cyc=Hermitian((Yc*Yc')/t)
+Cxyc=(Xc*Yc')/t
+cCc=cca(Cxc, Cyc, Cxyc, simple=true)
+@test cCc.F[1]'*Cxc*cCc.F[1]≈I
+@test cCc.F[2]'*Cyc*cCc.F[2]≈I
+Dc=cCc.F[1]'*Cxyc*cCc.F[2]
+@test norm(Dc-Diagonal(Dc))+1. ≈ 1.
+
+
+# Method (2) real
 cXY=cca(X, Y, simple=true)
 @test cXY.F[1]'*Cx*cXY.F[1]≈I
 @test cXY.F[2]'*Cy*cXY.F[2]≈I
 D=cXY.F[1]'*Cxy*cXY.F[2]
-@test norm(D-Diagonal(D))+1≈1.
-
+@test norm(D-Diagonal(D))+1. ≈ 1.
 @test cXY==cC
 
+# Method (2) complex
+cXYc=cca(Xc, Yc, simple=true)
+@test cXYc.F[1]'*Cxc*cXYc.F[1]≈I
+@test cXYc.F[2]'*Cyc*cXYc.F[2]≈I
+Dc=cXYc.F[1]'*Cxyc*cXYc.F[2]
+@test norm(Dc-Diagonal(Dc))+1. ≈ 1.
+@test cXYc==cCc
+
+
+# Method (3) real
+# canonical correlation analysis of the average covariance and cross-covariance
 k=10
 Xset=[genDataMatrix(n, t) for i=1:k]
 Yset=[genDataMatrix(n, t) for i=1:k]
 
-# Method (3)
-# canonical correlation analysis of the average covariance and cross-covariance
 c=cca(Xset, Yset)
 
-# ... selecting subspace dimension allowing an explained variance = 0.5
-c=cca(Xset, Yset; eVar=0.5)
+# ... selecting subspace dimension allowing an explained variance = 0.9
+c=cca(Xset, Yset; eVar=0.9)
 
 # ... subtracting the mean from the matrices in Xset and Yset
-c=cca(Xset, Yset; meanX=nothing, meanY=nothing, eVar=0.5)
+c=cca(Xset, Yset; meanX=nothing, meanY=nothing, eVar=0.9)
 
 # cca on the average of the covariance and cross-covariance matrices
 # computed along dims 1
-c=cca(Xset, Yset; dims=1, eVar=0.5)
+c=cca(Xset, Yset; dims=1, eVar=0.9)
 
 # name of the filter
 c.name
@@ -412,10 +471,34 @@ plot(c.arev)
  h5 = heatmap(Cy, clim=(-CyMax, CyMax), title="Cy", yflip=true, c=:bluesreds);
  h6 = heatmap(cC.F[2]'*Cy*cC.F[2], clim=(0, 1), title="F2'CyF2", yflip=true, c=:amp);
  📈=plot(h3, h5, h1, h4, h6, h2, size=(800,400))
+# savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigCCA.png")
 
 ```
 
 ![Figure CCA](assets/FigCCA.png)
+
+```
+# Method (3) complex
+# canonical correlation analysis of the average covariance and cross-covariance
+k=10
+Xcset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+Ycset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+
+cc=cca(Xcset, Ycset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+cc=cca(Xcset, Ycset; eVar=0.9)
+
+# ... subtracting the mean from the matrices in Xset and Yset
+cc=cca(Xcset, Ycset; meanX=nothing, meanY=nothing, eVar=0.9)
+
+# cca on the average of the covariance and cross-covariance matrices
+# computed along dims 1
+cc=cca(Xcset, Ycset; dims=1, eVar=0.9)
+
+# name of the filter
+cc.name
+```
 
 """
 function cca(Cx :: SorH, Cy :: SorH, Cxy :: Mat;
@@ -506,7 +589,7 @@ function cca(𝐗::VecMat, 𝐘::VecMat;
             w = wCy, ✓w = ✓w,
             init = initCy===○ ? ○ : Hermitian(initCy), #just init here when you upfate PodDefManifold
             tol = tol, verbose = verbose),
-       fVec(mean, Vector{Matrix}(𝐂xy)), # multi-threaded Euclidean mean in PosDefManifold.jl
+       PosDefManifold.fVec(mean, Vector{Matrix}(𝐂xy)), # multi-threaded Euclidean mean
        eVarCx=eVarCx, eVarCy=eVarCy, eVar=eVar, eVarMeth=eVarMeth,
        simple=simple)
 end
