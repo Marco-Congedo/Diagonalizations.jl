@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>gMCA · Diagonalizations</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Diagonalizations logo"/></a><div class="docs-package-name"><span class="docs-autofit">Diagonalizations</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Documentation</a></li><li><a class="tocitem" href="../Diagonalizations/">Diagonalizations</a></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><span class="tocitem">Filters</span><ul><li><input class="collapse-toggle" id="menuitem-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-1"><span class="docs-label">One dataset (m=1)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../pca/">PCA</a></li><li><a class="tocitem" href="../whitening/">Whitening</a></li><li><a class="tocitem" href="../csp/">CSP</a></li><li><a class="tocitem" href="../cstp/">CSTP</a></li><li><a class="tocitem" href="../ajd/">AJD</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-2"><span class="docs-label">Two datasets (m=2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../mca/">MCA</a></li><li><a class="tocitem" href="../cca/">CCA</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3" type="checkbox" checked/><label class="tocitem" for="menuitem-4-3"><span class="docs-label">Several datasets (m&gt;2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>gMCA</a></li><li><a class="tocitem" href="../gcca/">gCCA</a></li><li><a class="tocitem" href="../majd/">mAJD</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Filters</a></li><li><a class="is-disabled">Several datasets (m&gt;2)</a></li><li class="is-active"><a href>gMCA</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>gMCA</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/master/docs/src/gmca.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="gMCA-1"><a class="docs-heading-anchor" href="#gMCA-1">gMCA</a><a class="docs-heading-anchor-permalink" href="#gMCA-1" title="Permalink"></a></h1><p><em>Generalized Maximum Covariance Analysis</em> (gMCA) is a multiple approximate joint diagonalization prodedure generalizing the maximum covariance analysis (<a href="../mca/#MCA-1">MCA</a>) to the situation <span>$m&gt;2$</span> (number of datasets), as for MCA with <span>$k=1$</span> (one observation).</p><p>Let <span>${X_1,...,X_m}$</span> be a set of <span>$m$</span> data matrices of dimension <span>$n⋅t$</span>, where <span>$n$</span> is the number of variables and <span>$t$</span> the number of samples, both common to all datasets. From these data matrices let us estimate</p><p><span>$C_{ij}=\frac{1}{T}X_iX_j^H$</span>, for all <span>$i,j∈[1...m]$</span>, <span>$\hspace{1cm}$</span> [gmca.1]</p><p>i.e., all <em>covariance</em> (<span>$i=j$</span>) and <em>cross-covariance</em> (<span>$i≠j$</span>) matrices.</p><p>The gMCA seeks <span>$m$</span> matrices <span>$F_1,...,F_m$</span> diagonalizing as much as possible all products</p><p><span>$F_i^H C_{ij} F_j$</span>, for all <span>$i≠j∈[1...m]$</span>. <span>$\hspace{1cm}$</span> [gmca.2]</p><p>If the MCA (<span>$m=2$</span>) diagonalizes the cross-covariance, this generalized model (<span>$m&gt;2$</span>) diagonalizes all cross-covariance matrices.</p><h4 id="alternative-model-for-gMCA-1"><a class="docs-heading-anchor" href="#alternative-model-for-gMCA-1">alternative model for gMCA</a><a class="docs-heading-anchor-permalink" href="#alternative-model-for-gMCA-1" title="Permalink"></a></h4><p>The gMCA constructors also allow to seeks <span>$m$</span> matrices <span>$F_1,...,F_m$</span> diagonalizing as much as possible all products</p><p><span>$F_i^H C_{ij} F_j$</span>, for all <span>$i,j∈[1...m]$</span>. <span>$\hspace{1cm}$</span> [gmca.3]</p><p>As compared to model [gmca.2], this model diagonalizes the covariance matrices in addition to the cross-covariance matrices.</p><h4 id="permutation-for-gMCA-1"><a class="docs-heading-anchor" href="#permutation-for-gMCA-1">permutation for gMCA</a><a class="docs-heading-anchor-permalink" href="#permutation-for-gMCA-1" title="Permalink"></a></h4><p>As usual, the approximate diagonalizers <span>$F_1,...,F_m$</span> are arbitrary up to a <a href="../Diagonalizations/#scale-and-permutation-1">scale and permutation</a>. In mGCA scaling is fixed by appropriate constraints. For the remaining sign and permutation ambiguities, <em>Diagonalizations.jl</em> attempts to solve them by finding signed permutation matrices for <span>$F_1,...,F_m$</span> so as to make all diagonal elements of [gmca.2] or [gmca.3] positive and sorted in descending order.</p><p>Let</p><p><span>$λ=[λ_1...λ_n]$</span>  <span>$\hspace{1cm}$</span> [gmca.4]</p><p>be the diagonal elements of</p><p><span>$\frac{1}{m^2-m}\sum_{i≠j=1}^m(F_i^H C_{ij} F_j)$</span> <span>$\hspace{1cm}$</span> [gmca.5]</p><p>and <span>$σ_{TOT}=\sum_{i=1}^nλ_i$</span> be the total covariance.</p><p>We denote <span>$\widetilde{F}_i=[f_{i1} \ldots f_{ip}]$</span> the matrix holding the first <span>$p&lt;n$</span> column vectors of <span>$F_i$</span>, for <span>$i∈[1...m]$</span>, where <span>$p$</span> is the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>. The <em>explained variance</em> is given by</p><p><span>$σ_p=\frac{\sum_{i=1}^pλ_i}{σ_{TOT}}$</span>, <span>$\hspace{1cm}$</span> [gmca.6]</p><p>and the <em>accumulated regularized eigenvalues</em> (arev) by</p><p><span>$σ_j=\sum_{i=1}^j{σ_i}$</span>, for <span>$j=[1 \ldots n]$</span>, <span>$\hspace{1cm}$</span> [gmca.7]</p><p>where <span>$σ_i$</span> is given by Eq. [gmca.6].</p><p>For setting the subspace dimension <span>$p$</span> manually, set the <code>eVar</code> optional keyword argument of the gMCA constructors either to an integer or to a real number, this latter establishing <span>$p$</span> in conjunction with argument <code>eVarMeth</code> using the <code>arev</code> vector (see <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>). By default, <code>eVar</code> is set to 0.999.</p><p><strong>Solution</strong></p><p>There is no closed-form solution to the gMCA problem in general. <em>Diagonalizations.jl</em> implements the following iterative algorithms:</p><table><tr><th style="text-align: left">Algorithm</th><th style="text-align: left">Constraint</th><th style="text-align: left">Reference</th></tr><tr><td style="text-align: left">OJoB</td><td style="text-align: left"><span>$F$</span> orthogonal</td><td style="text-align: left">Congedo et al (2011, 2012); Congedo (2013)</td></tr><tr><td style="text-align: left">NoJoB</td><td style="text-align: left"><span>$F$</span> non-singular</td><td style="text-align: left">Congedo et al (2011, 2012); Congedo (2013)</td></tr></table><p>Note that the solution of the MCA are orthogonal matrices. In order to mimic this in gMCA use <em>OJoB</em>. Using <em>NoJoB</em> will constraint the solution only in the general linear group.</p><p><strong>Constructors</strong></p><p>One constructor is available (see here below). The constructed <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object holding the gMCA will have fields:</p><p><code>.F</code>: vector of matrices <span>$\widetilde{F}_1,...,\widetilde{F}_m$</span> with columns holding the first <span>$p$</span> eigenvectors in <span>$F_1,...,F_m$</span>, or just <span>$F_1,...,F_m$</span> if <span>$p=n$</span></p><p><code>.iF</code>: the vector of the left-inverses of the matrices in <code>.F</code></p><p><code>.D</code>: the leading <span>$p⋅p$</span> block of <span>$Λ$</span>, i.e., the elements [gmca.4] associated to the matrices in <code>.F</code> in diagonal form.</p><p><code>.eVar</code>: the explained variance [gmca.6] for the chosen value of <span>$p$</span>.</p><p><code>.ev</code>: the vector <span>$λ$</span> [gmca.4].</p><p><code>.arev</code>: the accumulated regularized eigenvalues, defined by Eq. [gmca.7].</p><article class="docstring"><header><a class="docstring-binding" id="Diagonalizations.gmca" href="#Diagonalizations.gmca"><code>Diagonalizations.gmca</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">function gmca(𝐗::VecMat;
+              covEst     :: StatsBase.CovarianceEstimator = SCM,
+              dims       :: Into    = ○,
+              meanX      :: Into    = 0,
+          algorithm :: Symbol    = :OJoB,
+          fullModel :: Bool      = false,
+          sort      :: Bool      = true,
+          init      :: VecMato   = ○,
+          tol       :: Real      = 0.,
+          maxiter   :: Int       = 2000,
+          verbose   :: Bool      = false,
+        eVar     :: TeVaro   = _minDim(𝐗),
+        eVarMeth :: Function = searchsortedfirst,
+        simple   :: Bool     = false)
+</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object.</p><p><strong>Generalized Maximum Covariance Analysis</strong> of the set of <span>$m$</span> data matrices <code>𝐗</code> using the given solving <code>algorithm</code> (<em>OJoB</em> by default).</p><p>If <code>fullModel</code> is true, the [gmca.3] problem here above is solved, otherwise (default), the [gmca.2] problem here above is solved.</p><p>If <code>sort</code> is true (default), the column vectors of the matrices <span>$F_1,...,F_m$</span> are signed and permuted as explained here above in <a href="#permutation-for-gMCA-1">permutation for gMCA</a>, otherwise they will have arbitrary sign and will be in arbitrary order.</p><p>A vector of matrices can be passed with the <code>init</code> argument in order to initialize the matrices <span>$F_1,...,F_m$</span> to be found by the gMCA algorithm. If <code>nothing</code> is passed (default), <span>$F_i$</span> is initialized as per this table:</p><table><tr><th style="text-align: left">Algorithm</th><th style="text-align: left">Initialization of <span>$F_i$</span></th></tr><tr><td style="text-align: left">OJoB</td><td style="text-align: left">eigevector matrix of <span>$\frac{1}{m}\sum_{j=1}^m C_{ij}C_{ij}^H$</span> (Congedo et al., 2011)</td></tr><tr><td style="text-align: left">NoJoB</td><td style="text-align: left">identity matrix</td></tr></table><p><code>tol</code> is the tolerance for convergence of the solving algorithm. By default it is set to the square root of <code>Base.eps</code> of the nearest real type of the data input. This corresponds to requiring the relative change across two successive iterations of the average squared norm of the column vectors of <span>$F$</span> to vanish for about half the significant digits. If the solving algorithm encounters difficulties in converging, try setting <code>tol</code> in between 1e-6 and 1e-3.</p><p><code>maxiter</code> is the maximum number of iterations allowed to the solving algorithm (2000 by default). If this maximum number of iteration is attained, a warning will be printed in the REPL. In this case, try increasing <code>maxiter</code> and/or <code>tol</code>.</p><p>If <code>verbose</code> is true (false by default), the convergence attained at each iteration will be printed in the REPL.</p><p><code>eVar</code> and <code>eVarMeth</code> are used to define a <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the accumulated regularized eigenvalues of Eq. [gmca.7].</p><p>The default values are:</p><ul><li><code>eVar</code> is set to the minimum dimension of the matrices in <code>𝐗</code></li><li><code>eVarMeth=searchsortedfirst</code></li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to the dimension of the covariance matrices that are computed on the matrices in <code>𝐗</code>, which depends on the choice of <code>dims</code>, and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This corresponds to the typical output of approximate diagonalization algorithms.</p><p><strong>See also:</strong> <a href="../mca/#MCA-1">MCA</a>, <a href="../gcca/#gCCA-1">gCCA</a>, <a href="../majd/#mAJD-1">mAJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+
+
+####  Create data for testing the case k=1, m&gt;1
+# `t` is the number of samples,
+# `m` is the number of datasets,
+# `n` is the number of variables,
+# `noise` must be smaller than 1.0. The smaller the noise,
+#  the more data are correlated.
+function getData(t, m, n, noise)
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(n) for i=1:m] # random orthogonal matrices
+    X=randn(n, t)  # data common to all subjects
+    # each subject has this common part plus a random part
+    𝐗=[𝐕[i]&#39;*((1-noise)*X + noise*randn(n, t)) for i=1:m]
+    return 𝐗
+end
+
+function getData(::Type{Complex{T}}, t, m, n, noise) where {T&lt;:AbstractFloat}
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(ComplexF64, n) for i=1:m] # random orthogonal matrices
+    X=randn(ComplexF64, n, t)  # data common to all subjects
+    # each subject has this common part plus a random part
+    𝐗=[𝐕[i]&#39;*((1-noise)*X + noise*randn(ComplexF64, n, t)) for i=1:m]
+    return 𝐗
+end
+
+
+# REAL data: check that for the case m=2 gMCA gives the same result as MCA
+t, m, n, noise = 20, 2, 6, 0.1
+Xset=getData(t, m, n, noise)
+Cx=(Xset[1]*Xset[1]&#39;)/t
+Cy=(Xset[2]*Xset[2]&#39;)/t
+Cxy=(Xset[1]*Xset[2]&#39;)/t
+
+gm=gmca(Xset; simple=true)
+m=mca(Cxy; simple=true)
+
+@test (m.F[1]&#39;*Cxy*m.F[2]) ≈ (gm.F[1]&#39;*Cxy*gm.F[2])
+# the following must be the identity matrix out of a possible sign ambiguity
+@test abs.(m.F[1]&#39;*gm.F[1]) ≈ I
+@test abs.(m.F[2]&#39;*gm.F[2]) ≈ I
+
+# COMPLEX data: check that for the case m=2 gMCA gives the same result as MCA
+t, m, n, noise = 20, 2, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+Ccx=(Xcset[1]*Xcset[1]&#39;)/t
+Ccy=(Xcset[2]*Xcset[2]&#39;)/t
+Ccxy=(Xcset[1]*Xcset[2]&#39;)/t
+
+gmc=gmca(Xcset; simple=true)
+mc=mca(Ccxy; simple=true)
+
+# for complex data just do a sanity check as the order of vectors
+# is arbitrary
+@test spForm(mc.F[1]&#39;gmc.F[1])&lt;0.01
+@test spForm(mc.F[2]&#39;gmc.F[2])&lt;0.01
+
+
+# REAL data: m&gt;2 case
+t, m, n, noise = 20, 4, 6, 0.1
+Xset=getData(t, m, n, noise)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+gm=gmca(Xset, eVar=0.9)
+
+# name of the filter
+gm.name
+
+𝒞=Array{Matrix}(undef, 1, m, m)
+for i=1:m, j=1:m 𝒞[1, i, j]=(Xset[i]*Xset[j]&#39;)/t end
+
+using Plots
+# plot regularized accumulated eigenvalues
+plot(gm.arev)
+
+
+# plot the original cross-covariance matrices and the rotated
+# cross-covariance matrices
+
+# Get all products 𝐔[i]&#39; * 𝒞[l, i, j] * 𝐔[j]
+function _rotate_crossCov(𝐔, 𝒞, m, k)
+    𝒮=Array{Matrix}(undef, k, m, m)
+    @inbounds for l=1:k, i=1:m, j=1:m 𝒮[l, i, j]=𝐔[i]&#39;*𝒞[l, i, j]*𝐔[j] end
+    return 𝒮
+end
+
+
+# Put all cross-covariances in a single matrix of dimension m*n x m*n for visualization
+function 𝒞2Mat(𝒞::AbstractArray, m, k)
+    n=size(𝒞[1, 1, 1], 1)
+    C=Matrix{Float64}(undef, m*n, m*n)
+    for i=1:m, j=1:m, x=1:n, y=1:n C[i*n-n+x, j*n-n+y]=𝒞[k, i, j][x, y] end
+    return C
+end
+
+ C=𝒞2Mat(𝒞, m, 1)
+ Cmax=maximum(abs.(C));
+ h1 = heatmap(C, clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;all cross-covariances&quot;)
+ 𝒮=_rotate_crossCov(gm.F, 𝒞, m, 1)
+ S=𝒞2Mat(𝒮, m, 1)
+ Smax=maximum(abs.(S));
+ h2 = heatmap(S, clim=(0, Smax), yflip=true, c=:amp, title=&quot;all rotated cross-covariances&quot;)
+ 📈=plot(h1, h2, size=(700,300))
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FiggMCA.png&quot;)
+</code></pre><p><img src="../assets/FiggMCA.png" alt="Figure gMCA"/></p><p>In the figure here above, the rotated cross-covariance matrices have the expected  <em>strip-diagonal</em> form, that is, each block <span>$F_i^T\frac{1}{T}(X_iX_j^T)F_j$</span>,  for <span>$i,j∈[1,...,m]$</span>, is approximately diagonal. Each block is <span>$5⋅5$</span> because  setting <code>eVar=0.9</code> the subspace dimension has been set to 5.</p><pre><code class="language-none"># COMPLEX data: m&gt;2 case
+t, m, n, noise = 20, 4, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+gmc=gmca(Xcset, eVar=0.9)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/eeae9a9956766e27d84d5a6bed7ac078d60c87ef/src/gcca.jl#L11-L216">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cca/">« CCA</a><a class="docs-footer-nextpage" href="../gcca/">gCCA »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 10 January 2020 17:35">Friday 10 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

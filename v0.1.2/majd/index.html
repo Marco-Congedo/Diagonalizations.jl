@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>mAJD · Diagonalizations</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Diagonalizations logo"/></a><div class="docs-package-name"><span class="docs-autofit">Diagonalizations</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Documentation</a></li><li><a class="tocitem" href="../Diagonalizations/">Diagonalizations</a></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><span class="tocitem">Filters</span><ul><li><input class="collapse-toggle" id="menuitem-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-1"><span class="docs-label">One dataset (m=1)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../pca/">PCA</a></li><li><a class="tocitem" href="../whitening/">Whitening</a></li><li><a class="tocitem" href="../csp/">CSP</a></li><li><a class="tocitem" href="../cstp/">CSTP</a></li><li><a class="tocitem" href="../ajd/">AJD</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-2"><span class="docs-label">Two datasets (m=2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../mca/">MCA</a></li><li><a class="tocitem" href="../cca/">CCA</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3" type="checkbox" checked/><label class="tocitem" for="menuitem-4-3"><span class="docs-label">Several datasets (m&gt;2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../gmca/">gMCA</a></li><li><a class="tocitem" href="../gcca/">gCCA</a></li><li class="is-active"><a class="tocitem" href>mAJD</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Filters</a></li><li><a class="is-disabled">Several datasets (m&gt;2)</a></li><li class="is-active"><a href>mAJD</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>mAJD</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/master/docs/src/majd.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="mAJD-1"><a class="docs-heading-anchor" href="#mAJD-1">mAJD</a><a class="docs-heading-anchor-permalink" href="#mAJD-1" title="Permalink"></a></h1><p><em>Multiple Approximate Joint Diagonalization</em> (MAJD) is the utmost general diagonalization prodedure implemented in <em>Diagonalizations.jl</em>. It generalizes the <a href="../ajd/#AJD-1">AJD</a> to the case of multiple datasets (<span>$m&gt;1$</span>) and the <a href="../gmca/#gMCA-1">gMCA</a>/<a href="../gcca/#gCCA-1">gCCA</a> to the case of multiple observations (<span>$k&gt;1$</span>). Therefore, it suits the situation <span>$m&gt;2$</span> (multiple datasets) and <span>$k&gt;2$</span> (multiple observations) at once.</p><p>Let <span>${X_{l1},...,X_{lm}}$</span> be <span>$k$</span> sets of <span>$m$</span> data matrices of dimension <span>$n⋅t$</span> each, indexed by <span>$l∈[1...k]$</span>.</p><p>From these data matrices let us estimate</p><p><span>$C_{lij}=\frac{1}{T}X_{li}X_{lj}^H$</span>, for all <span>$l∈[1...k]$</span> and <span>$i,j∈[1...m]$</span>, <span>$\hspace{1cm}$</span> [majd.1]</p><p>i.e., all <em>covariance</em> (<span>$i=j$</span>) and <em>cross-covariance</em> (<span>$i≠j$</span>) matrices for all <span>$l∈[1...k]$</span>.</p><p>The MAJD seeks <span>$m$</span> matrices <span>$F_1,...,F_m$</span> diagonalizing as much as possible all products</p><p><span>$F_i^H C_{lij} F_j$</span>, for all <span>$l∈[1...k]$</span> and <span>$i≠j∈[1...m]$</span> <span>$\hspace{1cm}$</span> [majd.2]</p><p>or all products</p><p><span>$F_i^H C_{lij} F_j$</span>, for all <span>$l∈[1...k]$</span> and <span>$i,j∈[1...m]$</span>, <span>$\hspace{1cm}$</span> [majd.3]</p><p>depending on the chosen model (see argument <code>fullModel</code> below).</p><h4 id="pre-whitening-for-MAJD-1"><a class="docs-heading-anchor" href="#pre-whitening-for-MAJD-1">pre-whitening for MAJD</a><a class="docs-heading-anchor-permalink" href="#pre-whitening-for-MAJD-1" title="Permalink"></a></h4><p>Pre-whitening can be applied. In this case, first <span>$m$</span> whitening matrices <span>$W_1,...,W_m$</span> are found such that</p><p><span>$W_i^H\Big(\frac{1}{k}\sum_{l=1}^kC_{kii}\Big)W_i=I$</span>, for all <span>$i∈[1...m]$</span> <span>$\hspace{1cm}$</span></p><p>then the following transformed AJD problem if solved for <span>$U_1,...,U_m$</span>:</p><p><span>$U_i^H(W_i^HC_{lij}W_j)U_j≈Λ_{lij}$</span>, for all <span>$l∈[1...k]$</span> and <span>$i,j∈[1...m]$</span>.</p><p>Finally, <span>$F_1,...,F_m$</span> are obtained as</p><p><span>$F_i=W_iU_i$</span>, for <span>$i∈[1...m]$</span>. <span>$\hspace{1cm}$</span></p><p>Notice that:</p><ul><li>matrix <span>$W$</span> may be taken rectangular so as to engender a dimensionality reduction at this stage. This may improve the convergence behavior of AJD algorithms if the matrices <span>${C_{lii}}$</span> are not well-conditioned.  </li><li>if this two-step procedure is employed, the final matrices <span>$F_1,...,F_m$</span> are never orthogonal, even if the solving AJD algorithm constrains the solutions within the orthogonal group.</li></ul><h4 id="permutation-for-MAJD-1"><a class="docs-heading-anchor" href="#permutation-for-MAJD-1">permutation for MAJD</a><a class="docs-heading-anchor-permalink" href="#permutation-for-MAJD-1" title="Permalink"></a></h4><p>As usual, the approximate diagonalizers <span>$F_1,...,F_m$</span> are arbitrary up to a <a href="../Diagonalizations/#scale-and-permutation-1">scale and permutation</a>. in MAJD scaling is fixed by appropriate constraints. For the remaining sign and permutation ambiguities, <em>Diagonalizations.jl</em> attempts to solve them by finding signed permutation matrices for <span>$F_1,...,F_m$</span> so as to make all diagonal elements of [gmca.2] or [gmca.3] positive and sorted in descending order.</p><p>Let</p><p><span>$λ=[λ_1...λ_n]$</span>  <span>$\hspace{1cm}$</span> [majd.4]</p><p>be the diagonal elements of</p><p><span>$\frac{1}{k(m^2-m)}\sum_{j=1}^k\sum_{i≠j=1}^m(F_i^H C_{lij} F_j)$</span> <span>$\hspace{1cm}$</span> [majd.5]</p><p>and <span>$σ_{TOT}=\sum_{i=1}^nλ_i$</span> be the total variance.</p><p>We denote <span>$\widetilde{F}_i=[f_{i1} \ldots f_{ip}]$</span> the matrix holding the first <span>$p&lt;n$</span> column vectors of <span>$F_i$</span>, where <span>$p$</span> is the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>. The <em>explained variance</em> is given by</p><p><span>$σ_p=\frac{\sum_{i=1}^pλ_i}{σ_{TOT}}$</span> <span>$\hspace{1cm}$</span> [majd.6]</p><p>and the <em>accumulated regularized eigenvalues</em> (arev) by</p><p><span>$σ_j=\sum_{i=1}^j{σ_i}$</span>, for <span>$j=[1 \ldots n]$</span>, <span>$\hspace{1cm}$</span> [majd.7]</p><p>where <span>$σ_i$</span> is given by Eq. [majd.6].</p><p><strong>Solution</strong></p><p>There is no closed-form solution to the MAJD problem in general. <em>Diagonalizations.jl</em> implements the following iterative algorithms:</p><table><tr><th style="text-align: left">Algorithm</th><th style="text-align: left">Constraint</th><th style="text-align: left">Reference</th></tr><tr><td style="text-align: left">OJoB</td><td style="text-align: left"><span>$F$</span> orthogonal</td><td style="text-align: left">Congedo et al (2011, 2012); Congedo (2013)</td></tr><tr><td style="text-align: left">NoJoB</td><td style="text-align: left"><span>$F$</span> non-singular</td><td style="text-align: left">Congedo et al (2011, 2012); Congedo (2013)</td></tr></table><p><strong>Constructors</strong></p><p>One constructor is available (see here below). The constructed <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object holding the MAJD will have fields:</p><p><code>.F</code>: vector of matrices <span>$\widetilde{F}_1,...,\widetilde{F}_m$</span> with columns holding the first <span>$p$</span> eigenvectors in <span>$F_1,...,F_m$</span>, or just <span>$F_1,...,F_m$</span> if <span>$p=n$</span></p><p><code>.iF</code>: the vector of the left-inverses of the matrices in <code>.F</code></p><p><code>.D</code>: the leading <span>$p⋅p$</span> block of <span>$Λ$</span>, i.e., the elements [majd.4] associated to the matrices in <code>.F</code> in diagonal form.</p><p><code>.eVar</code>: the explained variance [majd.6] for the chosen value of <span>$p$</span>.</p><p><code>.ev</code>: the vector <span>$λ$</span> [majd.4].</p><p><code>.arev</code>: the <em>accumulated regularized eigenvalues</em>  in [majd.7].</p><article class="docstring"><header><a class="docstring-binding" id="Diagonalizations.majd" href="#Diagonalizations.majd"><code>Diagonalizations.majd</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">function majd(𝑿::VecVecMat;
+              covEst     :: StatsBase.CovarianceEstimator = SCM,
+              dims       :: Into    = ○,
+              meanX      :: Into    = 0,
+          algorithm :: Symbol    = :NoJoB,
+          fullModel :: Bool      = false,
+          preWhite  :: Bool      = false,
+          sort      :: Bool      = true,
+          init      :: VecMato   = ○,
+          tol       :: Real      = 0.,
+          maxiter   :: Int       = 2000,
+          verbose   :: Bool      = false,
+        eVar     :: TeVaro   = _minDim(𝑿),
+        eVarC    :: TeVaro   = ○,
+        eVarMeth :: Function = searchsortedfirst,
+        simple   :: Bool     = false)
+</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object.</p><p><strong>Multiple Approximate Joint Diagonalization</strong> of the <span>$k$</span> sets of <span>$m$</span> data matrices <code>𝐗</code> using the given solving <code>algorithm</code> (<em>NoJoB</em> by default).</p><p>If <code>fullModel</code> is true, the [gmca.3] problem here above is solved, otherwise (default), the [gmca.2] problem here above is solved.</p><p>If <code>preWhite</code> the two-step procedure explained here above in the section <a href="#pre-whitening-for-MAJD-1">pre-whitening for MAJD</a> is used. Dimensionality reduction can be obtained at this stage using arguments <code>eVarC</code> and <code>eVarMeth</code>.</p><p>The default values are:</p><ul><li><code>eVarC</code> is set to 0.999</li><li><code>eVarMeth=searchsortedfirst</code>.</li></ul><p>If <code>sort</code> is true (default), the column vectors of the matrices <span>$F_1,...,F_m$</span> are signed and permuted as explained here above in <a href="#permutation-for-MAJD-1">permutation for MAJD</a>, otherwise they will have arbitrary sign and will be in arbitrary order.</p><p>A vector of matrices can be passed with the <code>init</code> argument in order to initialize the matrices <span>$F_1,...,F_m$</span> to be found by the MAJD algorithm. If <code>nothing</code> is passed (default), <span>$F_i$</span> is initialized as per this table:</p><table><tr><th style="text-align: left">Algorithm</th><th style="text-align: left"><code>fullModel</code></th><th style="text-align: left">Initialization of <span>$F_i$</span></th></tr><tr><td style="text-align: left">OJoB</td><td style="text-align: left">true</td><td style="text-align: left">eigevector matrix of <span>$\frac{1}{m}\sum_{l=1}^k\sum_{j=1}^m C_{lij}C_{lij}^H$</span></td></tr><tr><td style="text-align: left">(Congedo et al., 2011)</td><td style="text-align: left"></td><td style="text-align: left"></td></tr><tr><td style="text-align: left">OJoB</td><td style="text-align: left">false</td><td style="text-align: left">eigevector matrix of <span>$\frac{1}{m}\sum_{l=1}^k\sum_{j≠i, j=1}^m C_{lij}C_{lij}^H$</span></td></tr><tr><td style="text-align: left">(Congedo et al., 2011)</td><td style="text-align: left"></td><td style="text-align: left"></td></tr><tr><td style="text-align: left">NoJoB</td><td style="text-align: left">true or false</td><td style="text-align: left">identity matrix</td></tr></table><p><code>tol</code> is the tolerance for convergence of the solving algorithm. By default it is set to the square root of <code>Base.eps</code> of the nearest real type of the data input. This corresponds to requiring the relative change across two successive iterations of the average squared norm of the column vectors of matrices <span>$F_1,...,F_m$</span> to vanish for about half the significant digits. If the solving algorithm encounter difficulties in converging, try setting <code>tol</code> in between 1e-6 and 1e-3.</p><p><code>maxiter</code> is the maximum number of iterations allowed to the solving algorithm (2000 by default). If this maximum number of iteration is attained, a warning will be printed in the REPL. In this case, try increasing <code>maxiter</code> and/or <code>tol</code>.</p><p>If <code>verbose</code> is true (false by default), the convergence attained at each iteration will be printed in the REPL.</p><p><code>eVar</code> and <code>eVarMeth</code> are used to define a <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the accumulated regularized eigenvalues in Eq. [gmca.7]</p><p>The default values are:</p><ul><li><code>eVar</code> is set to the minimum dimension of the matrices in <code>𝐗</code></li><li><code>eVarMeth=searchsortedfirst</code>.</li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to the dimension of the covariance matrices that are computed on the matrices in <code>𝐗</code>, which depends on the choice of <code>dims</code>, and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This corresponds to the typical output of approximate diagonalization algorithms.</p><p><strong>See also:</strong> <a href="../gmca/#gMCA-1">gMCA</a>, <a href="../gcca/#gCCA-1">gCCA</a>, <a href="../ajd/#AJD-1">AJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+
+##  Create data for testing the case k&gt;1, m&gt;1 ##
+# `t` is the number of samples,
+# `m` is the number of datasets,
+# `k` is the number of observations,
+# `n` is the number of variables,
+# `noise` must be smaller than 1.0. The smaller the noise, the more data are correlated
+# Output k vectors of m data data matrices
+function getData(t, m, k, n, noise)
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(n) for i=1:m] # random orthogonal matrices
+    # variables common to all subjects with unique variance profile across k
+    X=[(abs2.(randn(n))).*randn(n, t) for s=1:k]
+    # each subject has this common part plus a random part
+    𝐗=[[𝐕[i]*((1-noise)*X[s] + noise*randn(n, t)) for i=1:m] for s=1:k]
+    return 𝐗, 𝐕
+end
+
+function getData(::Type{Complex{T}}, t, m, k, n, noise) where {T&lt;:AbstractFloat}
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(ComplexF64, n) for i=1:m] # random orthogonal matrices
+    # variables common to all subjects with unique variance profile across k
+    X=[(abs2.(randn(n))).*randn(ComplexF64, n, t) for s=1:k]
+    # each subject has this common part plus a random part
+    𝐗=[[𝐕[i]*((1-noise)*X[s] + noise*randn(ComplexF64, n, t)) for i=1:m] for s=1:k]
+    return 𝐗, 𝐕
+end
+
+
+# REAL data
+# do joint blind source separation of non-stationary data
+t, m, n, k, noise = 200, 5, 4, 6, 0.1
+Xset, Vset=getData(t, m, k, n, noise)
+𝒞=Array{Matrix}(undef, k, m, m)
+for s=1:k, i=1:m, j=1:m 𝒞[s, i, j]=(Xset[s][i]*Xset[s][j]&#39;)/t end
+
+aX=majd(Xset; fullModel=true, algorithm=:OJoB)
+# the spForm index of the estimated demixing matrices times the true
+# mixing matrix must be low
+@test mean(spForm(aX.F[i]&#39;*Vset[i]) for i=1:m)&lt;0.1
+
+# test the same using NoJoB algorithm
+aX=majd(Xset; fullModel=true, algorithm=:NoJoB)
+@test mean(spForm(aX.F[i]&#39;*Vset[i]) for i=1:m)&lt;0.1
+
+# plot the original cross-covariance matrices and the rotated
+# cross-covariance matrices
+
+# Get all products 𝐔[i]&#39; * 𝒞[l, i, j] * 𝐔[j]
+function _rotate_crossCov(𝐔, 𝒞, m, k)
+    𝒮=Array{Matrix}(undef, k, m, m)
+    @inbounds for l=1:k, i=1:m, j=1:m 𝒮[l, i, j]=𝐔[i]&#39;*𝒞[l, i, j]*𝐔[j] end
+    return 𝒮
+end
+
+# Put all `k` cross-covariances in a single matrix
+# of dimension m*n x m*n for visualization
+function 𝒞2Mat(𝒞::AbstractArray, m, k)
+    n=size(𝒞[1, 1, 1], 1)
+    C=Matrix{Float64}(undef, m*n, m*n)
+    for i=1:m, j=1:m, x=1:n, y=1:n C[i*n-n+x, j*n-n+y]=𝒞[k, i, j][x, y] end
+    return C
+end
+
+using Plots
+
+Cset=[𝒞2Mat(𝒞, m, s) for s=1:k]
+ Cmax=maximum(maximum(abs.(C)) for C ∈ Cset)
+ h1 = heatmap(Cset[1], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;all cross-cov, k=1&quot;)
+ h2 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;all cross-cov, k=2&quot;)
+ h3 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;all cross-cov, k=3&quot;)
+ h4 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;all cross-cov, k=4&quot;)
+ h5 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;all cross-cov, k=5&quot;)
+ h6 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;all cross-cov, k=6&quot;)
+ 📈=plot(h1, h2, h3, h4, h5, h6, size=(1200,550))
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigmAJD1.png&quot;)
+
+𝒮=_rotate_crossCov(aX.F, 𝒞, m, k)
+ Sset=[𝒞2Mat(𝒮, m, s) for s=1:k]
+ Smax=maximum(maximum(abs.(S)) for S ∈ Sset)
+ h11 = heatmap(Sset[1], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title=&quot;rotated cross-cov, k=1&quot;)
+ h12 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title=&quot;rotated cross-cov, k=2&quot;)
+ h13 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title=&quot;rotated cross-cov, k=3&quot;)
+ h14 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title=&quot;rotated cross-cov, k=4&quot;)
+ h15 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title=&quot;rotated cross-cov, k=5&quot;)
+ h16 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title=&quot;rotated cross-cov, k=6&quot;)
+ 📉=plot(h11, h12, h13, h14, h15, h16, size=(1200,550))
+# savefig(📉, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigmAJD2.png&quot;)
+</code></pre><p><img src="../assets/FigmAJD1.png" alt="Figure mAJD1"/></p><p><img src="../assets/FigmAJD2.png" alt="Figure mAJD2"/></p><p>In the bottom figures here above, the rotated cross-covariance matrices have the expected <em>strip-diagonal</em> form, that is, each block <span>$F_i^T\frac{1}{T}(X_{li}X_{lj}^T)F_j$</span>, for <span>$l∈[1,...,k]$</span>, <span>$i,j∈[1,...,m]$</span>, is approximately diagonal.</p><pre><code class="language-none"># COMPLEX data
+# do joint blind source separation of non-stationary data
+t, m, n, k, noise = 200, 5, 4, 6, 0.1
+Xcset, Vcset=getData(ComplexF64, t, m, k, n, noise)
+𝒞=Array{Matrix}(undef, k, m, m)
+for s=1:k, i=1:m, j=1:m 𝒞[s, i, j]=(Xcset[s][i]*Xcset[s][j]&#39;)/t end
+
+aXc=majd(Xcset; fullModel=true, algorithm=:OJoB)
+# the spForm index of the estimated demixing matrices times the true
+# mixing matrix must be low
+@test mean(spForm(aXc.F[i]&#39;*Vcset[i]) for i=1:m)&lt;0.1
+
+# test the same using NoJoB algorithm
+aXc=majd(Xcset; fullModel=true, algorithm=:NoJoB)
+@test mean(spForm(aXc.F[i]&#39;*Vcset[i]) for i=1:m)&lt;0.1</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/eeae9a9956766e27d84d5a6bed7ac078d60c87ef/src/ajd.jl#L349-L563">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../gcca/">« gCCA</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 10 January 2020 17:35">Friday 10 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
