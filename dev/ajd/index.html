@@ -8,7 +8,7 @@ function ajd(𝐂::ℍVector;
           sort      :: Bool   = true,
           init      :: Mato   = ○,
           tol       :: Real   = 0.,
-          maxiter   :: Int    = 1000,
+          maxiter   :: Int    = 2000,
           verbose   :: Bool   = false,
         eVar     :: TeVaro    = _minDim(𝐂),
         eVarC    :: TeVaro    = ○,
@@ -27,46 +27,83 @@ function ajd(𝐗::VecMat;
        sort      :: Bool = true,
        init      :: Mato = ○,
        tol       :: Real = 0.,
-       maxiter   :: Int  = 1000,
+       maxiter   :: Int  = 2000,
        verbose   :: Bool = false,
      eVar     :: TeVaro    = _minDim(𝐗),
      eVarC    :: TeVaro    = ○,
      eVarMeth :: Function  = searchsortedfirst,
      simple   :: Bool      = false)
-</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object:</p><p><strong>(1) Approximate joint diagonalization</strong> of the set of <span>$k$</span> symmetric or Hermitian matrices <code>𝐂</code>, of type <a href="https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#%E2%84%8DVector-type-1">ℍVector</a> using the given solving <code>algorithm</code> (<em>NoJoB</em> by default).</p><p>If <code>trace1</code> is true, all matrices in the set <code>𝐂</code> are normalized so as to have trace equal to 1. It is false by default.</p><p>if <code>w</code> is a <code>StatsBase.AbstractWeights</code>, the weights are applied to the set <code>𝐂</code>. If <code>w</code> is a <code>Function</code>, the weights are found passing each matrix in the set to such function. An appropriate choice for AJD algorithms minimizing a least-squares criterion, like <em>OJoB</em> and <em>NoJoB</em>, is the <a href="../tools/#Diagonalizations.nonDiagonality"><code>nonDiagonality</code></a> function (Congedo et al.(2008)<a href="../#-1">🎓</a>). By default, no weights are applied.</p><p>If <code>preWhite</code> is true the solution is found by the two-step procedure described here above in section <a href="#pre-whitening-for-AJD-1">pre-whitening for AJD</a>. By default, it is false. Dimensionality reduction can be obtained at this stage using arguments <code>eVarC</code> and <code>eVarMeth</code>, in the same way they are used to find the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span>, but using the accumulated regularized eigenvalues of</p><p><span>$\frac{1}{k}\sum_{l=1}^kC_k$</span>.</p><p>The default values are:</p><ul><li><code>eVarC</code> is set to 0.999</li><li><code>eVarMeth=searchsortedfirst</code>.</li></ul><p>If <code>sort</code> is true (default), the vectors in <code>.F</code> are permuted as explained here above in <a href="#permutation-for-AJD-1">permutation for AJD</a>, otherwise they will be in arbitrary order.</p><p>A matrix can be passed with the <code>init</code> argument in order to initialize the matrix <span>$F$</span> to be found by the AJD algorithm. If <code>nothing</code> is passed (default), <span>$F$</span> is initialized as per this table:</p><table><tr><th style="text-align: left">Algorithm</th><th style="text-align: left">Initialization of <span>$F$</span></th></tr><tr><td style="text-align: left">OJoB</td><td style="text-align: left">eigevector matrix of <span>$\frac{1}{k}\sum_{l=1}^kC_k^2$</span> (Congedo et al., 2011)</td></tr><tr><td style="text-align: left">NoJoB</td><td style="text-align: left">identity matrix</td></tr></table><p><code>tol</code> is the tolerance for convergence of the solving algorithm. By default it is set to the square root of <code>Base.eps</code> of the nearest real type of the data input. This corresponds to requiring the relative change across two successive iterations of the average squared norm of the column vectors of <span>$F$</span> to vanish for about half the significant digits. If the solving algorithm encounter difficulties in converging, try setting <code>tol</code> in between 1e-6 and 1e-3.</p><p><code>maxiter</code> is the maximum number of iterations allowed to the solving algorithm (1000 by default). If this maximum number of iteration is attained, a warning will be printed in the REPL. In this case, try increasing <code>maxiter</code> and/or <code>tol</code>.</p><p>If <code>verbose</code> is true (false by default), the convergence attained at each iteration will be printed in the REPL.</p><p><code>eVar</code> and <code>eVarMeth</code> are used to define a <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the accumulated regularized eigenvalues in Eq. [ajd.7].</p><p>The default values are:</p><ul><li><code>eVar</code> is set to the dimension of the matrices in <code>𝐂</code></li><li><code>eVarMeth=searchsortedfirst</code>.</li></ul><p>Note that passing <code>nothing</code> or a real nummber as <code>eVar</code> (see <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>) is meningful only if <code>sort</code> is set to true (default) and if the input matrices <span>${C_1,...,C_k}$</span> are positive definite.</p><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to the dimension of the matrices <span>${C_1,...,C_k}$</span> and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This corresponds to the typical output of AJD algorithms.</p><p><strong>(2) Approximate joint diagonalization</strong> with a set of <span>$k$</span> data matrices <code>𝐗</code> as input; the covariance matrices of the set are estimated using arguments <code>covEst</code>, <code>dims</code> and <code>meanX</code> (see <a href="../Diagonalizations/#covariance-matrix-estimations-1">covariance matrix estimations</a>) and passed to method (1) with the remaining arguments of method (2).</p><p><strong>See also:</strong> <a href="../pca/#PCA-1">PCA</a>, <a href="../csp/#CSP-1">CSP</a>, <a href="../majd/#mAJD-1">mAJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object:</p><p><strong>(1) Approximate joint diagonalization</strong> of the set of <span>$k$</span> symmetric or Hermitian matrices <code>𝐂</code>, of type <a href="https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#%E2%84%8DVector-type-1">ℍVector</a> using the given solving <code>algorithm</code> (<em>NoJoB</em> by default).</p><p>If <code>trace1</code> is true, all matrices in the set <code>𝐂</code> are normalized so as to have trace equal to 1. It is false by default.</p><p>if <code>w</code> is a <code>StatsBase.AbstractWeights</code>, the weights are applied to the set <code>𝐂</code>. If <code>w</code> is a <code>Function</code>, the weights are found passing each matrix in the set to such function. An appropriate choice for AJD algorithms minimizing a least-squares criterion, like <em>OJoB</em> and <em>NoJoB</em>, is the <a href="../tools/#Diagonalizations.nonDiagonality"><code>nonDiagonality</code></a> function (Congedo et al.(2008)<a href="../#-1">🎓</a>). By default, no weights are applied.</p><p>If <code>preWhite</code> is true the solution is found by the two-step procedure described here above in section <a href="#pre-whitening-for-AJD-1">pre-whitening for AJD</a>. By default, it is false. Dimensionality reduction can be obtained at this stage using arguments <code>eVarC</code> and <code>eVarMeth</code>, in the same way they are used to find the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span>, but using the accumulated regularized eigenvalues of</p><p><span>$\frac{1}{k}\sum_{l=1}^kC_k$</span>.</p><p>The default values are:</p><ul><li><code>eVarC</code> is set to 0.999</li><li><code>eVarMeth=searchsortedfirst</code>.</li></ul><p>If <code>sort</code> is true (default), the vectors in <code>.F</code> are permuted as explained here above in <a href="#permutation-for-AJD-1">permutation for AJD</a>, otherwise they will be in arbitrary order.</p><p>A matrix can be passed with the <code>init</code> argument in order to initialize the matrix <span>$F$</span> to be found by the AJD algorithm. If <code>nothing</code> is passed (default), <span>$F$</span> is initialized as per this table:</p><table><tr><th style="text-align: left">Algorithm</th><th style="text-align: left">Initialization of <span>$F$</span></th></tr><tr><td style="text-align: left">OJoB</td><td style="text-align: left">eigevector matrix of <span>$\frac{1}{k}\sum_{l=1}^kC_k^2$</span> (Congedo et al., 2011)</td></tr><tr><td style="text-align: left">NoJoB</td><td style="text-align: left">identity matrix</td></tr></table><p><code>tol</code> is the tolerance for convergence of the solving algorithm. By default it is set to the square root of <code>Base.eps</code> of the nearest real type of the data input. This corresponds to requiring the relative change across two successive iterations of the average squared norm of the column vectors of <span>$F$</span> to vanish for about half the significant digits. If the solving algorithm encounter difficulties in converging, try setting <code>tol</code> in between 1e-6 and 1e-3.</p><p><code>maxiter</code> is the maximum number of iterations allowed to the solving algorithm (2000 by default). If this maximum number of iteration is attained, a warning will be printed in the REPL. In this case, try increasing <code>maxiter</code> and/or <code>tol</code>.</p><p>If <code>verbose</code> is true (false by default), the convergence attained at each iteration will be printed in the REPL.</p><p><code>eVar</code> and <code>eVarMeth</code> are used to define a <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the accumulated regularized eigenvalues in Eq. [ajd.7].</p><p>The default values are:</p><ul><li><code>eVar</code> is set to the dimension of the matrices in <code>𝐂</code></li><li><code>eVarMeth=searchsortedfirst</code>.</li></ul><p>Note that passing <code>nothing</code> or a real nummber as <code>eVar</code> (see <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>) is meningful only if <code>sort</code> is set to true (default) and if the input matrices <span>${C_1,...,C_k}$</span> are positive definite.</p><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to the dimension of the matrices <span>${C_1,...,C_k}$</span> and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This corresponds to the typical output of AJD algorithms.</p><p><strong>(2) Approximate joint diagonalization</strong> with a set of <span>$k$</span> data matrices <code>𝐗</code> as input; the covariance matrices of the set are estimated using arguments <code>covEst</code>, <code>dims</code> and <code>meanX</code> (see <a href="../Diagonalizations/#covariance-matrix-estimations-1">covariance matrix estimations</a>) and passed to method (1) with the remaining arguments of method (2).</p><p><strong>See also:</strong> <a href="../pca/#PCA-1">PCA</a>, <a href="../csp/#CSP-1">CSP</a>, <a href="../majd/#mAJD-1">mAJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
-# generate data
+
+# method (1) real
 t, n, k=50, 10, 4
 A=randn(n, n) # mixing matrix in model x=As
 Xset = [genDataMatrix(t, n) for i = 1:k]
 Xfixed=randn(t, n)./1
 for i=1:length(Xset) Xset[i]+=Xfixed end
 Cset = ℍVector([ℍ((Xset[s]&#39;*Xset[s])/t) for s=1:k])
-
-# method (1)
 aC=ajd(Cset; simple=true)
 
-# method (2)
+# method (1) complex
+t, n, k=50, 10, 4
+Ac=randn(ComplexF64, n, n) # mixing matrix in model x=As
+Xcset = [genDataMatrix(ComplexF64, t, n) for i = 1:k]
+Xcfixed=randn(ComplexF64, t, n)./1
+for i=1:length(Xcset) Xcset[i]+=Xcfixed end
+Ccset = ℍVector([ℍ((Xcset[s]&#39;*Xcset[s])/t) for s=1:k])
+aCc=ajd(Ccset; algorithm=:OJoB, simple=true)
+
+
+# method (2) real
 aX=ajd(Xset; simple=true)
 @test aX≈aC
 
-# create 20 random commuting matrices
+# method (2) complex
+aXc=ajd(Xcset; algorithm=:OJoB, simple=true)
+@test aXc≈aCc
+
+
+# create 20 REAL random commuting matrices
 # they all have the same eigenvectors
-Cset2=randP(3, 20; eigvalsSNR=Inf, commuting=true)
+Cset2=PosDefManifold.randP(3, 20; eigvalsSNR=Inf, commuting=true)
 
 # estimate the approximate joint diagonalizer (ajd)
 a=ajd(Cset2; algorithm=:OJoB)
 
 # the ajd must be equivalent to the eigenvector matrix of any of the matrices in Cset
-@test spForm(a.F&#39;*eigvecs(Cset2[1]))+1.0≈1.0
+@test spForm(a.F&#39;*eigvecs(Cset2[1]))+1. ≈ 1.0
 
+# the same thing using the NoJoB algorithm. Here we just do a sanity check
+# as the NoJoB solution is not constrained in the orthogonal group
+a=ajd(Cset2; algorithm=:NoJoB)
+@test spForm(a.F&#39;*eigvecs(Cset2[1]))&lt;0.01
+
+
+# create 20 COMPLEX random commuting matrices
+# they all have the same eigenvectors
+Ccset2=PosDefManifold.randP(ComplexF64, 3, 20; eigvalsSNR=Inf, commuting=true)
+
+# estimate the approximate joint diagonalizer (ajd)
+ac=ajd(Ccset2; algorithm=:OJoB)
+
+# the ajd must be equivalent to the eigenvector matrix of any of the matrices in Cset
+# just a sanity check as rounding errors appears for complex data
+@test spForm(ac.F&#39;*eigvecs(Ccset2[1]))&lt;0.001
+
+# the same thing using the NoJoB algorithm. Here we just do a sanity check
+# as the NoJoB solution is not constrained in the orthogonal group
+ac=ajd(Ccset2; algorithm=:NoJoB)
+@test spForm(ac.F&#39;*eigvecs(Ccset2[1]))&lt;0.01
+
+# REAL data:
 # normalize the trace of input matrices,
 # give them weights according to the `nonDiagonality` function
 # apply pre-whitening and limit the explained variance both
 # at the pre-whitening level and at the level of final vector selection
-a=ajd(Cset; trace1=true, w=nonD, preWhite=true, eVarC=10, eVar=0.99)
+Cset=PosDefManifold.randP(8, 20; eigvalsSNR=10, SNR=2, commuting=false)
 
-a=ajd(Cset; preWhite=true)
+a=ajd(Cset; trace1=true, w=nonD, preWhite=true, eVarC=8, eVar=0.99)
 
 using Plots
 # plot the original covariance matrices
@@ -87,4 +124,16 @@ Dset=[a.F&#39;*C*a.F for C ∈ Cset];
  h8 = heatmap(Dset[4], clim=(-DMax, DMax), title=&quot;F&#39;*C4*F&quot;, yflip=true, c=:bluesreds);
  📉=plot(h5, h6, h7, h8, size=(700,400))
 # savefig(📉, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigAJD2.png&quot;)
-</code></pre><p><img src="../assets/FigAJD1.png" alt="Figure AJD1"/></p><p><img src="../assets/FigAJD2.png" alt="Figure AJD2"/></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/7d05006192ccadf5576b21f7beaf4fd70ef0d6f1/src/ajd.jl#L11-L201">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cstp/">« CSTP</a><a class="docs-footer-nextpage" href="../mca/">MCA »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 5 January 2020 10:48">Sunday 5 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</code></pre><p><img src="../assets/FigAJD1.png" alt="Figure AJD1"/></p><p><img src="../assets/FigAJD2.png" alt="Figure AJD2"/></p><pre><code class="language-none"># COMPLEX data:
+# normalize the trace of input matrices,
+# give them weights according to the `nonDiagonality` function
+# apply pre-whitening and limit the explained variance both
+# at the pre-whitening level and at the level of final vector selection
+Ccset=PosDefManifold.randP(3, 20; eigvalsSNR=10, SNR=2, commuting=false)
+
+# run OJoB
+ac=ajd(Ccset; trace1=true, w=nonD, preWhite=true,
+       algorithm=:OJoB, eVarC=8, eVar=0.99)
+
+# run NoJoB
+ac=ajd(Ccset; eVarC=8, eVar=0.99)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/eeae9a9956766e27d84d5a6bed7ac078d60c87ef/src/ajd.jl#L11-L254">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cstp/">« CSTP</a><a class="docs-footer-nextpage" href="../mca/">MCA »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 10 January 2020 17:16">Friday 10 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

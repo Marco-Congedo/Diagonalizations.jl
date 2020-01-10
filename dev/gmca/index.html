@@ -8,14 +8,15 @@
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 1000,
+          maxiter   :: Int       = 2000,
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
         simple   :: Bool     = false)
-</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object.</p><p><strong>Generalized Maximum Covariance Analysis</strong> of the set of <span>$m$</span> data matrices <code>𝐗</code> using the given solving <code>algorithm</code> (<em>OJoB</em> by default).</p><p>If <code>fullModel</code> is true, the [gmca.3] problem here above is solved, otherwise (default), the [gmca.2] problem here above is solved.</p><p>If <code>sort</code> is true (default), the column vectors of the matrices <span>$F_1,...,F_m$</span> are signed and permuted as explained here above in <a href="#permutation-for-gMCA-1">permutation for gMCA</a>, otherwise they will have arbitrary sign and will be in arbitrary order.</p><p>A vector of matrices can be passed with the <code>init</code> argument in order to initialize the matrices <span>$F_1,...,F_m$</span> to be found by the gMCA algorithm. If <code>nothing</code> is passed (default), <span>$F_i$</span> is initialized as per this table:</p><table><tr><th style="text-align: left">Algorithm</th><th style="text-align: left">Initialization of <span>$F_i$</span></th></tr><tr><td style="text-align: left">OJoB</td><td style="text-align: left">eigevector matrix of <span>$\frac{1}{m}\sum_{j=1}^m C_{ij}C_{ij}^H$</span> (Congedo et al., 2011)</td></tr><tr><td style="text-align: left">NoJoB</td><td style="text-align: left">identity matrix</td></tr></table><p><code>tol</code> is the tolerance for convergence of the solving algorithm. By default it is set to the square root of <code>Base.eps</code> of the nearest real type of the data input. This corresponds to requiring the relative change across two successive iterations of the average squared norm of the column vectors of <span>$F$</span> to vanish for about half the significant digits. If the solving algorithm encounters difficulties in converging, try setting <code>tol</code> in between 1e-6 and 1e-3.</p><p><code>maxiter</code> is the maximum number of iterations allowed to the solving algorithm (1000 by default). If this maximum number of iteration is attained, a warning will be printed in the REPL. In this case, try increasing <code>maxiter</code> and/or <code>tol</code>.</p><p>If <code>verbose</code> is true (false by default), the convergence attained at each iteration will be printed in the REPL.</p><p><code>eVar</code> and <code>eVarMeth</code> are used to define a <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the accumulated regularized eigenvalues of Eq. [gmca.7].</p><p>The default values are:</p><ul><li><code>eVar</code> is set to the minimum dimension of the matrices in <code>𝐗</code></li><li><code>eVarMeth=searchsortedfirst</code></li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to the dimension of the covariance matrices that are computed on the matrices in <code>𝐗</code>, which depends on the choice of <code>dims</code>, and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This corresponds to the typical output of approximate diagonalization algorithms.</p><p><strong>See also:</strong> <a href="../mca/#MCA-1">MCA</a>, <a href="../gcca/#gCCA-1">gCCA</a>, <a href="../majd/#mAJD-1">mAJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object.</p><p><strong>Generalized Maximum Covariance Analysis</strong> of the set of <span>$m$</span> data matrices <code>𝐗</code> using the given solving <code>algorithm</code> (<em>OJoB</em> by default).</p><p>If <code>fullModel</code> is true, the [gmca.3] problem here above is solved, otherwise (default), the [gmca.2] problem here above is solved.</p><p>If <code>sort</code> is true (default), the column vectors of the matrices <span>$F_1,...,F_m$</span> are signed and permuted as explained here above in <a href="#permutation-for-gMCA-1">permutation for gMCA</a>, otherwise they will have arbitrary sign and will be in arbitrary order.</p><p>A vector of matrices can be passed with the <code>init</code> argument in order to initialize the matrices <span>$F_1,...,F_m$</span> to be found by the gMCA algorithm. If <code>nothing</code> is passed (default), <span>$F_i$</span> is initialized as per this table:</p><table><tr><th style="text-align: left">Algorithm</th><th style="text-align: left">Initialization of <span>$F_i$</span></th></tr><tr><td style="text-align: left">OJoB</td><td style="text-align: left">eigevector matrix of <span>$\frac{1}{m}\sum_{j=1}^m C_{ij}C_{ij}^H$</span> (Congedo et al., 2011)</td></tr><tr><td style="text-align: left">NoJoB</td><td style="text-align: left">identity matrix</td></tr></table><p><code>tol</code> is the tolerance for convergence of the solving algorithm. By default it is set to the square root of <code>Base.eps</code> of the nearest real type of the data input. This corresponds to requiring the relative change across two successive iterations of the average squared norm of the column vectors of <span>$F$</span> to vanish for about half the significant digits. If the solving algorithm encounters difficulties in converging, try setting <code>tol</code> in between 1e-6 and 1e-3.</p><p><code>maxiter</code> is the maximum number of iterations allowed to the solving algorithm (2000 by default). If this maximum number of iteration is attained, a warning will be printed in the REPL. In this case, try increasing <code>maxiter</code> and/or <code>tol</code>.</p><p>If <code>verbose</code> is true (false by default), the convergence attained at each iteration will be printed in the REPL.</p><p><code>eVar</code> and <code>eVarMeth</code> are used to define a <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the accumulated regularized eigenvalues of Eq. [gmca.7].</p><p>The default values are:</p><ul><li><code>eVar</code> is set to the minimum dimension of the matrices in <code>𝐗</code></li><li><code>eVarMeth=searchsortedfirst</code></li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to the dimension of the covariance matrices that are computed on the matrices in <code>𝐗</code>, which depends on the choice of <code>dims</code>, and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This corresponds to the typical output of approximate diagonalization algorithms.</p><p><strong>See also:</strong> <a href="../mca/#MCA-1">MCA</a>, <a href="../gcca/#gCCA-1">gCCA</a>, <a href="../majd/#mAJD-1">mAJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
-#  Create data for testing the case k=1, m&gt;1 #
+
+####  Create data for testing the case k=1, m&gt;1
 # `t` is the number of samples,
 # `m` is the number of datasets,
 # `n` is the number of variables,
@@ -31,24 +32,53 @@ function getData(t, m, n, noise)
     return 𝐗
 end
 
+function getData(::Type{Complex{T}}, t, m, n, noise) where {T&lt;:AbstractFloat}
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(ComplexF64, n) for i=1:m] # random orthogonal matrices
+    X=randn(ComplexF64, n, t)  # data common to all subjects
+    # each subject has this common part plus a random part
+    𝐗=[𝐕[i]&#39;*((1-noise)*X + noise*randn(ComplexF64, n, t)) for i=1:m]
+    return 𝐗
+end
+
+
+# REAL data: check that for the case m=2 gMCA gives the same result as MCA
 t, m, n, noise = 20, 2, 6, 0.1
 Xset=getData(t, m, n, noise)
 Cx=(Xset[1]*Xset[1]&#39;)/t
 Cy=(Xset[2]*Xset[2]&#39;)/t
 Cxy=(Xset[1]*Xset[2]&#39;)/t
 
-# check that for the case m=2 GMCA gives the same result as MCA
 gm=gmca(Xset; simple=true)
-
 m=mca(Cxy; simple=true)
 
 @test (m.F[1]&#39;*Cxy*m.F[2]) ≈ (gm.F[1]&#39;*Cxy*gm.F[2])
 # the following must be the identity matrix out of a possible sign ambiguity
 @test abs.(m.F[1]&#39;*gm.F[1]) ≈ I
-@test abs.(m.F[2]&#39;*gm.F[2]) ≈ I</code></pre><p><strong>case m&gt;2</strong></p><pre><code class="language-none">t, m, n, noise = 20, 4, 6, 0.1
+@test abs.(m.F[2]&#39;*gm.F[2]) ≈ I
+
+# COMPLEX data: check that for the case m=2 gMCA gives the same result as MCA
+t, m, n, noise = 20, 2, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+Ccx=(Xcset[1]*Xcset[1]&#39;)/t
+Ccy=(Xcset[2]*Xcset[2]&#39;)/t
+Ccxy=(Xcset[1]*Xcset[2]&#39;)/t
+
+gmc=gmca(Xcset; simple=true)
+mc=mca(Ccxy; simple=true)
+
+# for complex data just do a sanity check as the order of vectors
+# is arbitrary
+@test spForm(mc.F[1]&#39;gmc.F[1])&lt;0.01
+@test spForm(mc.F[2]&#39;gmc.F[2])&lt;0.01
+
+
+# REAL data: m&gt;2 case
+t, m, n, noise = 20, 4, 6, 0.1
 Xset=getData(t, m, n, noise)
 
-# gmca selecting subspace dimension allowing an explained variance = 0.9
+# ... selecting subspace dimension allowing an explained variance = 0.9
 gm=gmca(Xset, eVar=0.9)
 
 # name of the filter
@@ -61,6 +91,7 @@ using Plots
 # plot regularized accumulated eigenvalues
 plot(gm.arev)
 
+
 # plot the original cross-covariance matrices and the rotated
 # cross-covariance matrices
 
@@ -71,6 +102,7 @@ function _rotate_crossCov(𝐔, 𝒞, m, k)
     return 𝒮
 end
 
+
 # Put all cross-covariances in a single matrix of dimension m*n x m*n for visualization
 function 𝒞2Mat(𝒞::AbstractArray, m, k)
     n=size(𝒞[1, 1, 1], 1)
@@ -79,12 +111,18 @@ function 𝒞2Mat(𝒞::AbstractArray, m, k)
     return C
 end
 
-C=𝒞2Mat(𝒞, m, 1)
+ C=𝒞2Mat(𝒞, m, 1)
  Cmax=maximum(abs.(C));
- h1 = heatmap(C, clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;all (mxm) cross-covariances&quot;)
+ h1 = heatmap(C, clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;all cross-covariances&quot;)
  𝒮=_rotate_crossCov(gm.F, 𝒞, m, 1)
  S=𝒞2Mat(𝒮, m, 1)
  Smax=maximum(abs.(S));
  h2 = heatmap(S, clim=(0, Smax), yflip=true, c=:amp, title=&quot;all rotated cross-covariances&quot;)
  📈=plot(h1, h2, size=(700,300))
-</code></pre><p><img src="../assets/FiggMCA.png" alt="Figure gMCA"/></p><p>In the figure here above, the rotated cross-covariance matrices have the expected  <em>strip-diagonal</em> form, that is, each block <span>$F_i^T\frac{1}{T}(X_iX_j^T)F_j$</span>,  for <span>$i,j∈[1,...,m]$</span>, is approximately diagonal. Each block is <span>$5⋅5$</span> because  setting <code>eVar=0.9</code> the subspace dimension has been set to 5.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/7d05006192ccadf5576b21f7beaf4fd70ef0d6f1/src/gcca.jl#L11-L180">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cca/">« CCA</a><a class="docs-footer-nextpage" href="../gcca/">gCCA »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 5 January 2020 10:48">Sunday 5 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FiggMCA.png&quot;)
+</code></pre><p><img src="../assets/FiggMCA.png" alt="Figure gMCA"/></p><p>In the figure here above, the rotated cross-covariance matrices have the expected  <em>strip-diagonal</em> form, that is, each block <span>$F_i^T\frac{1}{T}(X_iX_j^T)F_j$</span>,  for <span>$i,j∈[1,...,m]$</span>, is approximately diagonal. Each block is <span>$5⋅5$</span> because  setting <code>eVar=0.9</code> the subspace dimension has been set to 5.</p><pre><code class="language-none"># COMPLEX data: m&gt;2 case
+t, m, n, noise = 20, 4, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+gmc=gmca(Xcset, eVar=0.9)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/eeae9a9956766e27d84d5a6bed7ac078d60c87ef/src/gcca.jl#L11-L216">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cca/">« CCA</a><a class="docs-footer-nextpage" href="../gcca/">gCCA »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 10 January 2020 17:16">Friday 10 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
