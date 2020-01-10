@@ -340,7 +340,7 @@ dimension. The user may set ``p``:
  setting `eVar` to the desired explained variance in the subspace filtered
  data, as a float ``∈(0, 1]``, where ``1`` corresponds to the total variance.
 
-- **automaticlly** (default),
+- **automatically** (default),
 
  according to the `.arev` (accumulated regularized eigenvalues) vector
  that is computed by the filter constructors. This vector is
@@ -392,10 +392,10 @@ of ``C``, since ``OP^{H}F^{H}CFPO=Λ``.
 This implies that the filter matrices found by an exact diagonalization
 procedures are arbitrary up to **sign and permutation** of their columns.
 
-If ``O`` is a generic diagonal matrix, it is easy to verify then
-that any matrix ``FPO`` is an **equivalent** diagonalizer of ``C``
+If ``D`` is a generic diagonal matrix, it is easy to verify then
+that any matrix ``FPD`` is an **equivalent** diagonalizer of ``C``
 (Belouchrani et al., 1997 [🎓](@ref)),
-since ``OP^{T}F^{T}CFPO`` is also diagonal,
+since ``DP^{H}F^{H}CFPD`` is also diagonal,
 albeit different from ``Λ``.
 This implies that there exist infinite equivalent exact diagonalizers
 and that the solution is arbitrary up to **scale and permutation**
@@ -403,7 +403,7 @@ of the columns.
 Of course, the scale ambiguity implies the sign ambiguity,
 but not vice versa.  
 All exact diagonalization procedures
-implicitly constraint the solution to find ``P`` and ``O`` such that
+implicitly constraint the solution to find ``P`` and ``D`` such that
 ``Λ`` possesses a desired property. For example, in principal component analysis
 the elements of ``Λ`` are the maximum values that can be attained constraining  ``F`` to be orthogonal.
 
@@ -423,9 +423,9 @@ matrix ``FPD`` is an *equivalent* approximate joint diagonalizer of the set
 Throughout the code and documentation of this package the following
 notation is followed:
 
-- **scalars** and **vectors** are denoted using lower-case letters, e.g., `y`,
-- **matrices** using upper case letters, e.g., `X`
-- **sets (vectors) of matrices** using bold upper-case letters, e.g., `𝐗`.
+- **scalars** and **vectors** are denoted using lower-case letters, e.g., `x`, `y`,
+- **matrices** using upper case letters, e.g., `X`, `Y`,
+- **sets (vectors) of matrices** using bold upper-case letters, e.g., `𝐗`, `𝐘`.
 - superscripts *H* and *T* denote matrix complex conjugate-transpose and transpose.
 
 The following nomenclature is used consistently:
@@ -434,8 +434,8 @@ The following nomenclature is used consistently:
 - ``𝐗``, ``𝐘``: **vectors of data matrices**
 - ``C``: a **covariance matrix**
 - ``𝐂``: a **vector of covariance matrices**
-- ``Cx``: the **covariance matrix** of data matrix ``X``
-- ``Cxy``: the **cross-covariance matrix** of ``X`` and ``Y``
+- ``C_x``: the **covariance matrix** of data matrix ``X``
+- ``C_{xy}``: the **cross-covariance matrix** of ``X`` and ``Y``
 - ``U``, ``V``: **orthogonal matrices** of eigenvectors or the left and right singular vectors
 - ``λ``: **vector** of eigenvalues, singular values or a function thereof
 - ``Λ``: **diagonal matrix** of eigenvalues, singular values or a function thereof

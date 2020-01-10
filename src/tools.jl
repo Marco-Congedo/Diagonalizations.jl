@@ -69,8 +69,8 @@ Measure of deviancy from scaled permutation form of ``n⋅n`` square matrix
 
 ``\\frac{1}{2(n-1)}\\bigg(\\sum_{row}1-\\beta(row)+\\sum_{col}1-\\beta(col)\\bigg)``,
 
-where for each *row* and *column* of `P`, β is the maximum of the absolute values
-divided by the sum of the absolute values.
+where for each *row* and *column* of `P`, β is the maximum of the
+absolute values divided by the sum of the absolute values.
 
 This index is equal to ``0`` if in each row and column ``P``
 has only one non-zero element, that is, if ``P`` is a scaled permutation matrix.
@@ -114,22 +114,45 @@ end
 
 """
 ```
+(1)
 function genDataMatrix(t::Int, n::Int, A=nothing)
+
+(2)
+function genDataMatrix(::Type{Complex{T}},
+                       t::Int, n::Int, A=○) where {T<:AbstractFloat}
 ```
 
+(1)
 Generate a ``t⋅n`` random data matrix as ``XA``,
 where ``X`` is a ``t⋅n`` matrix with entries randomly drawn
 from a Gaussian distribution and ``A`` a ``n⋅n`` symmetric
 matrix, which, if not provided as argument `A`,
 will be generated with entries randomly drawn from a uniform
 distribution ∈[-1, 1].
+
+(2)
+as (1), but ``X`` is generated randomly from a complex
+Gaussian distribution and ``A``is Hermitian (complex)
+which, if not provided as argument `A`,
+will be generated with entries randomly drawn from a uniform
+distribution ∈[-1-i1, 1+i1].
+
+**Examples:**
+
+A=genDataMatrix(100, 20) # (1), real
+A=genDataMatrix(ComplexF64, 100, 20) # (2), complex
+
 """
 function genDataMatrix(t::Int, n::Int, A=○)
-   if A===○ A=Symmetric((rand(n, n) .-0.5).*2) end
+   if A===○ A=Symmetric((rand(n, n).-0.5).*2) end
    return randn(t, n)*A
 end
 
-
+function genDataMatrix(::Type{Complex{T}},
+                       t::Int, n::Int, A=○) where {T<:AbstractFloat}
+  if A===○ A=Hermitian([(rand(T).-(0.5+0.5im)).*2. for i=1:n, j=1:n]) end
+  return randn(T, t, n)*A
+end
 # -------------------------------------------------------- #
 # INTERNAL FUNCTIONS #
 # -------------------------------------------------------- #
@@ -140,6 +163,7 @@ function _getEVD(C :: Union{Hermitian, Symmetric, Mat}, eVar::TeVaro,
                  eVarMeth::Function, simple::Bool)
 
    λ, U = eig(C)
+   λ=_checkλ(λ) # make sure no imaginary noise is present (fro complex data)
    simple ? (U, Matrix(U'), Diagonal(λ), ○, ○, ○) :
    begin
      eVar===○ ? eVar=0.999 : ○
@@ -220,18 +244,31 @@ end
 # call StatsBase.cov within one line with or without weights
 # Also, flag the covariance as Symmetric if is real, Hermitian if is complex
 # The mean is subtracted separatedly for consistence with the other _cov method
+# NB!!! covarianceestimations.jl does not work for complex data input!
 function _cov(X::Matrix{R},
               covEst   :: StatsBase.CovarianceEstimator = SCM,
               dims     :: Int64 = 1,
               meanX    :: Tmean = 0,
-              wX       :: Tw = ○) where R<:Union{Real, Complex}
-   T = R===Real ? Symmetric : Hermitian
+              wX       :: Tw = ○) where R<:Real
+   #T = R isa Real ? Symmetric : Hermitian
    X_=_deMean(X, dims, meanX)
-   return wX===○ ? T(cov(covEst, X_; dims=dims, mean=0)) : # do NOT remove `mean`=0
-                   T(cov(covEst, X_, wX; dims=dims, mean=0)) # "
+   return wX===○ ? Symmetric(cov(covEst, X_; dims=dims, mean=0)) : # do NOT remove `mean`=0
+                   Symmetric(cov(covEst, X_, wX; dims=dims, mean=0)) # "
+end
+
+# `covest` is not used but left in for code homogeneity
+function _cov(X::Matrix{R},
+              covEst   :: StatsBase.CovarianceEstimator = SCM,
+              dims     :: Int64 = 1,
+              meanX    :: Tmean = 0,
+              wX       :: Tw = ○) where R<:Complex
+   X_=_deMean(X, dims, meanX)
+   wX≠○ ? ( dims==1 ? X__=wX.*X_ : X__=wX'.*X_ ) : X__=X_
+   return dims==1 ? Hermitian((X__'*X__)/size(X, 1)) : Hermitian((X__*X__')/size(X, 2))
 end
 
 # as before for a vector of data matrices at once
+# NB!!! does not work for complex data inout as uses the above method!
 function _cov(𝐗::VecMat;
               covEst   :: StatsBase.CovarianceEstimator = SCM,
               dims     :: Int64 = 1,
@@ -301,6 +338,8 @@ function _Normalize!(𝒞::AbstractArray, m::Int, k::Int,
                      trace1::Bool=false, w::Union{Tw, Function}=○)
    !trace1 && w===○ && return
 
+   #for κ=1:k println(tr(𝒞[κ, 1, 1])) end
+
    if m==1
       if trace1
          @inbounds for κ=1:k 𝒞[κ, 1, 1] = tr1(𝒞[κ, 1, 1]) end
@@ -319,9 +358,9 @@ function _Normalize!(𝒞::AbstractArray, m::Int, k::Int,
                t=ones(eltype(𝒞[1, 1, 1]), m)
          end
          if     w isa Function
-                  @inbounds for i=1:m t[i]*=w(𝒞[κ, i, i]) end
+                  @inbounds for i=1:m t[i]*=sqrt(w(𝒞[κ, i, i])) end
          elseif w isa StatsBase.AbstractWeights
-                  @inbounds for i=1:m t[i]*=w[i] end
+                  @inbounds for i=1:m t[i]*=sqrt(w[i]) end
          end
          if trace1 || w ≠ ○
            @inbounds for i=1:m, j=i:m 𝒞[κ, i, j] = 𝒞[κ, i, j]*(t[i]*t[j]) end
@@ -386,26 +425,32 @@ end
 # the vector with the accumulated regularized eigenvalues (arev)
 
 function _getssd!(eVar::TeVaro, λ::Vec, r::Int64, eVarMeth::Function)
+   eltype(λ)<:Complex && @warn "📌, internal function `_getssd!`: the `λ` vector is complex, subspace dimension is based on its absolute values."
    eVar===○ ? eVar=0.999 : ○
-   arev = accumulate(+, λ./sum(λ))
+   λ_=abs.(λ)
+   arev = accumulate(+, λ_./sum(λ_))
    return (eVar isa Int64 ? clamp(eVar, 1, r) : clamp(eVarMeth(arev, eVar), 1, r), arev)
 end
 
 #see PCA and Whitening
 function _ssd!(eVar::TeVaro, λ::Vec, U::Mat, r::Int64, eVarMeth::Function)
+   eltype(λ)<:Complex && @warn "📌, internal function `_ssd!`: the `λ` vector is complex, subspace dimension is based on its absolute values."
    p, arev = _getssd!(eVar, λ, r, eVarMeth)
    return p==r ? 1. : arev[p], Diagonal(λ[1:p]), U[:, 1:p], p, arev
 end
 
 #see PMCA and CCA
 function _ssdxy!(eVar::TeVaro, λ::Vec, U1::Mat, U2::Mat, r::Int64, eVarMeth::Function)
+   eltype(λ)<:Complex && @warn "📌, internal function `_ssdxy!`: the `λ` vector is complex, subspace dimension  is based on its absolute values."
    p, arev = _getssd!(eVar, λ, r, eVarMeth)
    return p==r ? 1. : arev[p], Diagonal(λ[1:p]), U1[:, 1:p], U2[:, 1:p], p, arev
 end
 
 # see CSP
 function _ssdcsp!(eVar::TeVaro, λ::Vec, U::Mat, r::Int64, eVarMeth::Function, selMeth::Symbol)
-   ratio = λ./(1.0.-λ)
+   eltype(λ)<:Complex && @warn "📌, internal function `_ssdcsp!`: the `λ` vector is complex, subspace dimension  is based on its absolute values."
+   λ_=abs.(λ)
+   ratio = λ_./(1.0.-λ_)
    d = (log.(ratio)).^2
    h = selMeth==:extremal ? sortperm(d; rev=true) : [i for i=1:length(λ)]
    arev = accumulate(+, d[h]./sum(d))
@@ -426,7 +471,9 @@ end
 
 # see CSTP
 function _ssdcstp!(eVar::TeVaro, λ::Vec, U::Mat, V::Mat, r::Int64, eVarMeth::Function)
-   arev = accumulate(+, λ./sum(λ))
+   eltype(λ)<:Complex && @warn "📌, internal function `_ssdcstp!`: the `λ` vector is complex, subspace dimension is based on its absolute values."
+   λ_=abs.(λ)
+   arev = accumulate(+, λ_./sum(λ_))
    if     eVar isa Int
       p = clamp(eVar, 1, r)
    elseif eVar isa Real
@@ -465,6 +512,22 @@ _minDim(𝑿::VecVecMat) = minimum((minimum(minimum(size(X)) for X ∈ 𝑿[i]) 
 
 ### tools for AJD Algorithms ###
 
+# take as input the vector `λ` of diagonal elements of transformed diagonalized
+# matrices. Check that the imaginary part of λ is close to zero.
+# If so, return a vector with the real part of λ,
+# otherwise print a warning and return λ.
+function _checkλ(λ::Vec)
+   rePart=sum(real(λ).^2)
+   imPart=sum(imag(λ).^2)
+   if imPart/rePart > 1e-6
+      @warn "📌, internal function _permute!: sum_κ=1^k trace(imag(Diagonal(F'*C_k*F))^2) / trace(imag(Diagonal(F'*C_k*F))^2) > 1e-6. The elements of fields `D`, `ev` and `arev` of the constructed LinearFilter will be complex. See documentation"
+      return λ
+   else
+      return real(λ)
+   end
+end
+
+
 # try to resolve the permutation for the output of AJD algorithms
 # for the case m=1
 # return a vector holding the n 'average eigenvalues' λ1,...,λn,
@@ -479,8 +542,8 @@ function _permute!(U::AbstractArray, D::Diagonal, n::Int)
       U[:, η]=temp
    end
 
-   for e=1:n  # for all variables # find the position of the absolute maximum
-      p, max=e, zero(type)
+   for e=1:n  # for all variables find the position of the absolute maximum
+      p, max=e, zero(real(type))
       for η=e:n
            absd=abs(D[η, η])
            if  absd > max
@@ -497,6 +560,7 @@ function _permute!(U::AbstractArray, D::Diagonal, n::Int)
            D[e, e]=d
       end
    end
+
    return diag(D)
 end
 
@@ -551,7 +615,7 @@ function _scaleAndPermute!( 𝐔::AbstractArray, 𝐗::AbstractArray,
 
     for e=1:n  # for all variables  (e.g., electrodes)
         # find the position of the absolute maximum
-        max=zero(type)
+        max=zero(real(type))
         for i=1:m-1, j=i+1:m, η=e:n
             absd=abs(𝑫[i][j][η, η])
             if  absd > max
@@ -562,14 +626,14 @@ function _scaleAndPermute!( 𝐔::AbstractArray, 𝐗::AbstractArray,
 
         # flip sign of 𝐔[j][η, η] if abs max is negative
         i=p[1]; j=p[2]; η=p[3]
-        if 𝑫[i][j][η, η]<0
+        if real(𝑫[i][j][η, η])<0
             𝐔[j][:, η] *= -one(type)
         end
 
         # flip sign of 𝐔[j] for all j≠i:1:m if their corresponding element is negative
         for x=1:m
             if x≠j
-                if 𝑫[i][x][η, η]<0
+                if real(𝑫[i][x][η, η])<0
                     𝐔[x][:, η] *= -one(type)
                 end
             end

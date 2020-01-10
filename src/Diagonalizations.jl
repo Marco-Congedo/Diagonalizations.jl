@@ -40,7 +40,9 @@ export
    ajd,
    gmca,
    gcca,
-   majd
+   majd,
+
+   _cov # temp
 
    #OJoB,
 
@@ -151,13 +153,13 @@ end # Struct LinearFilter
 
 LF=LinearFilter # alias
 
+
+
 size(f::LF) = f.F isa Matrix ? size(f.F) : (size(f.F[i]) for i=1:length(f.F))
 
 length(f::LF) = f.F isa Matrix ? 1 : length(f.F)
 
 eltype(f::LF) = f.F isa Matrix ? eltype(f.F) : eltype(f.F[1])
-
-
 
 function ==(f::LF, g::LF)
    ((f.F isa Matrix) ≠ (g.F isa Matrix)) && return false
@@ -178,7 +180,6 @@ end
 
 ≠(f::LF, g::LF)= !==(f, g)
 ≉(f::LF, g::LF)= !≈(f, g)
-
 
 
 # Given a filter, create a reduced filter with dimension p

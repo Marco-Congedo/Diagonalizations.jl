@@ -134,8 +134,10 @@ corresponding to the vectors of ``\widetilde{B}``.
 `.eVar`: the explained variance for the chosen value of ``p``,
 given by the ``p^{th}`` value of [csp.5]
 
-`.ev`: the vector `diag(Λ)` holding all ``n`` diagonal elements
-of matrix ``Λ`` [csp.1].
+`.ev`: the vector holding all ``n`` generalized eigenvalues, i.e., the diagonal
+elements of matrix ``Λ`` [csp.1]. Notice that if `selMeth`=`:extremal`
+these elements are sorted differently than in `.D` and their position
+do not correspond to the vectors of `.F`.
 
 `.arev`: the *accumulated regularized eigenvalues*, defined in [csp.5].
 

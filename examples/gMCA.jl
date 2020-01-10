@@ -17,15 +17,25 @@ function getData(t, m, n, noise)
     return 𝐗
 end
 
+function getData(::Type{Complex{T}}, t, m, n, noise) where {T<:AbstractFloat}
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(ComplexF64, n) for i=1:m] # random orthogonal matrices
+    X=randn(ComplexF64, n, t)  # data common to all subjects
+    # each subject has this common part plus a random part
+    𝐗=[𝐕[i]'*((1-noise)*X + noise*randn(ComplexF64, n, t)) for i=1:m]
+    return 𝐗
+end
+
+
+# REAL data: check that for the case m=2 gMCA gives the same result as MCA
 t, m, n, noise = 20, 2, 6, 0.1
 Xset=getData(t, m, n, noise)
 Cx=(Xset[1]*Xset[1]')/t
 Cy=(Xset[2]*Xset[2]')/t
 Cxy=(Xset[1]*Xset[2]')/t
 
-# check that for the case m=2 GMCA gives the same result as MCA
 gm=gmca(Xset; simple=true)
-
 m=mca(Cxy; simple=true)
 
 @test (m.F[1]'*Cxy*m.F[2]) ≈ (gm.F[1]'*Cxy*gm.F[2])
@@ -33,7 +43,23 @@ m=mca(Cxy; simple=true)
 @test abs.(m.F[1]'*gm.F[1]) ≈ I
 @test abs.(m.F[2]'*gm.F[2]) ≈ I
 
-# m>2 case
+# COMPLEX data: check that for the case m=2 gMCA gives the same result as MCA
+t, m, n, noise = 20, 2, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+Ccx=(Xcset[1]*Xcset[1]')/t
+Ccy=(Xcset[2]*Xcset[2]')/t
+Ccxy=(Xcset[1]*Xcset[2]')/t
+
+gmc=gmca(Xcset; simple=true)
+mc=mca(Ccxy; simple=true)
+
+# for complex data just do a sanity check as the order of vectors
+# is arbitrary
+@test spForm(mc.F[1]'gmc.F[1])<0.01
+@test spForm(mc.F[2]'gmc.F[2])<0.01
+
+
+# REAL data: m>2 case
 t, m, n, noise = 20, 4, 6, 0.1
 Xset=getData(t, m, n, noise)
 
@@ -79,3 +105,10 @@ end
  h2 = heatmap(S, clim=(0, Smax), yflip=true, c=:amp, title="all rotated cross-covariances")
  📈=plot(h1, h2, size=(700,300))
 # savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FiggMCA.png")
+
+# COMPLEX data: m>2 case
+t, m, n, noise = 20, 4, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+gmc=gmca(Xcset, eVar=0.9)
