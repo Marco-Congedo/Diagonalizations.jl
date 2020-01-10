@@ -358,9 +358,9 @@ function _Normalize!(𝒞::AbstractArray, m::Int, k::Int,
                t=ones(eltype(𝒞[1, 1, 1]), m)
          end
          if     w isa Function
-                  @inbounds for i=1:m t[i]*=w(𝒞[κ, i, i]) end
+                  @inbounds for i=1:m t[i]*=sqrt(w(𝒞[κ, i, i])) end
          elseif w isa StatsBase.AbstractWeights
-                  @inbounds for i=1:m t[i]*=w[i] end
+                  @inbounds for i=1:m t[i]*=sqrt(w[i]) end
          end
          if trace1 || w ≠ ○
            @inbounds for i=1:m, j=i:m 𝒞[κ, i, j] = 𝒞[κ, i, j]*(t[i]*t[j]) end
@@ -626,14 +626,14 @@ function _scaleAndPermute!( 𝐔::AbstractArray, 𝐗::AbstractArray,
 
         # flip sign of 𝐔[j][η, η] if abs max is negative
         i=p[1]; j=p[2]; η=p[3]
-        if 𝑫[i][j][η, η]<0
+        if real(𝑫[i][j][η, η])<0
             𝐔[j][:, η] *= -one(type)
         end
 
         # flip sign of 𝐔[j] for all j≠i:1:m if their corresponding element is negative
         for x=1:m
             if x≠j
-                if 𝑫[i][x][η, η]<0
+                if real(𝑫[i][x][η, η])<0
                     𝐔[x][:, η] *= -one(type)
                 end
             end

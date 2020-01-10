@@ -1,6 +1,8 @@
 using LinearAlgebra, Statistics, PosDefManifold, Test,
       Diagonalizations
 
+# for more tests see the `Examples` folder
+
 # compare two matrices
 compare(a::AbstractArray, b::AbstractArray) = @test a≈b
 
@@ -231,14 +233,14 @@ end
 end
 
 
-t, m, n, noise = 200, 2, 6, 0.1
-𝐗, 𝐕 = getData(t, m, n, noise)
-Cx=(𝐗[1]*𝐗[1]')/t
-Cy=(𝐗[2]*𝐗[2]')/t
-Cxy=(𝐗[1]*𝐗[2]')/t
-
 
 @testset "gMCA" begin
+    t, m, n, noise = 200, 2, 6, 0.1
+    𝐗, 𝐕 = getData(t, m, n, noise)
+    Cx=(𝐗[1]*𝐗[1]')/t
+    Cy=(𝐗[2]*𝐗[2]')/t
+    Cxy=(𝐗[1]*𝐗[2]')/t
+
     # check that for the case m=2 GMCA gives the same result as MCA
     gm=gmca(𝐗; simple=true)
 
@@ -250,6 +252,7 @@ Cxy=(𝐗[1]*𝐗[2]')/t
     @test abs.(m.F[1]'*gm.F[1]) ≈ I
     @test abs.(m.F[2]'*gm.F[2]) ≈ I
 end
+
 
 @testset "gCCA" begin
     # check that for the case m=2 GCCA gives the same result as CCA

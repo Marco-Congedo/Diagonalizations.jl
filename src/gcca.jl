@@ -19,7 +19,7 @@ function gmca(𝐗::VecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 1000,
+          maxiter   :: Int       = 2000,
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
@@ -59,7 +59,7 @@ digits. If the solving algorithm encounters difficulties in converging,
 try setting `tol` in between 1e-6 and 1e-3.
 
 `maxiter` is the maximum number of iterations allowed to the solving
-algorithm (1000 by default). If this maximum number of iteration
+algorithm (2000 by default). If this maximum number of iteration
 is attained, a warning will be printed in the REPL. In this case,
 try increasing `maxiter` and/or `tol`.
 
@@ -89,7 +89,8 @@ algorithms.
 ```
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
-#  Create data for testing the case k=1, m>1 #
+
+####  Create data for testing the case k=1, m>1
 # `t` is the number of samples,
 # `m` is the number of datasets,
 # `n` is the number of variables,
@@ -105,30 +106,53 @@ function getData(t, m, n, noise)
     return 𝐗
 end
 
+function getData(::Type{Complex{T}}, t, m, n, noise) where {T<:AbstractFloat}
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(ComplexF64, n) for i=1:m] # random orthogonal matrices
+    X=randn(ComplexF64, n, t)  # data common to all subjects
+    # each subject has this common part plus a random part
+    𝐗=[𝐕[i]'*((1-noise)*X + noise*randn(ComplexF64, n, t)) for i=1:m]
+    return 𝐗
+end
+
+
+# REAL data: check that for the case m=2 gMCA gives the same result as MCA
 t, m, n, noise = 20, 2, 6, 0.1
 Xset=getData(t, m, n, noise)
 Cx=(Xset[1]*Xset[1]')/t
 Cy=(Xset[2]*Xset[2]')/t
 Cxy=(Xset[1]*Xset[2]')/t
 
-# check that for the case m=2 GMCA gives the same result as MCA
 gm=gmca(Xset; simple=true)
-
 m=mca(Cxy; simple=true)
 
 @test (m.F[1]'*Cxy*m.F[2]) ≈ (gm.F[1]'*Cxy*gm.F[2])
 # the following must be the identity matrix out of a possible sign ambiguity
 @test abs.(m.F[1]'*gm.F[1]) ≈ I
 @test abs.(m.F[2]'*gm.F[2]) ≈ I
-```
 
-**case m>2**
+# COMPLEX data: check that for the case m=2 gMCA gives the same result as MCA
+t, m, n, noise = 20, 2, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+Ccx=(Xcset[1]*Xcset[1]')/t
+Ccy=(Xcset[2]*Xcset[2]')/t
+Ccxy=(Xcset[1]*Xcset[2]')/t
 
-```
+gmc=gmca(Xcset; simple=true)
+mc=mca(Ccxy; simple=true)
+
+# for complex data just do a sanity check as the order of vectors
+# is arbitrary
+@test spForm(mc.F[1]'gmc.F[1])<0.01
+@test spForm(mc.F[2]'gmc.F[2])<0.01
+
+
+# REAL data: m>2 case
 t, m, n, noise = 20, 4, 6, 0.1
 Xset=getData(t, m, n, noise)
 
-# gmca selecting subspace dimension allowing an explained variance = 0.9
+# ... selecting subspace dimension allowing an explained variance = 0.9
 gm=gmca(Xset, eVar=0.9)
 
 # name of the filter
@@ -141,6 +165,7 @@ using Plots
 # plot regularized accumulated eigenvalues
 plot(gm.arev)
 
+
 # plot the original cross-covariance matrices and the rotated
 # cross-covariance matrices
 
@@ -151,6 +176,7 @@ function _rotate_crossCov(𝐔, 𝒞, m, k)
     return 𝒮
 end
 
+
 # Put all cross-covariances in a single matrix of dimension m*n x m*n for visualization
 function 𝒞2Mat(𝒞::AbstractArray, m, k)
     n=size(𝒞[1, 1, 1], 1)
@@ -159,14 +185,15 @@ function 𝒞2Mat(𝒞::AbstractArray, m, k)
     return C
 end
 
-C=𝒞2Mat(𝒞, m, 1)
+ C=𝒞2Mat(𝒞, m, 1)
  Cmax=maximum(abs.(C));
- h1 = heatmap(C, clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all (mxm) cross-covariances")
+ h1 = heatmap(C, clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-covariances")
  𝒮=_rotate_crossCov(gm.F, 𝒞, m, 1)
  S=𝒞2Mat(𝒮, m, 1)
  Smax=maximum(abs.(S));
  h2 = heatmap(S, clim=(0, Smax), yflip=true, c=:amp, title="all rotated cross-covariances")
  📈=plot(h1, h2, size=(700,300))
+# savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FiggMCA.png")
 
 ```
 
@@ -176,6 +203,15 @@ C=𝒞2Mat(𝒞, m, 1)
  *strip-diagonal* form, that is, each block ``F_i^T\\frac{1}{T}(X_iX_j^T)F_j``,
  for ``i,j∈[1,...,m]``, is approximately diagonal. Each block is ``5⋅5`` because
  setting `eVar=0.9` the subspace dimension has been set to 5.
+
+```
+# COMPLEX data: m>2 case
+t, m, n, noise = 20, 4, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+gmc=gmca(Xcset, eVar=0.9)
+```
 
 """
 function gmca(𝐗::VecMat;
@@ -187,7 +223,7 @@ function gmca(𝐗::VecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 1000,
+          maxiter   :: Int       = 2000,
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
@@ -229,7 +265,7 @@ function gcca(𝐗::VecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 1000,
+          maxiter   :: Int       = 2000,
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
@@ -314,13 +350,23 @@ function getData(t, m, n, noise)
     return 𝐗
 end
 
+function getData(::Type{Complex{T}}, t, m, n, noise) where {T<:AbstractFloat}
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(ComplexF64, n) for i=1:m] # random orthogonal matrices
+    X=randn(ComplexF64, n, t)  # data common to all subjects
+    # each subject has this common part plus a random part
+    𝐗=[𝐕[i]'*((1-noise)*X + noise*randn(ComplexF64, n, t)) for i=1:m]
+    return 𝐗
+end
+
+# REAL data: check that for the case m=2 gCCA gives the same result as CCA
 t, m, n, noise = 20, 2, 6, 0.1
 Xset=getData(t, m, n, noise)
 Cx=(Xset[1]*Xset[1]')/t
 Cy=(Xset[2]*Xset[2]')/t
 Cxy=(Xset[1]*Xset[2]')/t
 
-# check that for the case m=2 GCCA gives the same result as CCA
 gc=gcca(Xset; simple=true)
 
 c=cca(Hermitian(Cx), Hermitian(Cy), Cxy; simple=true)
@@ -330,11 +376,31 @@ c=cca(Hermitian(Cx), Hermitian(Cy), Cxy; simple=true)
 @test gc.F[2]'*Cy*gc.F[2]≈I
 D=gc.F[1]'*Cxy*gc.F[2]
 @test norm(D-Diagonal(D))+1≈1.
-```
 
-**case m>2**
 
-```
+# COMPLEX data: check that for the case m=2 gCCA gives the same result as CCA
+t, m, n, noise = 20, 2, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+Ccx=(Xcset[1]*Xcset[1]')/t
+Ccy=(Xcset[2]*Xcset[2]')/t
+Ccxy=(Xcset[1]*Xcset[2]')/t
+
+gcc=gcca(Xcset; simple=true)
+cc=cca(Hermitian(Ccx), Hermitian(Ccy), Ccxy; simple=true)
+
+# for complex data just do a sanity check as the order of vectors
+# is arbitrary. The following two tests currently fail
+# @test spForm(cc.F[1]'gcc.F[1])<0.001
+# @test spForm(cc.F[2]'gcc.F[2])<0.001
+
+@test gcc.F[1]'*Ccx*gcc.F[1]≈I
+@test gcc.F[2]'*Ccy*gcc.F[2]≈I
+# sanity check only as there is noise in the complex case
+D=gcc.F[1]'*Ccxy*gcc.F[2]
+@test norm(D-Diagonal(D))/(n^2-n)<0.001
+
+
+# REAL data: m>2 case
 t, m, n, noise = 20, 4, 6, 0.1
 Xset=getData(t, m, n, noise)
 
@@ -351,6 +417,7 @@ using Plots
 # plot regularized accumulated eigenvalues
 plot(gc.arev)
 
+
 # plot the original cross-covariance matrices and the rotated
 # cross-covariance matrices
 
@@ -360,6 +427,7 @@ function _rotate_crossCov(𝐔, 𝒞, m, k)
     @inbounds for l=1:k, i=1:m, j=1:m 𝒮[l, i, j]=𝐔[i]'*𝒞[l, i, j]*𝐔[j] end
     return 𝒮
 end
+
 
 # Put all cross-covariances in a single matrix of dimension m*n x m*n for visualization
 function 𝒞2Mat(𝒞::AbstractArray, m, k)
@@ -376,6 +444,8 @@ end
  S=𝒞2Mat(𝒮, m, 1)
  h2 = heatmap(S, clim=(0, 1), yflip=true, c=:amp, title="all rotated cross-covariances")
  📈=plot(h1, h2, size=(700,300))
+# savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FiggCCA.png")
+
 ```
 
   ![Figure gCCA](assets/FiggCCA.png)
@@ -387,6 +457,15 @@ end
   The solution is similar to the [gMCA](@ref), but here the diagonal
   of the rotated block matrix is the identity.
 
+```
+# COMPLEX data: m>2 case
+t, m, n, noise = 20, 4, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+gcc=gcca(Xcset, eVar=0.9)
+```
+
 """
 function gcca(𝐗::VecMat;
               covEst     :: StatsBase.CovarianceEstimator = SCM,
@@ -396,7 +475,7 @@ function gcca(𝐗::VecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 1000,
+          maxiter   :: Int       = 2000,
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,

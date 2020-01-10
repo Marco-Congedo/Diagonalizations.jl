@@ -17,13 +17,23 @@ function getData(t, m, n, noise)
     return 𝐗
 end
 
+function getData(::Type{Complex{T}}, t, m, n, noise) where {T<:AbstractFloat}
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(ComplexF64, n) for i=1:m] # random orthogonal matrices
+    X=randn(ComplexF64, n, t)  # data common to all subjects
+    # each subject has this common part plus a random part
+    𝐗=[𝐕[i]'*((1-noise)*X + noise*randn(ComplexF64, n, t)) for i=1:m]
+    return 𝐗
+end
+
+# REAL data: check that for the case m=2 gCCA gives the same result as CCA
 t, m, n, noise = 20, 2, 6, 0.1
 Xset=getData(t, m, n, noise)
 Cx=(Xset[1]*Xset[1]')/t
 Cy=(Xset[2]*Xset[2]')/t
 Cxy=(Xset[1]*Xset[2]')/t
 
-# check that for the case m=2 GCCA gives the same result as CCA
 gc=gcca(Xset; simple=true)
 
 c=cca(Hermitian(Cx), Hermitian(Cy), Cxy; simple=true)
@@ -35,7 +45,29 @@ D=gc.F[1]'*Cxy*gc.F[2]
 @test norm(D-Diagonal(D))+1≈1.
 
 
-# m>2 case
+# COMPLEX data: check that for the case m=2 gCCA gives the same result as CCA
+t, m, n, noise = 20, 2, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+Ccx=(Xcset[1]*Xcset[1]')/t
+Ccy=(Xcset[2]*Xcset[2]')/t
+Ccxy=(Xcset[1]*Xcset[2]')/t
+
+gcc=gcca(Xcset; simple=true, maxiter=10000)
+cc=cca(Hermitian(Ccx), Hermitian(Ccy), Ccxy; simple=true)
+
+# for complex data just do a sanity check as the order of vectors
+# is arbitrary. The following two tests currently fail
+# @test spForm(cc.F[1]'gcc.F[1])<0.001
+# @test spForm(cc.F[2]'gcc.F[2])<0.001
+
+@test gcc.F[1]'*Ccx*gcc.F[1]≈I
+@test gcc.F[2]'*Ccy*gcc.F[2]≈I
+# sanity check only as there is noise in the complex case
+D=gcc.F[1]'*Ccxy*gcc.F[2]
+@test norm(D-Diagonal(D))/(n^2-n)<0.001
+
+
+# REAL data: m>2 case
 t, m, n, noise = 20, 4, 6, 0.1
 Xset=getData(t, m, n, noise)
 
@@ -80,3 +112,10 @@ end
  h2 = heatmap(S, clim=(0, 1), yflip=true, c=:amp, title="all rotated cross-covariances")
  📈=plot(h1, h2, size=(700,300))
 # savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FiggCCA.png")
+
+# COMPLEX data: m>2 case
+t, m, n, noise = 20, 4, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+gcc=gcca(Xcset, eVar=0.9)

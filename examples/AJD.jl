@@ -39,9 +39,10 @@ a=ajd(Cset2; algorithm=:OJoB)
 # the ajd must be equivalent to the eigenvector matrix of any of the matrices in Cset
 @test spForm(a.F'*eigvecs(Cset2[1]))+1. ≈ 1.0
 
-# the same thing using the NoJoB algorithm
+# the same thing using the NoJoB algorithm. Here we just do a sanity check
+# as the NoJoB solution is not constrained in the orthogonal group
 a=ajd(Cset2; algorithm=:NoJoB)
-@test spForm(a.F'*eigvecs(Cset2[1]))+1. ≈ 1.0
+@test spForm(a.F'*eigvecs(Cset2[1]))<0.01
 
 
 # create 20 COMPLEX random commuting matrices
@@ -55,9 +56,10 @@ ac=ajd(Ccset2; algorithm=:OJoB)
 # just a sanity check as rounding errors appears for complex data
 @test spForm(ac.F'*eigvecs(Ccset2[1]))<0.001
 
-# the same thing using the NoJoB algorithm
+# the same thing using the NoJoB algorithm. Here we just do a sanity check
+# as the NoJoB solution is not constrained in the orthogonal group
 ac=ajd(Ccset2; algorithm=:NoJoB)
-@test spForm(ac.F'*eigvecs(Ccset2[1]))<0.001
+@test spForm(ac.F'*eigvecs(Ccset2[1]))<0.01
 
 # REAL data:
 # normalize the trace of input matrices,

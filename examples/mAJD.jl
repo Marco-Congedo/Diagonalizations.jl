@@ -18,16 +18,32 @@ function getData(t, m, k, n, noise)
     return 𝐗, 𝐕
 end
 
+function getData(::Type{Complex{T}}, t, m, k, n, noise) where {T<:AbstractFloat}
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(ComplexF64, n) for i=1:m] # random orthogonal matrices
+    # variables common to all subjects with unique variance profile across k
+    X=[(abs2.(randn(n))).*randn(ComplexF64, n, t) for s=1:k]
+    # each subject has this common part plus a random part
+    𝐗=[[𝐕[i]*((1-noise)*X[s] + noise*randn(ComplexF64, n, t)) for i=1:m] for s=1:k]
+    return 𝐗, 𝐕
+end
+
+
+# REAL data
 # do joint blind source separation of non-stationary data
-t, m, n, k, noise = 200, 5, 4, 6, 0.4
+t, m, n, k, noise = 200, 5, 4, 6, 0.1
 Xset, Vset=getData(t, m, k, n, noise)
 𝒞=Array{Matrix}(undef, k, m, m)
 for s=1:k, i=1:m, j=1:m 𝒞[s, i, j]=(Xset[s][i]*Xset[s][j]')/t end
 
-
 aX=majd(Xset; fullModel=true, algorithm=:OJoB)
 # the spForm index of the estimated demixing matrices times the true
 # mixing matrix must be low
+@test mean(spForm(aX.F[i]'*Vset[i]) for i=1:m)<0.1
+
+# test the same using NoJoB algorithm
+aX=majd(Xset; fullModel=true, algorithm=:NoJoB)
 @test mean(spForm(aX.F[i]'*Vset[i]) for i=1:m)<0.1
 
 # plot the original cross-covariance matrices and the rotated
@@ -73,3 +89,19 @@ Cset=[𝒞2Mat(𝒞, m, s) for s=1:k]
  h16 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-cov, k=6")
  📉=plot(h11, h12, h13, h14, h15, h16, size=(1200,550))
 # savefig(📉, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigmAJD2.png")
+
+# COMPLEX data
+# do joint blind source separation of non-stationary data
+t, m, n, k, noise = 200, 5, 4, 6, 0.1
+Xcset, Vcset=getData(ComplexF64, t, m, k, n, noise)
+𝒞=Array{Matrix}(undef, k, m, m)
+for s=1:k, i=1:m, j=1:m 𝒞[s, i, j]=(Xcset[s][i]*Xcset[s][j]')/t end
+
+aXc=majd(Xcset; fullModel=true, algorithm=:OJoB)
+# the spForm index of the estimated demixing matrices times the true
+# mixing matrix must be low
+@test mean(spForm(aXc.F[i]'*Vcset[i]) for i=1:m)<0.1
+
+# test the same using NoJoB algorithm
+aXc=majd(Xcset; fullModel=true, algorithm=:NoJoB)
+@test mean(spForm(aXc.F[i]'*Vcset[i]) for i=1:m)<0.1

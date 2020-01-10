@@ -19,7 +19,7 @@ function ajd(𝐂::ℍVector;
           sort      :: Bool   = true,
           init      :: Mato   = ○,
           tol       :: Real   = 0.,
-          maxiter   :: Int    = 1000,
+          maxiter   :: Int    = 2000,
           verbose   :: Bool   = false,
         eVar     :: TeVaro    = _minDim(𝐂),
         eVarC    :: TeVaro    = ○,
@@ -38,7 +38,7 @@ function ajd(𝐗::VecMat;
        sort      :: Bool = true,
        init      :: Mato = ○,
        tol       :: Real = 0.,
-       maxiter   :: Int  = 1000,
+       maxiter   :: Int  = 2000,
        verbose   :: Bool = false,
      eVar     :: TeVaro    = _minDim(𝐗),
      eVarC    :: TeVaro    = ○,
@@ -99,7 +99,7 @@ about half the significant digits. If the solving algorithm encounter difficulti
 try setting `tol` in between 1e-6 and 1e-3.
 
 `maxiter` is the maximum number of iterations allowed to the solving
-algorithm (1000 by default). If this maximum number of iteration
+algorithm (2000 by default). If this maximum number of iteration
 is attained, a warning will be printed in the REPL. In this case,
 try increasing `maxiter` and/or `tol`.
 
@@ -178,9 +178,10 @@ a=ajd(Cset2; algorithm=:OJoB)
 # the ajd must be equivalent to the eigenvector matrix of any of the matrices in Cset
 @test spForm(a.F'*eigvecs(Cset2[1]))+1. ≈ 1.0
 
-# the same thing using the NoJoB algorithm
+# the same thing using the NoJoB algorithm. Here we just do a sanity check
+# as the NoJoB solution is not constrained in the orthogonal group
 a=ajd(Cset2; algorithm=:NoJoB)
-@test spForm(a.F'*eigvecs(Cset2[1]))+1. ≈ 1.0
+@test spForm(a.F'*eigvecs(Cset2[1]))<0.01
 
 
 # create 20 COMPLEX random commuting matrices
@@ -194,9 +195,10 @@ ac=ajd(Ccset2; algorithm=:OJoB)
 # just a sanity check as rounding errors appears for complex data
 @test spForm(ac.F'*eigvecs(Ccset2[1]))<0.001
 
-# the same thing using the NoJoB algorithm
+# the same thing using the NoJoB algorithm. Here we just do a sanity check
+# as the NoJoB solution is not constrained in the orthogonal group
 ac=ajd(Ccset2; algorithm=:NoJoB)
-@test spForm(ac.F'*eigvecs(Ccset2[1]))<0.001
+@test spForm(ac.F'*eigvecs(Ccset2[1]))<0.01
 
 # REAL data:
 # normalize the trace of input matrices,
@@ -226,6 +228,7 @@ Dset=[a.F'*C*a.F for C ∈ Cset];
  h8 = heatmap(Dset[4], clim=(-DMax, DMax), title="F'*C4*F", yflip=true, c=:bluesreds);
  📉=plot(h5, h6, h7, h8, size=(700,400))
 # savefig(📉, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigAJD2.png")
+
 ```
 
  ![Figure AJD1](assets/FigAJD1.png)
@@ -233,7 +236,6 @@ Dset=[a.F'*C*a.F for C ∈ Cset];
  ![Figure AJD2](assets/FigAJD2.png)
 
 ```
-
 # COMPLEX data:
 # normalize the trace of input matrices,
 # give them weights according to the `nonDiagonality` function
@@ -258,7 +260,7 @@ function ajd(𝐂::ℍVector;
           sort      :: Bool   = true,
           init      :: Mato   = ○,
           tol       :: Real   = 1e-06,
-          maxiter   :: Int    = 1000,
+          maxiter   :: Int    = 2000,
           verbose   :: Bool   = false,
         eVar     :: TeVaro    = _minDim(𝐂),
         eVarC    :: TeVaro    = ○,
@@ -306,7 +308,7 @@ function ajd(𝐗::VecMat;
        sort      :: Bool   = true,
        init      :: Mato   = ○,
        tol       :: Real   = 1e-06,
-       maxiter   :: Int    = 1000,
+       maxiter   :: Int    = 2000,
        verbose   :: Bool   = false,
      eVar     :: TeVaro   = _minDim(𝐗),
      eVarC    :: TeVaro   = ○,
@@ -356,7 +358,7 @@ function majd(𝑿::VecVecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 1000,
+          maxiter   :: Int       = 2000,
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝑿),
         eVarC    :: TeVaro   = ○,
@@ -410,7 +412,7 @@ digits. If the solving algorithm encounter difficulties in converging,
 try setting `tol` in between 1e-6 and 1e-3.
 
 `maxiter` is the maximum number of iterations allowed to the solving
-algorithm (1000 by default). If this maximum number of iteration
+algorithm (2000 by default). If this maximum number of iteration
 is attained, a warning will be printed in the REPL. In this case,
 try increasing `maxiter` and/or `tol`.
 
@@ -458,8 +460,21 @@ function getData(t, m, k, n, noise)
     return 𝐗, 𝐕
 end
 
+function getData(::Type{Complex{T}}, t, m, k, n, noise) where {T<:AbstractFloat}
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(ComplexF64, n) for i=1:m] # random orthogonal matrices
+    # variables common to all subjects with unique variance profile across k
+    X=[(abs2.(randn(n))).*randn(ComplexF64, n, t) for s=1:k]
+    # each subject has this common part plus a random part
+    𝐗=[[𝐕[i]*((1-noise)*X[s] + noise*randn(ComplexF64, n, t)) for i=1:m] for s=1:k]
+    return 𝐗, 𝐕
+end
+
+
+# REAL data
 # do joint blind source separation of non-stationary data
-t, m, n, k, noise = 200, 5, 4, 6, 0.4
+t, m, n, k, noise = 200, 5, 4, 6, 0.1
 Xset, Vset=getData(t, m, k, n, noise)
 𝒞=Array{Matrix}(undef, k, m, m)
 for s=1:k, i=1:m, j=1:m 𝒞[s, i, j]=(Xset[s][i]*Xset[s][j]')/t end
@@ -467,6 +482,10 @@ for s=1:k, i=1:m, j=1:m 𝒞[s, i, j]=(Xset[s][i]*Xset[s][j]')/t end
 aX=majd(Xset; fullModel=true, algorithm=:OJoB)
 # the spForm index of the estimated demixing matrices times the true
 # mixing matrix must be low
+@test mean(spForm(aX.F[i]'*Vset[i]) for i=1:m)<0.1
+
+# test the same using NoJoB algorithm
+aX=majd(Xset; fullModel=true, algorithm=:NoJoB)
 @test mean(spForm(aX.F[i]'*Vset[i]) for i=1:m)<0.1
 
 # plot the original cross-covariance matrices and the rotated
@@ -492,25 +511,25 @@ using Plots
 
 Cset=[𝒞2Mat(𝒞, m, s) for s=1:k]
  Cmax=maximum(maximum(abs.(C)) for C ∈ Cset)
- h1 = heatmap(Cset[1], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-covariances, k=1")
- h2 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-covariances, k=2")
- h3 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-covariances, k=3")
- h4 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-covariances, k=4")
- h5 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-covariances, k=5")
- h6 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-covariances, k=6")
- 📈=plot(h1, h2, h3, h4, h5, h6, size=(1000,400))
+ h1 = heatmap(Cset[1], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-cov, k=1")
+ h2 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-cov, k=2")
+ h3 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-cov, k=3")
+ h4 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-cov, k=4")
+ h5 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-cov, k=5")
+ h6 = heatmap(Cset[2], clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title="all cross-cov, k=6")
+ 📈=plot(h1, h2, h3, h4, h5, h6, size=(1200,550))
 # savefig(📈, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigmAJD1.png")
 
 𝒮=_rotate_crossCov(aX.F, 𝒞, m, k)
  Sset=[𝒞2Mat(𝒮, m, s) for s=1:k]
  Smax=maximum(maximum(abs.(S)) for S ∈ Sset)
- h11 = heatmap(Sset[1], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-covariances, k=1")
- h12 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-covariances, k=2")
- h13 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-covariances, k=3")
- h14 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-covariances, k=4")
- h15 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-covariances, k=5")
- h16 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-covariances, k=6")
- 📉=plot(h11, h12, h13, h14, h15, h16, size=(1000,400))
+ h11 = heatmap(Sset[1], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-cov, k=1")
+ h12 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-cov, k=2")
+ h13 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-cov, k=3")
+ h14 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-cov, k=4")
+ h15 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-cov, k=5")
+ h16 = heatmap(Sset[2], clim=(-Smax, Smax), yflip=true, c=:bluesreds, title="rotated cross-cov, k=6")
+ 📉=plot(h11, h12, h13, h14, h15, h16, size=(1200,550))
 # savefig(📉, homedir()*"\\Documents\\Code\\julia\\Diagonalizations\\docs\\src\\assets\\FigmAJD2.png")
 
 ```
@@ -523,6 +542,24 @@ expected *strip-diagonal* form, that is, each block
 ``F_i^T\\frac{1}{T}(X_{li}X_{lj}^T)F_j``,
 for ``l∈[1,...,k]``, ``i,j∈[1,...,m]``, is approximately diagonal.
 
+```
+# COMPLEX data
+# do joint blind source separation of non-stationary data
+t, m, n, k, noise = 200, 5, 4, 6, 0.1
+Xcset, Vcset=getData(ComplexF64, t, m, k, n, noise)
+𝒞=Array{Matrix}(undef, k, m, m)
+for s=1:k, i=1:m, j=1:m 𝒞[s, i, j]=(Xcset[s][i]*Xcset[s][j]')/t end
+
+aXc=majd(Xcset; fullModel=true, algorithm=:OJoB)
+# the spForm index of the estimated demixing matrices times the true
+# mixing matrix must be low
+@test mean(spForm(aXc.F[i]'*Vcset[i]) for i=1:m)<0.1
+
+# test the same using NoJoB algorithm
+aXc=majd(Xcset; fullModel=true, algorithm=:NoJoB)
+@test mean(spForm(aXc.F[i]'*Vcset[i]) for i=1:m)<0.1
+```
+
 """
 function majd(𝑿::VecVecMat;
               covEst     :: StatsBase.CovarianceEstimator = SCM,
@@ -534,7 +571,7 @@ function majd(𝑿::VecVecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 1000,
+          maxiter   :: Int       = 2000,
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝑿),
         eVarC    :: TeVaro   = ○,
