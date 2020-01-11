@@ -43,8 +43,8 @@ c=cstp(Xset; eVar=0.9)
 # ... giving weights `w` to the covariance matrices
 c=cstp(Xset; w=abs2.(randn(k)), eVar=0.9)
 
-# ... subtracting the mean
-c=cstp(Xset; meanX=nothing, w=abs2.(randn(k)), eVar=0.9)
+# ... subtracting the means
+c=cstp(Xset; meanXd₁=nothing, meanXd₂=nothing, w=abs2.(randn(k)), eVar=0.9)
 
 # explained variance
 c.eVar

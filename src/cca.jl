@@ -1,7 +1,7 @@
 #   Unit "cca.jl" of the Diagonalization.jl Package for Julia language
 #
 #   MIT License
-#   Copyright (c) 2019,
+#   Copyright (c) 2019, 2020
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 
@@ -228,8 +228,8 @@ function mca(X::Mat, Y::Mat;
           eVarMeth :: Function = searchsortedfirst,
           simple   :: Bool = false)
 
-   if dims===○ dims=_set_dims(X, Y) end
-   _check_data(X, Y, dims, meanX, meanY, wXY)===○ && return
+   dims===○ && (dims=_set_dims(X, Y))
+   _check_data(X, Y, dims, SCM, meanX, meanY, wXY)===○ && return
 
    return mca(_cov(X, Y, dims, meanX, meanY, wXY);
               eVar=eVar, eVarMeth=eVarMeth, simple=simple)
@@ -244,7 +244,8 @@ function mca(𝐗::VecMat, 𝐘::VecMat;
           eVarMeth :: Function = searchsortedfirst,
           simple   :: Bool = false)
 
-   if dims===○ dims=_set_dims(𝐗, 𝐘) end
+   dims===○ && (dims=_set_dims(𝐗, 𝐘))
+   _check_data(𝐗, 𝐘, dims, SCM, meanX, meanY, ○)===○ && return
 
    𝐂=_cov(𝐗, 𝐘; dims=dims, meanX=meanX, meanY=meanY)
 
@@ -528,8 +529,6 @@ function cca(Cx :: SorH, Cy :: SorH, Cxy :: Mat;
 end
 
 
-
-
 function cca(X::Mat, Y::Mat;
              covEst   :: StatsBase.CovarianceEstimator=SCM,
              dims     :: Into = ○,
@@ -544,8 +543,8 @@ function cca(X::Mat, Y::Mat;
           eVarMeth :: Function = searchsortedfirst,
           simple   :: Bool = false)
 
-   if dims===○ dims=_set_dims(X, Y) end
-   _check_data(X, Y, dims, meanX, meanY, wXY)===○ && return
+   dims===○ && (dims=_set_dims(X, Y))
+   _check_data(X, Y, dims, covEst, meanX, meanY, wXY)===○ && return
 
    cca(_cov(X, covEst, dims, meanX, wX),
        _cov(Y, covEst, dims, meanY, wY),
@@ -575,7 +574,8 @@ function cca(𝐗::VecMat, 𝐘::VecMat;
        verbose  :: Bool = false)
 
    Metric==VonNeumann && throw(ArgumentError(📌*", cca function: A solution for the mean is not available for the Von Neumann metric. Use another metric as `metric` argument"))
-   if dims===○ dims=_set_dims(𝐗, 𝐘) end
+   dims===○ && (dims=_set_dims(𝐗, 𝐘))
+   _check_data(𝐗, 𝐘, dims, covEst, meanX, meanY, ○)===○ && return
 
    𝐂x= _cov(𝐗; covEst=covEst, dims = dims, meanX = meanX)
    𝐂y= _cov(𝐘; covEst=covEst, dims = dims, meanX = meanX)

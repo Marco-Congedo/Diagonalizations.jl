@@ -1,8 +1,8 @@
 #   Main Module of the Diagonalization.jl Package for Julia language
-#   v 0.1.0 - last update 1st of January 2020
+#   v 0.1.3 - last update 11th of January 2020
 
 #   MIT License
-#   Copyright (c) 2019,
+#   Copyright (c) 2019, 2020
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 
@@ -76,6 +76,7 @@ Stringo    = Union{String, Nothing}
 Tmean      = Union{Int64, AbstractVector, AbstractMatrix, Nothing}
 Into       = Union{Int64, Nothing}
 Tw         = Union{StatsBase.AbstractWeights, Nothing}
+Twf        = Union{Tw, Function}
 TeVar      = Union{Float64, Int64}
 TeVaro     = Union{TeVar, Nothing}
 
