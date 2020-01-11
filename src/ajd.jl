@@ -1,7 +1,7 @@
 #   Unit "ajd.jl" of the Diagonalization.jl Package for Julia language
 #
 #   MIT License
-#   Copyright (c) 2019,
+#   Copyright (c) 2019, 2020
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 
@@ -32,7 +32,7 @@ function ajd(𝐗::VecMat;
              dims       :: Into = ○,
              meanX      :: Into = 0,
           trace1     :: Bool = false,
-          w          :: Union{Tw, Function} = ○,
+          w          :: Twf  = ○,
        algorithm :: Symbol = :NoJoB,
        preWhite  :: Bool = false,
        sort      :: Bool = true,
@@ -302,7 +302,7 @@ function ajd(𝐗::VecMat;
              dims       :: Into = ○,
              meanX      :: Into = 0,
           trace1     :: Bool = false,
-          w          :: Union{Tw, Function} = ○,
+          w          :: Twf  = ○,
        algorithm :: Symbol = :NoJoB,
        preWhite  :: Bool   = false,
        sort      :: Bool   = true,
@@ -315,7 +315,8 @@ function ajd(𝐗::VecMat;
      eVarMeth :: Function = searchsortedfirst,
      simple   :: Bool     = false)
 
-   if dims===○ dims=_set_dims(𝐗) end
+   dims===○ && (dims=_set_dims(𝐗))
+   _check_data(𝐗, dims, covEst, meanX, w)===○ && return
    (n, t)=dims==1 ? reverse(size(𝐗[1])) : size(𝐗[1])
    args=("Approximate Joint Diagonalization", false)
 
@@ -579,9 +580,9 @@ function majd(𝑿::VecVecMat;
         simple   :: Bool     = false)
 
    if dims===○ dims=_set_dims(𝑿) end
+   #TODO _check_data(𝑿, dims, covEst, meanX, ○)===○ && return
    (n, t)=dims==1 ? reverse(size(𝑿[1][1])) : size(𝑿[1][1])
-   k=length(𝑿)
-   m=length(𝑿[1])
+   k, m=length(𝑿), length(𝑿[1])
    args=("Multiple Approximate Joint Diagonalization", false)
 
    if algorithm ∈(:OJoB, :NoJoB)

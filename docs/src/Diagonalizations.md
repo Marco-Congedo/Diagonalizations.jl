@@ -150,7 +150,7 @@ Some methods take as input a vector of Hermitian matrices,
 of type [ℍVector](https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#%E2%84%8DVector-type-1),
 see [typecasting matrices](https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#typecasting-matrices-1).
 
-Using data matrices as input, shrinked covariance
+Using **real data matrices** as input, shrinked covariance
 matrix estimators can be used for several filters
 (e.g., [PCA](@ref), [Whitening](@ref), [CSP](@ref), [CSTP](@ref)).
 See here below.
@@ -168,8 +168,7 @@ Covariance matrices can be computed along a specific dimension
 using optional keyword argument `dims`,
 as in [StatsBase](https://github.com/JuliaStats/StatsBase.jl).
 
-Many filter constructors allow to use *shrinked* covariance matrix
-estimations by means of the
+Many filter constructors allow to use *shrinked* covariance matrix estimations (only for real data) by means of the
 [CovarianceEstimation](https://github.com/mateuszbaran/CovarianceEstimation.jl)
 package.   
 The following constants are provided to allow quick access
@@ -238,13 +237,19 @@ the mean ad weights of the several input data matrices.
 ```
 using Diagonalizations
 
-X=randn(100, 30) # X is 'tall', the default format
+X=randn(100, 30) # X is 'tall'
 p=pca(X)
 ```
 
 The call here above uses the default SCM estimator and computes the PCA
 from the ``30⋅30`` covariance matrix ``\frac{1}{100}X^{T}X``.
-The 'filter' `p.F` is ``30⋅p``, where ``p`` is the [subspace dimension](@ref).
+The 'filter' `p.F` is ``30⋅p``, where ``p`` is the [subspace dimension](@ref). For complex data the call is the same:
+
+```
+Xc=randn(ComplexF64, 100, 30)
+pc=pca(Xc)
+```
+
 
 This call
 

@@ -1,7 +1,7 @@
 #   Unit "tools.jl" of the Diagonalization.jl Package for Julia language
 #
 #   MIT License
-#   Copyright (c) 2019,
+#   Copyright (c) 2019, 2020
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 
@@ -220,9 +220,11 @@ function _deMean(X::Mat, dims::Int, meanX::Tmean)
 end
 
 # check arguments for one data matrix input
-function _check_data(X::Mat, dims::Int64, meanX::Tmean, wX::Tw)
+function _check_data(X::Mat, dims::Int64, covEst::StatsBase.CovarianceEstimator, meanX::Tmean, wX::Tw)
    dims ∈ (1, 2) || throw(ArgumentError(📌*", _check-data internal function: Argument `dims` may be 1 or 2. dims=$dims"))
    wX≠○ && lenght(wX)≠size(X, dims) && throw(ArgumentError(📌*", _check-data internal function: The size of `wX` does not fit input matrix `X` with `dims`=$dims"))
+   eltype(X)<:Complex && covEst≠SCM && throw(ArgumentError(📌*", _check-data internal function: Only the `SCM` (sample covariance matrix) `covEst` estimator can be used for complex data"))
+   # TODO add check for meanX
    ishermitian(X) && throw(ArgumentError(📌*", _check-data internal function: it looks like
    you want to call a filter constuctor that takes covariance matrices as input,
    but you are actually calling the constructor that takes data matrices as input.
@@ -232,14 +234,40 @@ function _check_data(X::Mat, dims::Int64, meanX::Tmean, wX::Tw)
 end
 
 # check arguments for two data matrices input
-function _check_data(X::Mat, Y::Mat, dims::Int64, meanX::Tmean, meanY::Tmean, wXY::Tw)
+function _check_data(X::Mat, Y::Mat, dims::Int64, covEst::StatsBase.CovarianceEstimator, meanX::Tmean, meanY::Tmean, wXY::Tw)
    dims ∈ (1, 2) || throw(ArgumentError(📌*", _check-data internal function: Argument `dims` may be 1 or 2. dims=$dims"))
    size(X, dims)==size(Y, dims) || throw(ArgumentError(📌*", _check-data internal function: The `dims` dimension of argument `X` and `Y` must be the same"))
    wXY≠○ && lenght(wXY)≠size(X, dims) && throw(ArgumentError(📌*", _check-data internal function: The size of `wXY` does not fit input matrix `X` with `dims`=$dims"))
-   # Since cross-covariance is not implemented in StatsBase.jl, we subtract the means here
+   (eltype(X)<:Complex || eltype(Y)<:Complex) && covEst≠SCM && throw(ArgumentError(📌*", _check-data internal function: Only the `SCM` (sample covariance matrix) `covEst` estimator can be used for complex data"))
+   # TODO add check for meanX and meanY
    return true
 end
 
+
+# check arguments for one vector of data matrix input
+function _check_data(𝐗::VecMat, dims::Int64, covEst::StatsBase.CovarianceEstimator, meanX::Into, w::Twf)
+   dims ∈ (1, 2) || throw(ArgumentError(📌*", _check-data internal function: Argument `dims` may be 1 or 2. dims=$dims"))
+   x=collect(size(X, _flip12(dims)) for X ∈ 𝐗)
+   all(y->y==x[1], x) ||  throw(ArgumentError(📌*", _check-data internal function: Given `dims`=$dims, all matrices in `𝐗` must have the same dimension $(_flip12(dims))"))
+   w≠○ && !(w isa Function) && lenght(w)≠length(𝐗) && throw(ArgumentError(📌*", _check-data internal function: The size of `w` must be equal to the number of matrices in `𝐗`"))
+   !isempty(findall(x->eltype(x)<:Complex, 𝐗)) && covEst≠SCM && throw(ArgumentError(📌*", _check-data internal function: Only the `SCM` (sample covariance matrix) `covEst` estimator can be used for complex data"))
+   # TODO add check for meanX
+   return true
+end
+
+# check arguments for two vectors of data matrix input
+function _check_data(𝐗::VecMat, 𝐘::VecMat, dims::Int64, covEst::StatsBase.CovarianceEstimator, meanX::Into, meanY::Into, w::Twf)
+   dims ∈ (1, 2) || throw(ArgumentError(📌*", _check-data internal function: Argument `dims` may be 1 or 2. dims=$dims"))
+   length(𝐗)==length(𝐘) || throw(ArgumentError(📌*", _check-data internal function: The number of matrices in `𝐗` and `𝐘` must be the same"))
+   x=collect(size(X, dims)-size(Y, dims) for (X, Y) ∈ (𝐗, 𝐘))
+   norm(x)==0 || throw(ArgumentError(📌*", _check-data internal function: The `dims` dimension of all pairs of matrices in `𝐗` and `𝐘` must be the same"))
+   w≠○ && !(w isa Function) && lenght(w)≠length(𝐗) && throw(ArgumentError(📌*", _check-data internal function: The size of `w` must be equal to the number of matrices in `𝐗` and `𝐘`"))
+   (!isempty(findall(x->eltype(x)<:Complex, 𝐗)) || !isempty(findall(y->eltype(y)<:Complex, 𝐘))) && covEst≠SCM && throw(ArgumentError(📌*", _check-data internal function: Only the `SCM` (sample covariance matrix) `covEst` estimator can be used for complex data"))
+   # TODO add check for meanX and meanY
+   return true
+end
+
+#TODO _check_data(𝑿::VecVecMat, dims::Int64, covEst::StatsBase.CovarianceEstimator, meanX::Into, ○)===○ && return
 
 # call StatsBase.cov within one line with or without weights
 # Also, flag the covariance as Symmetric if is real, Hermitian if is complex
@@ -268,7 +296,7 @@ function _cov(X::Matrix{R},
 end
 
 # as before for a vector of data matrices at once
-# NB!!! does not work for complex data inout as uses the above method!
+# NB!!! does not work for complex data input as uses the above method!
 function _cov(𝐗::VecMat;
               covEst   :: StatsBase.CovarianceEstimator = SCM,
               dims     :: Int64 = 1,
@@ -278,8 +306,7 @@ function _cov(𝐗::VecMat;
    # remove `Hermitian` here below and use T instead
    # _cov will automatically flag its output
    𝐂=Vector{Hermitian}(undef, length(𝐗))
-   #@threads
-   for i=1:length(𝐗)
+   @threads for i=1:length(𝐗)
                𝐂[i]=Hermitian(_cov(𝐗[i], covEst, dims, meanX, ○))
    end
    return 𝐂

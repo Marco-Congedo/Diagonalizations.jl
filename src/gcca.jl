@@ -1,7 +1,7 @@
 #   Unit "gcca.jl" of the Diagonalization.jl Package for Julia language
 #
 #   MIT License
-#   Copyright (c) 2019,
+#   Copyright (c) 2019, 2020
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 
@@ -229,7 +229,9 @@ function gmca(𝐗::VecMat;
         eVarMeth :: Function = searchsortedfirst,
         simple   :: Bool     = false)
 
-   if dims===○ dims=_set_dims(𝐗) end
+   dims===○ && (dims=_set_dims(𝐗))
+   _check_data(𝐗, 1, covEst, meanX, ○)===○ && return
+   _check_data(𝐗, 2, covEst, meanX, ○)===○ && return
    (n, t)=dims==1 ? reverse(size(𝐗[1])) : size(𝐗[1])
    m=length(𝐗)
    args=("generalized Maximum Covariance Analysis", false)
@@ -481,7 +483,9 @@ function gcca(𝐗::VecMat;
         eVarMeth :: Function = searchsortedfirst,
         simple   :: Bool     = false)
 
-   if dims===○ dims=_set_dims(𝐗) end
+   dims===○ && (dims=_set_dims(𝐗))
+   _check_data(𝐗, 1, covEst, meanX, ○)===○ && return
+   _check_data(𝐗, 2, covEst, meanX, ○)===○ && return
    (n, t)=dims==1 ? reverse(size(𝐗[1])) : size(𝐗[1])
    m=length(𝐗)
    args=("generalized Canonical Correlation Analysis", false)
@@ -494,8 +498,10 @@ function gcca(𝐗::VecMat;
                eVar=eVar, eVarMeth=eVarMeth)
    # elseif...
    else
-      if algorithm == :NoJoB @warn "The NoJoB algorithm does not suit gCCA." end
-      throw(ArgumentError(📌*", gcca constructor: invalid `algorithm` argument"))
+      if algorithm == :NoJoB
+         @warn "The NoJoB algorithm does not suit gCCA."
+         throw(ArgumentError(📌*", gcca constructor: invalid `algorithm` argument"))
+      end
    end
 
    λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)

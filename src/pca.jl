@@ -1,7 +1,7 @@
 #   Unit "pca.jl" of the Diagonalization.jl Package for Julia language
 #
 #   MIT License
-#   Copyright (c) 2019,
+#   Copyright (c) 2019, 2020
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 
@@ -224,8 +224,8 @@ function pca(X :: Mat;
           eVarMeth :: Function = searchsortedfirst,
           simple   :: Bool = false)
 
-   if dims===○ dims=_set_dims(X) end
-   _check_data(X, dims, meanX, wX)===○ && return
+   dims===○ && (dims=_set_dims(X))
+   _check_data(X, dims, covEst, meanX, wX)===○ && return
    args=("Principal Component Analysis", false)
 
    LF(_getEVD(X, covEst, dims, meanX, wX, eVar, eVarMeth, simple)..., args...)
@@ -247,7 +247,9 @@ function pca(𝐗 :: VecMat;
        verbose  :: Bool = false)
 
     Metric==VonNeumann && throw(ArgumentError(📌*", pca function: A solution for the mean is not available for the Von Neumann metric. Use another metric as `metric` argument"))
-    if dims===○ dims=_set_dims(𝐗) end
+    dims===○ && (dims=_set_dims(𝐗))
+    _check_data(𝐗, dims, covEst, meanX, ○)===○ && return
+
     𝐂=_cov(𝐗; covEst=covEst, dims = dims, meanX = meanX)
 
     pca(mean(metric, 𝐂;
@@ -477,8 +479,8 @@ function whitening(X::Mat;
                 eVarMeth :: Function = searchsortedfirst,
                 simple   :: Bool = false)
 
-   if dims===○ dims=_set_dims(X) end
-   _check_data(X, dims, meanX ,wX)===○ && return
+   dims===○ && (dims=_set_dims(X))
+   _check_data(X, dims, covEst, meanX, wX)===○ && return
    args=("Whitening", false)
 
    LF(_getWhi(X, covEst, dims, meanX, wX, eVar, eVarMeth, simple)..., args...)
@@ -500,7 +502,8 @@ function whitening(𝐗::VecMat;
              verbose  :: Bool = false)
 
    Metric==VonNeumann && throw(ArgumentError(📌*", whitening function: A solution for the mean is not available for the Von Neumann metric. Use another metric as `metric` argument"))
-   if dims===○ dims=_set_dims(𝐗) end
+   dims===○ && (dims=_set_dims(𝐗))
+   _check_data(𝐗, dims, covEst, meanX, ○)===○ && return
 
    whitening(mean(metric, _cov(𝐗; covEst=covEst, dims=dims, meanX=meanX);
                   w = w, ✓w = ✓w,
