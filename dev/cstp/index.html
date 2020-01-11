@@ -9,7 +9,8 @@ function cstp( X :: Mat, C₍₁₎ :: SorH, C₍₂₎ :: SorH;
 (2)
 function cstp( 𝐗::VecMat;
                covEst   :: StatsBase.CovarianceEstimator = SCM,
-               meanX    :: Into = 0,
+               meanXd₁  :: Into = 0,
+               meanXd₂  :: Into = 0,
             eVar     :: TeVaro = ○,
             eVarC    :: TeVaro = ○,
             eVarMeth :: Function = searchsortedfirst,
@@ -20,4 +21,98 @@ function cstp( 𝐗::VecMat;
          init1    :: SorHo = nothing,
          init2    :: SorHo = nothing,
          tol      :: Real = 0.,
-         verbose  :: Bool = false)</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object:</p><p>(1) <strong>Common spatio-temporal pattern</strong> with <span>$n⋅m$</span> mean data matrix <code>X</code>, <span>$m⋅m$</span> covariance matrices <code>C₍₁₎</code> and <span>$n⋅n$</span> covariance matrix <code>C₍₂₎</code> as input.</p><p><code>eVar</code>, <code>eVarC</code> and <code>eVarMeth</code> are keyword optional arguments for defining the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span>. Particularly:</p><ul><li><code>eVarC</code> is used for defining the subspace dimension of  the whitening step. The default is 0.999.</li><li><code>eVar</code> is the keyword optional argument for defining the  <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the <code>.arev</code> vector  given by [cstp.5]. The default is given in [cstp.6] here above.</li><li><code>eVarMeth</code> applies to both <code>eVarC</code> and <code>eVar</code>. The default value is  <code>evarMeth=searchsortedfirst</code>.</li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to <span>$n$</span> and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This option is provided for low-level work when you don&#39;t need to define a subspace dimension or you want to define it by your own methods.</p><p>(2) <strong>Common spatio-temporal pattern</strong> with a set of <span>$k$</span> data matrices <code>𝐗</code> as input.</p><p>The <span>$k$</span> matrices in <code>𝐗</code> are real or complex data matrices. They must all have the same size.</p><p><code>covEst</code> and <code>meanX</code> are optional keyword arguments to regulate the estimation of the covariance matrices of the data matrices in <code>𝐗</code>, to be used to compute the mean covariance matrices in [cstp.2] here above. See <a href="../Diagonalizations/#covariance-matrix-estimations-1">covariance matrix estimations</a>.</p><p>The mean covariance matrices <span>$C_{(1)}$</span> and <span>$C_{(1)}$</span> in [cstp.2] are computed using optional keywords arguments <code>metric</code>, <code>w</code>, <code>✓w</code>, <code>init1</code>, <code>init2</code>, <code>tol</code> and <code>verbose</code>, which allow to compute non-Euclidean means. Particularly (see <a href="../Diagonalizations/#mean-covariance-matrix-estimations-1">mean covariance matrix estimations</a>),</p><ul><li><code>init1</code> is the initialization for <span>$C_{(1)}$</span>,</li><li><code>init2</code> is the initialization for <span>$C_{(2)}$</span>.</li></ul><p>By default, the arithmetic means [cstp.2] are computed.</p><p>Once the two covariance matrices <span>$C_{(1)}$</span> and <span>$C_{(2)}$</span> estimated, method (1) is invoked with optional keyword arguments <code>eVar</code>, <code>eVarC</code>, <code>eVarMeth</code> and <code>simple</code>. See method (1) for details.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/eeae9a9956766e27d84d5a6bed7ac078d60c87ef/src/csp.jl#L382-L458">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../csp/">« CSP</a><a class="docs-footer-nextpage" href="../ajd/">AJD »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 10 January 2020 17:16">Friday 10 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+         verbose  :: Bool = false)</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object:</p><p>(1) <strong>Common spatio-temporal pattern</strong> with <span>$n⋅m$</span> mean data matrix <code>X</code>, <span>$m⋅m$</span> covariance matrices <code>C₍₁₎</code> and <span>$n⋅n$</span> covariance matrix <code>C₍₂₎</code> as input.</p><p><code>eVar</code>, <code>eVarC</code> and <code>eVarMeth</code> are keyword optional arguments for defining the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span>. Particularly:</p><ul><li><code>eVarC</code> is used for defining the subspace dimension of  the whitening step. The default is 0.999.</li><li><code>eVar</code> is the keyword optional argument for defining the  <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the <code>.arev</code> vector  given by [cstp.5]. The default is given in [cstp.6] here above.</li><li><code>eVarMeth</code> applies to both <code>eVarC</code> and <code>eVar</code>. The default value is  <code>evarMeth=searchsortedfirst</code>.</li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to <span>$n$</span> and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This option is provided for low-level work when you don&#39;t need to define a subspace dimension or you want to define it by your own methods.</p><p>(2) <strong>Common spatio-temporal pattern</strong> with a set of <span>$k$</span> data matrices <code>𝐗</code> as input.</p><p>The <span>$k$</span> matrices in <code>𝐗</code> are real or complex data matrices. They must all have the same size.</p><p><code>covEst</code>, <code>meanXd₁</code> and <code>meanXd₂</code> are optional keyword arguments to regulate the estimation of the covariance matrices of the data matrices in <code>𝐗</code>, to be used to compute the mean covariance matrices in [cstp.2] here above. See <a href="../Diagonalizations/#covariance-matrix-estimations-1">covariance matrix estimations</a>. <code>meanXd₁</code> and <code>meanXd₂</code> are the means along dimension 1 and 2, respectively, of the data matrices in <code>𝐗</code>.</p><p>The mean covariance matrices <span>$C_{(1)}$</span> and <span>$C_{(1)}$</span> in [cstp.2] are computed using optional keywords arguments <code>metric</code>, <code>w</code>, <code>✓w</code>, <code>init1</code>, <code>init2</code>, <code>tol</code> and <code>verbose</code>, which allow to compute non-Euclidean means. Particularly (see <a href="../Diagonalizations/#mean-covariance-matrix-estimations-1">mean covariance matrix estimations</a>),</p><ul><li><code>init1</code> is the initialization for <span>$C_{(1)}$</span>,</li><li><code>init2</code> is the initialization for <span>$C_{(2)}$</span>.</li></ul><p>By default, the arithmetic means [cstp.2] are computed.</p><p>Once the two covariance matrices <span>$C_{(1)}$</span> and <span>$C_{(2)}$</span> estimated, method (1) is invoked with optional keyword arguments <code>eVar</code>, <code>eVarC</code>, <code>eVarMeth</code> and <code>simple</code>. See method (1) for details.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+
+# Method (1) real
+t, n, k=10, 20, 10
+Xset = [genDataMatrix(t, n) for i = 1:k]
+Xfixed=randn(t, n)./1
+for i=1:length(Xset) Xset[i]+=Xfixed end
+C1=Hermitian( mean((X&#39;*X)/t for X∈Xset) )
+C2=Hermitian( mean((X*X&#39;)/n for X∈Xset) )
+Xbar=mean(Xset)
+c=cstp(Xbar, C1, C2; simple=true)
+@test c.F[1]&#39;*C2*c.F[1]≈I
+@test c.F[2]&#39;*C1*c.F[2]≈I
+Z=c.F[1]&#39;*Xbar*c.F[2]
+n=minimum(size(Z))
+@test norm(Z[1:n, 1:n]-Diagonal(Z[1:n, 1:n]))+1. ≈ 1.
+cX=cstp(Xset; simple=true)
+@test c==cX
+
+# Method (1) complex
+t, n, k=10, 20, 10
+Xcset = [genDataMatrix(ComplexF64, t, n) for i = 1:k]
+Xcfixed=randn(ComplexF64, t, n)./1
+for i=1:length(Xcset) Xcset[i]+=Xcfixed end
+C1c=Hermitian( mean((Xc&#39;*Xc)/t for Xc∈Xcset) )
+C2c=Hermitian( mean((Xc*Xc&#39;)/n for Xc∈Xcset) )
+Xcbar=mean(Xcset)
+cc=cstp(Xcbar, C1c, C2c; simple=true)
+@test cc.F[1]&#39;*C2c*cc.F[1]≈I
+@test cc.F[2]&#39;*C1c*cc.F[2]≈I
+Zc=cc.F[1]&#39;*Xcbar*cc.F[2]
+n=minimum(size(Zc))
+@test norm(Zc[1:n, 1:n]-Diagonal(Zc[1:n, 1:n]))+1. ≈ 1.
+cXc=cstp(Xcset; simple=true)
+@test cc==cXc
+
+# Method (2) real
+c=cstp(Xset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+c=cstp(Xset; eVar=0.9)
+
+# ... giving weights `w` to the covariance matrices
+c=cstp(Xset; w=abs2.(randn(k)), eVar=0.9)
+
+# ... subtracting the means
+c=cstp(Xset; meanXd₁=nothing, meanXd₂=nothing, w=abs2.(randn(k)), eVar=0.9)
+
+# explained variance
+c.eVar
+
+# name of the filter
+c.name
+
+using Plots
+# plot the original covariance matrices and the transformed counterpart
+c=cstp(Xset)
+
+C1Max=maximum(abs.(C1));
+ h1 = heatmap(C1, clim=(-C1Max, C1Max), title=&quot;C1&quot;, yflip=true, c=:bluesreds);
+ D1=c.F[1]&#39;*C2*c.F[1];
+ D1Max=maximum(abs.(D1));
+ h2 = heatmap(D1, clim=(0, D1Max), title=&quot;F[1]&#39;*C2*F[1]&quot;, yflip=true, c=:amp);
+ C2Max=maximum(abs.(C2));
+ h3 = heatmap(C2, clim=(-C2Max, C2Max), title=&quot;C2&quot;, yflip=true, c=:bluesreds);
+ D2=c.F[2]&#39;*C1*c.F[2];
+ D2Max=maximum(abs.(D2));
+ h4 = heatmap(D2, clim=(0, D2Max), title=&quot;F[2]&#39;*C1*F[2]&quot;, yflip=true, c=:amp);
+
+XbarMax=maximum(abs.(Xbar));
+ h5 = heatmap(Xbar, clim=(-XbarMax, XbarMax), title=&quot;Xbar&quot;, yflip=true, c=:bluesreds);
+ DX=c.F[1]&#39;*Xbar*c.F[2];
+ DXMax=maximum(abs.(DX));
+ h6 = heatmap(DX, clim=(0, DXMax), title=&quot;F[1]&#39;*Xbar*F[2]&quot;, yflip=true, c=:amp);
+ 📈=plot(h1, h3, h5, h2, h4, h6, size=(800,400))
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigCSTP.png&quot;)
+</code></pre><p><img src="../assets/FigCSTP.png" alt="Figure CSTP"/></p><pre><code class="language-none">
+# Method (2) complex
+cc=cstp(Xcset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+cc=cstp(Xcset; eVar=0.9)
+
+# ... giving weights `w` to the covariance matrices
+cc=cstp(Xcset; w=abs2.(randn(k)), eVar=0.9)
+
+# ... subtracting the mean
+cc=cstp(Xcset; meanX=nothing, w=abs2.(randn(k)), eVar=0.9)
+
+# explained variance
+c.eVar
+
+# name of the filter
+c.name
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/36ce93e38f67fc59571e1408dad7823f66f92be8/src/csp.jl#L383-L568">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../csp/">« CSP</a><a class="docs-footer-nextpage" href="../ajd/">AJD »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 11 January 2020 17:15">Saturday 11 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
