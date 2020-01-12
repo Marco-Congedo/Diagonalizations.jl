@@ -19,7 +19,7 @@ function gmca(𝐗::VecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 2000,
+          maxiter   :: Int       = _maxiter(algorithm, eltype(𝐗[1])),
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
@@ -41,27 +41,7 @@ are signed and permuted
 as explained here above in [permutation for gMCA](@ref),
 otherwise they will have arbitrary sign and will be in arbitrary order.
 
-A vector of matrices can be passed with the `init` argument in order
-to initialize the matrices ``F_1,...,F_m`` to be found by the gMCA algorithm.
-If `nothing` is passed (default), ``F_i`` is initialized as per this table:
-
-| Algorithm   | Initialization of ``F_i``|
-|:----------|:----------|
-| OJoB | eigevector matrix of ``\\frac{1}{m}\\sum_{j=1}^m C_{ij}C_{ij}^H`` (Congedo et al., 2011)|
-| NoJoB | identity matrix |
-
-`tol` is the tolerance for convergence of the solving algorithm.
-By default it is set to the square root of `Base.eps` of the nearest real
-type of the data input. This corresponds to requiring the relative
-change across two successive iterations of the average squared norm
-of the column vectors of ``F`` to vanish for about half the significant
-digits. If the solving algorithm encounters difficulties in converging,
-try setting `tol` in between 1e-6 and 1e-3.
-
-`maxiter` is the maximum number of iterations allowed to the solving
-algorithm (2000 by default). If this maximum number of iteration
-is attained, a warning will be printed in the REPL. In this case,
-try increasing `maxiter` and/or `tol`.
+Regarding arguments `init`, `tol` and `maxiter`, see [Algorithms](@ref).
 
 If `verbose` is true (false by default), the convergence attained
 at each iteration will be printed in the REPL.
@@ -223,7 +203,7 @@ function gmca(𝐗::VecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 2000,
+          maxiter   :: Int       = _maxiter(algorithm, eltype(𝐗[1])),
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
@@ -267,7 +247,7 @@ function gcca(𝐗::VecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 2000,
+          maxiter   :: Int       = _maxiter(algorithm, eltype(𝐗[1])),
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
@@ -286,27 +266,7 @@ are signed and permuted
 as explained here above in [permutation for gCCA](@ref),
 otherwise they will have arbitrary sign and will be in arbitrary order.
 
-A vector of matrices can be passed with the `init` argument in order
-to initialize the matrices ``F_1,...,F_m`` to be found by the gCCA algorithm.
-This matrices should be orthogonal/unitary.
-If `nothing` is passed (default), ``F_i`` is initialized as per this table:
-
-| Algorithm   | Initialization of ``F_i``|
-|:----------|:----------|
-| OJoB | eigevector matrix of ``\\frac{1}{m}\\sum_{j=1}^m C_{ij}C_{ij}^H`` (Congedo et al., 2011)|
-
-`tol` is the tolerance for convergence of the solving algorithm.
-By default it is set to the square root of `Base.eps` of the nearest real
-type of the data input. This corresponds to requiring the relative
-change across two successive iterations of the average squared norm
-of the column vectors of ``F`` to vanish for about half the significant
-digits. If the solving algorithm encounter difficulties in converging,
-try setting `tol` in between 1e-6 and 1e-3.
-
-`maxiter` is the maximum number of iterations allowed to the solving
-algorithm (1000 by default). If this maximum number of iteration
-is attained, a warning will be printed in the REPL. In this case,
-try increasing `maxiter` and/or `tol`.
+Regarding arguments `init`, `tol` and `maxiter`, see [Algorithms](@ref).
 
 If `verbose` is true (false by default), the convergence attained
 at each iteration will be printed in the REPL.
@@ -477,7 +437,7 @@ function gcca(𝐗::VecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 2000,
+          maxiter   :: Int       = _maxiter(algorithm, eltype(𝐗[1])),
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,

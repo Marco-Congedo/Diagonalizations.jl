@@ -43,7 +43,6 @@ author, is a research scientist of [CNRS](http://www.cnrs.fr/en)
 
 *Diagonalizations.jl* implements the following **multivariate linear filters**:
 
-
 **Table 1**
 
 | Acronym   | Full Name | Datasets ( *m* ) | Observations ( *k* ) |
@@ -102,7 +101,7 @@ this package supports :
 
 ## Code units
 
-**Diagonalizations.jl** includes seven code units (.jl files):
+**Diagonalizations.jl** includes nine code units (.jl files):
 
 | Unit   | Description |
 |:----------|:----------|
@@ -114,6 +113,8 @@ this package supports :
 | ajd.jl | Unit implementing the AJD and the mAJD |
 | tools.jl | Unit containing general tools and internal functions|
 | JoB.jl | Unit implementing the OJoB and NoJoB iterative algorithms (in the 'optim' folder)|
+| LogLike.jl | Unit implementing the Log-Likelyhood iterative algorithms (in the 'optim' folder)|
+
 
 Furthermore, all examples given at the end of the documentation of the filter
 constructors are collected as .jl units in the 'examples' folder.
@@ -199,6 +200,7 @@ Pages = [       "index.md",
 								"ajd.md",
 								"majd.md",
 								"tools.md",
+								"algorithms.md"
 		]
 Depth = 1
 ```
