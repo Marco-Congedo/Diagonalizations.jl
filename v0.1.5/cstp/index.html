@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>CSTP · Diagonalizations</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Diagonalizations logo"/></a><div class="docs-package-name"><span class="docs-autofit">Diagonalizations</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Documentation</a></li><li><a class="tocitem" href="../Diagonalizations/">Diagonalizations</a></li><li><span class="tocitem">Filters</span><ul><li><input class="collapse-toggle" id="menuitem-3-1" type="checkbox" checked/><label class="tocitem" for="menuitem-3-1"><span class="docs-label">One dataset (m=1)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../pca/">PCA</a></li><li><a class="tocitem" href="../whitening/">Whitening</a></li><li><a class="tocitem" href="../csp/">CSP</a></li><li class="is-active"><a class="tocitem" href>CSTP</a></li><li><a class="tocitem" href="../ajd/">AJD</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-2" type="checkbox"/><label class="tocitem" for="menuitem-3-2"><span class="docs-label">Two datasets (m=2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../mca/">MCA</a></li><li><a class="tocitem" href="../cca/">CCA</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-3" type="checkbox"/><label class="tocitem" for="menuitem-3-3"><span class="docs-label">Several datasets (m&gt;2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../gmca/">gMCA</a></li><li><a class="tocitem" href="../gcca/">gCCA</a></li><li><a class="tocitem" href="../majd/">mAJD</a></li></ul></li></ul></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../algorithms/">Algorithms</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Filters</a></li><li><a class="is-disabled">One dataset (m=1)</a></li><li class="is-active"><a href>CSTP</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>CSTP</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/master/docs/src/cstp.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="CSTP-1"><a class="docs-heading-anchor" href="#CSTP-1">CSTP</a><a class="docs-heading-anchor-permalink" href="#CSTP-1" title="Permalink"></a></h1><p>In the <a href="../csp/#CSP-1">CSP</a> one assumes that the multiplicity of data have a common structure along one dimension of the input data matrices. For example, in <em>electroencephalography</em> (<a href="https://en.wikipedia.org/wiki/Electroencephalography">EEG</a>) a data matrix <span>$X$</span>, which is comprised of <span>$n$</span> variables corresponding to the spatial locations for the electrodes on the scalp and <span>$t$</span> temporal samples, this is the <em>spatial</em> dimension. The assumption holds because the same brain source engenders a fixed spatial pattern on the scalp, whereas, in general, the temporal pattern is arbitrary.</p><p>The <em>common spatio-temporal pattern</em> (CSTP) extends the CSP to situations when the multiplicity of data have a common structure along <em>both</em> dimensions. In EEG, for example, this is the case of <em>event-related potentials</em> (<a href="https://en.wikipedia.org/wiki/Event-related_potential">ERPs</a>). The assumption holds because, again, the same brain source engenders a fixed spatial pattern on the scalp and furthermore ERPs have a quasi-fixed temporal pattern. As the CSP, the CSTP corresponds to the situation <span>$m=1$</span> (one dataset) and <span>$k=2$</span> (two observation).</p><p>Given a set of <span>$k$</span> data matrices <span>$\{X_1 \ldots X_k\}$</span> of dimension <span>$n⋅t$</span>, with mean <span>$\bar{X}=\frac{1}{k}\sum_{i=1}^kX_i$</span>, the goal of the CSTP is to find two matrices <span>$B_{(1)}$</span> and <span>$B_{(2)}$</span> verifying</p><p><span>$\left \{ \begin{array}{rl}B_{(1)}^TC_{(2)}B_{(1)}=I\\B_{(2)}^TC_{(1)}B_{(2)}=I\\B_{(1)}^T\bar{X}B_{(2)}=Λ \end{array} \right.$</span>, <span>$\hspace{1cm}$</span> [cstp.1],</p><p>where</p><p><span>$\left \{ \begin{array}{rl}C_{(1)}=\sum_{i=1}^k\frac{1}{t}(X_i^TX_i)\\C_{(2)}=\sum_{i=1}^k\frac{1}{n}(X_iX_i^T) \end{array} \right.$</span>, <span>$\hspace{1cm}$</span> [cstp.2]</p><p>are the mean covariance matrices along the first and second dimension of the <span>$X_i$</span> matrices and <span>$Λ$</span> is a diagonal matrix.</p><p>In words, the CSTP maximizes the ratio of the variance of the transformed <span>$\bar{X}$</span> over the transformed mean covariance matrices <span>$C_{(1)}$</span> and <span>$C_{(2)}$</span>. The CSTP can threfore be used to enhance the signal-to-noise ratio of data matrices mean estimation. For doing so, we retain the filters <span>$\widetilde{B}_{(1)}=[b_{(1)1} \ldots b_{(1)p}]$</span> and <span>$\widetilde{B}_{(2)}=[b_{(2)1} \ldots b_{(2)p}]$</span> holding the first <span>$p$</span> vectors of <span>$B_{(1)}$</span> and <span>$B_{(2)}$</span> corresponding to the highest values of the variance ratio <span>$Λ$</span>.</p><p>For the CSTP we define the total variance ratio as</p><p><span>$λ_{TOT}=\sum_{i=1}^nλ_i$</span>,</p><p>where the <span>$λ_i$</span> are the diagonal elements of <span>$Λ$</span> [cstp.1] and we define the <em>explained variance</em> for dimension <span>$p$</span> such as</p><p><span>$σ_p=\frac{\sum_{i=1}^pλ_i}{λ_{TOT}}$</span>. <span>$\hspace{1cm}$</span> [cstp.3]</p><p>The <code>.arev</code> field of the CSTP filter is defined as the vector of accumulated variance ratios</p><p><span>$[σ_1≤\ldots≤σ_n]$</span>, <span>$\hspace{1cm}$</span> [cstp.4]</p><p>where <span>$σ_j$</span> is defined in [cstp.3].</p><p>For setting the subspace dimension <span>$p$</span> manually, set the <code>eVar</code> optional keyword argument of the CSTP constructors either to an integer or to a real number, this latter establishing <span>$p$</span> in conjunction with argument <code>eVarMeth</code> using the <code>arev</code> vector (see <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>). By default, <code>eVar</code> is set to 0.999.</p><p><strong>Solution</strong></p><p>The CSTP solutions <span>$B_{(1)}$</span> and <span>$B_{(2)}$</span> can be found by a two-step procedure (Congedo et al., 2016)<a href="../#-1">🎓</a>:</p><ol><li>get two whitening matrices <span>$\hspace{0.1cm}W_{(1)}\hspace{0.1cm}$</span> and <span>$\hspace{0.1cm}W_{(2)}\hspace{0.1cm}$</span> such that <span>$\left \{ \begin{array}{rl}W_{(1)}^TC_{(1)}W_{(1)}=I\\W_{(2)}^TC_{(2)}W_{(2)}=I \end{array} \right.$</span></li><li>do <span>$\hspace{0.1cm}\textrm{SVD}(W_{(2)}^T\bar{X}W_{(1)})=UΛV^{T}$</span></li></ol><p>The solutions are <span>$\hspace{0.1cm}B_{(1)}=W_{(2)}U\hspace{0.1cm}$</span> and <span>$\hspace{0.1cm}B_{(2)}=W_{(1)}V$</span>.</p><p><strong>Constructors</strong></p><p>Two constructors are available (see here below). The constructed <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object holding the CSTP will have fields:</p><p><code>.F[1]</code>: matrix <span>$\widetilde{B}_{(1)}=[b_{(1)1} \ldots b_{(1)p}]$</span>. This is the whole matrix <span>$B_{(1)}$</span> if <span>$p=n$</span>.</p><p><code>.F[2]</code>: matrix <span>$\widetilde{B}_{(2)}=[b_{(2)1} \ldots b_{(2)p}]$</span>. This is the whole matrix <span>$B_{(2)}$</span> if <span>$p=n$</span></p><p><code>.iF[1]</code>: the left-inverse of <code>.F[1]</code></p><p><code>.iF[2]</code>: the left-inverse of <code>.F[2]</code></p><p><code>.D</code>: the leading <span>$p⋅p$</span> block of <span>$Λ$</span> in [cstp.1].</p><p><code>.eVar</code>: the explained variance for the chosen value of <span>$p$</span>, given by the <span>$p^{th}$</span> value of [cstp.4].</p><p><code>.ev</code>: the vector <code>diag(Λ)</code> holding all <span>$n$</span> diagonal elements of matrix <span>$Λ$</span> in [cstp.1].</p><p><code>.arev</code>: the <em>accumulated regularized eigenvalues</em>, defined in [cstp.4].</p><article class="docstring"><header><a class="docstring-binding" id="Diagonalizations.cstp" href="#Diagonalizations.cstp"><code>Diagonalizations.cstp</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">(1)
+function cstp( X :: Mat, C₍₁₎ :: SorH, C₍₂₎ :: SorH;
+               eVar     :: TeVaro = ○,
+               eVarC    :: TeVaro = ○,
+               eVarMeth :: Function = searchsortedfirst,
+               simple   :: Bool = false)
+
+(2)
+function cstp( 𝐗::VecMat;
+               covEst   :: StatsBase.CovarianceEstimator = SCM,
+               meanXd₁  :: Into = 0,
+               meanXd₂  :: Into = 0,
+            eVar     :: TeVaro = ○,
+            eVarC    :: TeVaro = ○,
+            eVarMeth :: Function = searchsortedfirst,
+            simple   :: Bool = false,
+         metric   :: Metric = Euclidean,
+         w        :: Vector = [],
+         ✓w       :: Bool = true,
+         init1    :: SorHo = nothing,
+         init2    :: SorHo = nothing,
+         tol      :: Real = 0.,
+         verbose  :: Bool = false)</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object:</p><p>(1) <strong>Common spatio-temporal pattern</strong> with <span>$n⋅m$</span> mean data matrix <code>X</code>, <span>$m⋅m$</span> covariance matrices <code>C₍₁₎</code> and <span>$n⋅n$</span> covariance matrix <code>C₍₂₎</code> as input.</p><p><code>eVar</code>, <code>eVarC</code> and <code>eVarMeth</code> are keyword optional arguments for defining the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span>. Particularly:</p><ul><li><code>eVarC</code> is used for defining the subspace dimension of  the whitening step. The default is 0.999.</li><li><code>eVar</code> is the keyword optional argument for defining the  <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the <code>.arev</code> vector  given by [cstp.5]. The default is given in [cstp.6] here above.</li><li><code>eVarMeth</code> applies to both <code>eVarC</code> and <code>eVar</code>. The default value is  <code>evarMeth=searchsortedfirst</code>.</li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to <span>$n$</span> and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This option is provided for low-level work when you don&#39;t need to define a subspace dimension or you want to define it by your own methods.</p><p>(2) <strong>Common spatio-temporal pattern</strong> with a set of <span>$k$</span> data matrices <code>𝐗</code> as input.</p><p>The <span>$k$</span> matrices in <code>𝐗</code> are real or complex data matrices. They must all have the same size.</p><p><code>covEst</code>, <code>meanXd₁</code> and <code>meanXd₂</code> are optional keyword arguments to regulate the estimation of the covariance matrices of the data matrices in <code>𝐗</code>, to be used to compute the mean covariance matrices in [cstp.2] here above. See <a href="../Diagonalizations/#covariance-matrix-estimations-1">covariance matrix estimations</a>. <code>meanXd₁</code> and <code>meanXd₂</code> are the means along dimension 1 and 2, respectively, of the data matrices in <code>𝐗</code>.</p><p>The mean covariance matrices <span>$C_{(1)}$</span> and <span>$C_{(1)}$</span> in [cstp.2] are computed using optional keywords arguments <code>metric</code>, <code>w</code>, <code>✓w</code>, <code>init1</code>, <code>init2</code>, <code>tol</code> and <code>verbose</code>, which allow to compute non-Euclidean means. Particularly (see <a href="../Diagonalizations/#mean-covariance-matrix-estimations-1">mean covariance matrix estimations</a>),</p><ul><li><code>init1</code> is the initialization for <span>$C_{(1)}$</span>,</li><li><code>init2</code> is the initialization for <span>$C_{(2)}$</span>.</li></ul><p>By default, the arithmetic means [cstp.2] are computed.</p><p>Once the two covariance matrices <span>$C_{(1)}$</span> and <span>$C_{(2)}$</span> estimated, method (1) is invoked with optional keyword arguments <code>eVar</code>, <code>eVarC</code>, <code>eVarMeth</code> and <code>simple</code>. See method (1) for details.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+
+# Method (1) real
+t, n, k=10, 20, 10
+Xset = [genDataMatrix(t, n) for i = 1:k]
+Xfixed=randn(t, n)./1
+for i=1:length(Xset) Xset[i]+=Xfixed end
+C1=Hermitian( mean((X&#39;*X)/t for X∈Xset) )
+C2=Hermitian( mean((X*X&#39;)/n for X∈Xset) )
+Xbar=mean(Xset)
+c=cstp(Xbar, C1, C2; simple=true)
+@test c.F[1]&#39;*C2*c.F[1]≈I
+@test c.F[2]&#39;*C1*c.F[2]≈I
+Z=c.F[1]&#39;*Xbar*c.F[2]
+n=minimum(size(Z))
+@test norm(Z[1:n, 1:n]-Diagonal(Z[1:n, 1:n]))+1. ≈ 1.
+cX=cstp(Xset; simple=true)
+@test c==cX
+
+# Method (1) complex
+t, n, k=10, 20, 10
+Xcset = [genDataMatrix(ComplexF64, t, n) for i = 1:k]
+Xcfixed=randn(ComplexF64, t, n)./1
+for i=1:length(Xcset) Xcset[i]+=Xcfixed end
+C1c=Hermitian( mean((Xc&#39;*Xc)/t for Xc∈Xcset) )
+C2c=Hermitian( mean((Xc*Xc&#39;)/n for Xc∈Xcset) )
+Xcbar=mean(Xcset)
+cc=cstp(Xcbar, C1c, C2c; simple=true)
+@test cc.F[1]&#39;*C2c*cc.F[1]≈I
+@test cc.F[2]&#39;*C1c*cc.F[2]≈I
+Zc=cc.F[1]&#39;*Xcbar*cc.F[2]
+n=minimum(size(Zc))
+@test norm(Zc[1:n, 1:n]-Diagonal(Zc[1:n, 1:n]))+1. ≈ 1.
+cXc=cstp(Xcset; simple=true)
+@test cc==cXc
+
+# Method (2) real
+c=cstp(Xset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+c=cstp(Xset; eVar=0.9)
+
+# ... giving weights `w` to the covariance matrices
+c=cstp(Xset; w=abs2.(randn(k)), eVar=0.9)
+
+# ... subtracting the means
+c=cstp(Xset; meanXd₁=nothing, meanXd₂=nothing, w=abs2.(randn(k)), eVar=0.9)
+
+# explained variance
+c.eVar
+
+# name of the filter
+c.name
+
+using Plots
+# plot the original covariance matrices and the transformed counterpart
+c=cstp(Xset)
+
+C1Max=maximum(abs.(C1));
+ h1 = heatmap(C1, clim=(-C1Max, C1Max), title=&quot;C1&quot;, yflip=true, c=:bluesreds);
+ D1=c.F[1]&#39;*C2*c.F[1];
+ D1Max=maximum(abs.(D1));
+ h2 = heatmap(D1, clim=(0, D1Max), title=&quot;F[1]&#39;*C2*F[1]&quot;, yflip=true, c=:amp);
+ C2Max=maximum(abs.(C2));
+ h3 = heatmap(C2, clim=(-C2Max, C2Max), title=&quot;C2&quot;, yflip=true, c=:bluesreds);
+ D2=c.F[2]&#39;*C1*c.F[2];
+ D2Max=maximum(abs.(D2));
+ h4 = heatmap(D2, clim=(0, D2Max), title=&quot;F[2]&#39;*C1*F[2]&quot;, yflip=true, c=:amp);
+
+XbarMax=maximum(abs.(Xbar));
+ h5 = heatmap(Xbar, clim=(-XbarMax, XbarMax), title=&quot;Xbar&quot;, yflip=true, c=:bluesreds);
+ DX=c.F[1]&#39;*Xbar*c.F[2];
+ DXMax=maximum(abs.(DX));
+ h6 = heatmap(DX, clim=(0, DXMax), title=&quot;F[1]&#39;*Xbar*F[2]&quot;, yflip=true, c=:amp);
+ 📈=plot(h1, h3, h5, h2, h4, h6, size=(800,400))
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigCSTP.png&quot;)
+</code></pre><p><img src="../assets/FigCSTP.png" alt="Figure CSTP"/></p><pre><code class="language-none">
+# Method (2) complex
+cc=cstp(Xcset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+cc=cstp(Xcset; eVar=0.9)
+
+# ... giving weights `w` to the covariance matrices
+cc=cstp(Xcset; w=abs2.(randn(k)), eVar=0.9)
+
+# ... subtracting the mean
+cc=cstp(Xcset; meanXd₁=nothing, meanXd₂=nothing,
+        w=abs2.(randn(k)), eVar=0.9)
+
+# explained variance
+c.eVar
+
+# name of the filter
+c.name
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/688855308ebceea986c5ba3bc508771ae7d3fcc2/src/csp.jl#L383-L569">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../csp/">« CSP</a><a class="docs-footer-nextpage" href="../ajd/">AJD »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 12 January 2020 20:11">Sunday 12 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
