@@ -63,21 +63,14 @@ in conjunction with argument `eVarMeth` using the `arev` vector
 (see [subspace dimension](@ref)).
 By default, `eVar` is set to 0.999.
 
-
-
 **Solution**
 
-There is no closed-form solution to the gCCA problem in general.
-*Diagonalizations.jl* implements the following iterative algorithms:
+There is no closed-form solution to the AJD problem in general.
+See [Algorithms](@ref).
 
-| Algorithm   | Constraint | Reference |
-|:----------|:----------|:----------|
-| OJoB | ``F`` orthogonal | Congedo et al (2011, 2012); Congedo (2013)|
-
-Note that solving algorithm constraining the solution
-to the general linear group, like *NoJoB* do not suit
-gCCA as they do not encure constraint [gcca.2].
-
+Note that solving algorithms constraining the solution
+to the general linear group, like *NoJoB*, do not suit
+gCCA as they do not ensure constraint [gcca.2].
 
 **Constructors**
 

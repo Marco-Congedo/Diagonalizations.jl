@@ -85,7 +85,8 @@ cc=cstp(Xcset; eVar=0.9)
 cc=cstp(Xcset; w=abs2.(randn(k)), eVar=0.9)
 
 # ... subtracting the mean
-cc=cstp(Xcset; meanX=nothing, w=abs2.(randn(k)), eVar=0.9)
+cc=cstp(Xcset; meanXd₁=nothing, meanXd₂=nothing,
+        w=abs2.(randn(k)), eVar=0.9)
 
 # explained variance
 c.eVar

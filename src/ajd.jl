@@ -19,7 +19,7 @@ function ajd(𝐂::ℍVector;
           sort      :: Bool   = true,
           init      :: Mato   = ○,
           tol       :: Real   = 0.,
-          maxiter   :: Int    = 2000,
+          maxiter   :: Int    = _maxiter(algorithm, eltype(𝐂[1])),
           verbose   :: Bool   = false,
         eVar     :: TeVaro    = _minDim(𝐂),
         eVarC    :: TeVaro    = ○,
@@ -38,7 +38,7 @@ function ajd(𝐗::VecMat;
        sort      :: Bool = true,
        init      :: Mato = ○,
        tol       :: Real = 0.,
-       maxiter   :: Int  = 2000,
+       maxiter   :: Int  = _maxiter(algorithm, eltype(𝐗[1])),
        verbose   :: Bool = false,
      eVar     :: TeVaro    = _minDim(𝐗),
      eVarC    :: TeVaro    = ○,
@@ -56,7 +56,9 @@ using the given solving `algorithm` (*NoJoB* by default).
 
 If `trace1` is true, all matrices in the set
 `𝐂` are normalized so as to have trace equal to 1.
-It is false by default.
+It is false by default. This option applies only for solving algorithms
+that are not invariante by scaling, that is, those based on the least-squares
+(Frebenius) criterion. See [Algorithms](@ref).
 
 if `w` is a `StatsBase.AbstractWeights`, the weights are applied to the set
 `𝐂`. If `w` is a `Function`, the weights are found passing each matrix
@@ -82,26 +84,7 @@ The default values are:
 If `sort` is true (default), the vectors in `.F` are permuted as explained
 here above in [permutation for AJD](@ref), otherwise they will be in arbitrary order.
 
-A matrix can be passed with the `init` argument in order to initialize
-the matrix ``F`` to be found by the AJD algorithm.
-If `nothing` is passed (default), ``F`` is initialized as per this table:
-
-| Algorithm   | Initialization of ``F``|
-|:----------|:----------|
-| OJoB | eigevector matrix of ``\\frac{1}{k}\\sum_{l=1}^kC_k^2`` (Congedo et al., 2011)|
-| NoJoB | identity matrix |
-
-`tol` is the tolerance for convergence of the solving algorithm.
-By default it is set to the square root of `Base.eps` of the nearest real type of the data
-input. This corresponds to requiring the relative change across two successive
-iterations of the average squared norm of the column vectors of ``F`` to vanish for
-about half the significant digits. If the solving algorithm encounter difficulties in converging,
-try setting `tol` in between 1e-6 and 1e-3.
-
-`maxiter` is the maximum number of iterations allowed to the solving
-algorithm (2000 by default). If this maximum number of iteration
-is attained, a warning will be printed in the REPL. In this case,
-try increasing `maxiter` and/or `tol`.
+Regarding arguments `init`, `tol` and `maxiter`, see [Algorithms](@ref).
 
 If `verbose` is true (false by default), the convergence attained
 at each iteration will be printed in the REPL.
@@ -139,7 +122,6 @@ remaining arguments of method (2).
 ```
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
-
 # method (1) real
 t, n, k=50, 10, 4
 A=randn(n, n) # mixing matrix in model x=As
@@ -147,7 +129,9 @@ Xset = [genDataMatrix(t, n) for i = 1:k]
 Xfixed=randn(t, n)./1
 for i=1:length(Xset) Xset[i]+=Xfixed end
 Cset = ℍVector([ℍ((Xset[s]'*Xset[s])/t) for s=1:k])
-aC=ajd(Cset; simple=true)
+aC=ajd(Cset; algorithm=:OJoB, simple=true)
+aC2=ajd(Cset; algorithm=:NoJoB, simple=true)
+aC3=ajd(Cset; algorithm=:LogLike, simple=true)
 
 # method (1) complex
 t, n, k=50, 10, 4
@@ -157,48 +141,66 @@ Xcfixed=randn(ComplexF64, t, n)./1
 for i=1:length(Xcset) Xcset[i]+=Xcfixed end
 Ccset = ℍVector([ℍ((Xcset[s]'*Xcset[s])/t) for s=1:k])
 aCc=ajd(Ccset; algorithm=:OJoB, simple=true)
+aCc2=ajd(Ccset; algorithm=:NoJoB, simple=true)
 
 
 # method (2) real
-aX=ajd(Xset; simple=true)
+aX=ajd(Xset; algorithm=:OJoB, simple=true)
+aX2=ajd(Xset; algorithm=:NoJoB, simple=true)
+aX3=ajd(Xset; algorithm=:LogLike, simple=true)
 @test aX≈aC
+@test aX2≈aC2
+@test aX3≈aC3
 
 # method (2) complex
 aXc=ajd(Xcset; algorithm=:OJoB, simple=true)
+aXc2=ajd(Xcset; algorithm=:NoJoB, simple=true)
 @test aXc≈aCc
+@test aXc2≈aCc2
 
 
 # create 20 REAL random commuting matrices
 # they all have the same eigenvectors
 Cset2=PosDefManifold.randP(3, 20; eigvalsSNR=Inf, commuting=true)
-
-# estimate the approximate joint diagonalizer (ajd)
+# estimate the approximate joint diagonalizer (AJD)
 a=ajd(Cset2; algorithm=:OJoB)
+# the orthogonal AJD must be equivalent to the eigenvector matrix
+# of any of the matrices in Cset
+@test [spForm(a.F'*eigvecs(C))+1. for C ∈ Cset2] ≈
+      ones(eltype(Cset2[1]), length(Cset2))
 
-# the ajd must be equivalent to the eigenvector matrix of any of the matrices in Cset
-@test spForm(a.F'*eigvecs(Cset2[1]))+1. ≈ 1.0
-
-# the same thing using the NoJoB algorithm. Here we just do a sanity check
-# as the NoJoB solution is not constrained in the orthogonal group
-a=ajd(Cset2; algorithm=:NoJoB)
-@test spForm(a.F'*eigvecs(Cset2[1]))<0.01
+# generate positive definite matrices with model A*D_κ*D, where
+# A is the mixing matrix and D_κ, for all κ=1:k, are diagonal matrices.
+# The estimated AJD matrix must be the inverse of A
+n, k=3, 10
+Dest=PosDefManifold.randΛ(eigvalsSNR=100, n, k)
+A=randn(n, n) # mixing matrix
+Cset3=Vector{Hermitian}([Hermitian(A*D*A') for D ∈ Dest])
+a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
+@test spForm(a.F'*A)<0.0001
+a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
+@test spForm(a.F'*A)<0.0001
+# repeat the test adding noise; now the model is no more exactly identifiable
+for k=1:length(Cset3) Cset3[k]+=randP(n)/1000 end
+a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
+@test spForm(a.F'*A)<0.1
+a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
+@test spForm(a.F'*A)<0.1
 
 
 # create 20 COMPLEX random commuting matrices
 # they all have the same eigenvectors
 Ccset2=PosDefManifold.randP(ComplexF64, 3, 20; eigvalsSNR=Inf, commuting=true)
-
-# estimate the approximate joint diagonalizer (ajd)
+# estimate the approximate joint diagonalizer (AJD)
 ac=ajd(Ccset2; algorithm=:OJoB)
-
-# the ajd must be equivalent to the eigenvector matrix of any of the matrices in Cset
+# he AJD must be equivalent to the eigenvector matrix of any of the matrices in Cset
 # just a sanity check as rounding errors appears for complex data
-@test spForm(ac.F'*eigvecs(Ccset2[1]))<0.001
+@test norm([spForm(ac.F'*eigvecs(C)) for C ∈ Ccset2])/3<0.001
 
-# the same thing using the NoJoB algorithm. Here we just do a sanity check
+# the same thing using the NoJoB algorithm. Require less precision
 # as the NoJoB solution is not constrained in the orthogonal group
 ac=ajd(Ccset2; algorithm=:NoJoB)
-@test spForm(ac.F'*eigvecs(Ccset2[1]))<0.01
+@test norm([spForm(ac.F'*eigvecs(C)) for C ∈ Ccset2])/3<0.01
 
 # REAL data:
 # normalize the trace of input matrices,
@@ -207,7 +209,12 @@ ac=ajd(Ccset2; algorithm=:NoJoB)
 # at the pre-whitening level and at the level of final vector selection
 Cset=PosDefManifold.randP(8, 20; eigvalsSNR=10, SNR=2, commuting=false)
 
-a=ajd(Cset; trace1=true, w=nonD, preWhite=true, eVarC=8, eVar=0.99)
+a=ajd(Cset; trace1=true, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+
+a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+
+# AJD for plots below
+a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true)
 
 using Plots
 # plot the original covariance matrices
@@ -260,7 +267,7 @@ function ajd(𝐂::ℍVector;
           sort      :: Bool   = true,
           init      :: Mato   = ○,
           tol       :: Real   = 1e-06,
-          maxiter   :: Int    = 2000,
+          maxiter   :: Int    = _maxiter(algorithm, eltype(𝐂[1])),
           verbose   :: Bool   = false,
         eVar     :: TeVaro    = _minDim(𝐂),
         eVarC    :: TeVaro    = ○,
@@ -273,14 +280,15 @@ function ajd(𝐂::ℍVector;
    if     algorithm ∈(:OJoB, :NoJoB)
           U, V, λ, iter, conv=JoB(reshape(𝕄Vector(𝐂), (k, 1, 1)), 1, k, :c, algorithm, eltype(𝐂[1]);
                trace1=trace1, w=w, preWhite=preWhite, sort=sort,
-                  init=init, tol=tol, maxiter=maxiter, verbose=verbose,
-               eVar=eVarC, eVarMeth=eVarMeth)
+                     init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+                     eVar=eVarC, eVarMeth=eVarMeth)
+   elseif algorithm==:LogLike
+          U, V, λ, iter, conv=logLike(𝐂; w=w, preWhite=preWhite, sort=sort,
+                init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+                eVar=eVarC, eVarMeth=eVarMeth)
    #=
    elseif algorithm==:JADE
-          U, V, λ, iter, conv=JADE(𝐂, :c;
-               trace1=trace1, w=w, preWhite=preWhite, sort=sort,
-                  init=init, tol=tol, maxiter=maxiter, verbose=verbose,
-               eVar=eVarC, eVarMeth=eVarMeth)
+          U, V, λ, iter, conv=JADE(𝐂, :c; trace1=trace1, args...)
    =#
    else
       throw(ArgumentError(📌*", ajd constructor: invalid `algorithm` argument: $algorithm"))
@@ -308,7 +316,7 @@ function ajd(𝐗::VecMat;
        sort      :: Bool   = true,
        init      :: Mato   = ○,
        tol       :: Real   = 1e-06,
-       maxiter   :: Int    = 2000,
+       maxiter   :: Int    = _maxiter(algorithm, eltype(𝐗[1])),
        verbose   :: Bool   = false,
      eVar     :: TeVaro   = _minDim(𝐗),
      eVarC    :: TeVaro   = ○,
@@ -317,32 +325,11 @@ function ajd(𝐗::VecMat;
 
    dims===○ && (dims=_set_dims(𝐗))
    _check_data(𝐗, dims, covEst, meanX, w)===○ && return
-   (n, t)=dims==1 ? reverse(size(𝐗[1])) : size(𝐗[1])
-   args=("Approximate Joint Diagonalization", false)
-
-   if     algorithm ∈(:OJoB, :NoJoB)
-          U, V, λ, iter, conv=JoB(𝐗, 1, length(𝐗), :d, algorithm, eltype(𝐗[1]);
-               covEst=covEst, dims=dims, meanX=meanX,
-               trace1=trace1, preWhite=preWhite, sort=sort,
-                  init=init, tol=tol, maxiter=maxiter, verbose=verbose,
-               eVar=eVarC, eVarMeth=eVarMeth)
-   elseif algorithm==:JADE
-          U, V, λ, iter, conv=JADE(𝐗, :d;
-               covEst=covEst, dims=dims, meanX=meanX,
-               trace1=trace1, w=w, preWhite=preWhite, sort=sort,
-                  init=init, tol=tol, maxiter=maxiter, verbose=verbose,
-               eVar=eVarC, eVarMeth=eVarMeth)
-   else
-      throw(ArgumentError(📌*", ajd constructor: invalid `algorithm` argument"))
-   end
-
-   λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
-
-   simple ? LF(U, V, Diagonal(λ), ○, ○, ○, args...) :
-   begin
-      p, arev = _getssd!(eVar, λ, n, eVarMeth) # find subspace
-      LF(U[:, 1:p], V[1:p, :], Diagonal(λ[1:p]), arev[p], λ, arev, args...)
-   end
+   # check algo
+   ajd(_cov(𝐗; covEst=covEst, dims=dims, meanX=meanX);
+       trace1=trace1, w=w, algorithm=algorithm, preWhite=preWhite,
+       sort=sort, init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+       eVar=eVar, eVarC=eVarC, eVarMeth=eVarMeth, simple=simple)
 end
 
 
@@ -359,7 +346,7 @@ function majd(𝑿::VecVecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 2000,
+          maxiter   :: Int       = _maxiter(algorithm, eltype(𝑿[1][1])),
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝑿),
         eVarC    :: TeVaro   = ○,
@@ -390,32 +377,6 @@ If `sort` is true (default), the column vectors of the matrices ``F_1,...,F_m``
 are signed and permuted
 as explained here above in [permutation for MAJD](@ref),
 otherwise they will have arbitrary sign and will be in arbitrary order.
-
-A vector of matrices can be passed with the `init` argument in order
-to initialize the matrices ``F_1,...,F_m`` to be found by the MAJD algorithm.
-If `nothing` is passed (default), ``F_i`` is initialized as per this table:
-
-| Algorithm   | `fullModel` | Initialization of ``F_i``|
-|:----------|:----------|:----------|
-| OJoB | true | eigevector matrix of ``\\frac{1}{m}\\sum_{l=1}^k\\sum_{j=1}^m C_{lij}C_{lij}^H``
- (Congedo et al., 2011)|
-| OJoB | false | eigevector matrix of ``\\frac{1}{m}\\sum_{l=1}^k\\sum_{j≠i, j=1}^m C_{lij}C_{lij}^H``
- (Congedo et al., 2011)|
-| NoJoB | true or false | identity matrix |
-
-`tol` is the tolerance for convergence of the solving algorithm.
-By default it is set to the square root of `Base.eps` of the nearest real
-type of the data input. This corresponds to requiring the relative
-change across two successive iterations of the average squared norm
-of the column vectors of matrices ``F_1,...,F_m`` to vanish for about
-half the significant
-digits. If the solving algorithm encounter difficulties in converging,
-try setting `tol` in between 1e-6 and 1e-3.
-
-`maxiter` is the maximum number of iterations allowed to the solving
-algorithm (2000 by default). If this maximum number of iteration
-is attained, a warning will be printed in the REPL. In this case,
-try increasing `maxiter` and/or `tol`.
 
 If `verbose` is true (false by default), the convergence attained
 at each iteration will be printed in the REPL.
@@ -572,7 +533,7 @@ function majd(𝑿::VecVecMat;
           sort      :: Bool      = true,
           init      :: VecMato   = ○,
           tol       :: Real      = 0.,
-          maxiter   :: Int       = 2000,
+          maxiter   :: Int       = _maxiter(algorithm, eltype(𝑿[1][1])),
           verbose   :: Bool      = false,
         eVar     :: TeVaro   = _minDim(𝑿),
         eVarC    :: TeVaro   = ○,

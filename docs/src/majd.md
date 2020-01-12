@@ -78,14 +78,8 @@ where ``σ_i`` is given by Eq. [majd.6].
 
 **Solution**
 
-There is no closed-form solution to the MAJD problem in general.
-*Diagonalizations.jl* implements the following iterative algorithms:
-
-| Algorithm   | Constraint | Reference |
-|:----------|:----------|:----------|
-| OJoB | ``F`` orthogonal | Congedo et al (2011, 2012); Congedo (2013)|
-| NoJoB | ``F`` non-singular | Congedo et al (2011, 2012); Congedo (2013)|
-
+There is no closed-form solution to the AJD problem in general.
+See [Algorithms](@ref).
 
 **Constructors**
 

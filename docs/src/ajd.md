@@ -82,13 +82,7 @@ By default, `eVar` is set to 0.999.
 **Solution**
 
 There is no closed-form solution to the AJD problem in general.
-*Diagonalizations.jl* implements the following iterative algorithms:
-
-| Algorithm   | Constraint | Reference |
-|:----------|:----------|:----------|
-| OJoB | ``F`` orthogonal | Congedo et al (2011, 2012); Congedo (2013)|
-| NoJoB | ``F`` non-singular | Congedo et al (2011, 2012); Congedo (2013)|
-
+See [Algorithms](@ref).
 
 **Constructors**
 

@@ -539,6 +539,16 @@ _minDim(𝑿::VecVecMat) = minimum((minimum(minimum(size(X)) for X ∈ 𝑿[i]) 
 
 ### tools for AJD Algorithms ###
 
+# get the maximum number of iterations for each algorithm depending on the
+# data input type if the algorithm supports both real and complex data input
+_maxiter(algorithm, type) =
+   if       algorithm∈(:OJoB, :NoJoB)
+            return type<:Real ? 1000 : 2000
+   elseif   algorithm==(:LogLike)
+            return 100
+   end
+
+
 # take as input the vector `λ` of diagonal elements of transformed diagonalized
 # matrices. Check that the imaginary part of λ is close to zero.
 # If so, return a vector with the real part of λ,
