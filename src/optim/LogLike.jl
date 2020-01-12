@@ -15,16 +15,16 @@
 #  to the case m=1, k>1 according to the taxonomy adopted in this package.
 #
 #  The algorithm takes as input a vector of k-real positive definite matrices
-#  𝐂 and find a non-singular matrix B such that the congruences B'*𝐂_κ*B
-#  are as diagonal as possible for all κ=1:k
+#  𝐂 and finds a non-singular matrix B such that the congruences B'*𝐂_κ*B
+#  are as diagonal as possible for all κ=1:k.
 #
 #  `w` is an optional vector of k non-negative weights for each matrix in 𝐂.
 #  Pham's criterion being invariant by scaling, the weights act on the cost
-#  function, not as a weights for the entris of the matrices.
+#  function, not as a weights for the entries of the matrices.
 #  Notice that the weights can be zero, amounting to ignoring the
 #  corresponding matrices. By default all weights are equal to one.
 #  A function can be passed as the `w` argument, in which case the kth weight
-#  is found as the output of this function applied to the kth matrix in 𝐂.
+#  is found as the output of the function applied to the kth matrix in 𝐂.
 #  A good choice in general is the `nonD` function declared in tools.jl unit.
 #
 #  if `whitening` = true is passed, the Jeffrey mean of the matrices in 𝐂 is
