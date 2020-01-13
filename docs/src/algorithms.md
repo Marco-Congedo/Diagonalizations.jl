@@ -45,7 +45,8 @@ for instance in the case of *AJD*, those are just the ``k`` covariance matrices
 to be jointly diagonalized.
 
 A matrix (if ``m=1``) or a vector of matrices (if ``m>1``) can be passed with the `init` argument in order to initialize
-the solver differently.
+the solver differently. Note that for *LogLike* and *LogLikeR* algorithms
+the actual approximate joint diagonalizer will be given by `init*B`, where `B` is the output of the algorithms.
 
 `tol` is the tolerance for convergence of the solver.
 By default it is set to the square root of `Base.eps` of the nearest real type of the data input. If the solver encounters difficulties in converging, try setting `tol` in between 1e-6 and 1e-3.
