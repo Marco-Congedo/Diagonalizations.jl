@@ -41,7 +41,8 @@
 #  where mean(𝐂) is the arithmetic mean of the matrices in 𝐂.
 #
 #  if  `whitening` = false (default), a matrix can be provided with the `init`
-#  argument in order to initialize B.
+#  argument in order to initialize B. In this case the actual AJD
+#  will be given by init*B, where B is the output of the algorithms.
 #
 #  `tol` is the convergence to be attained.
 #
@@ -73,7 +74,7 @@ end
 
 function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 				 w			:: Union{Tw, Function} = ○,
-				 preWhite  	:: Bool = false,
+				 preWhite	:: Bool = false,
 				 sort      	:: Bool = true,
 				 init		:: Union{Symmetric, Hermitian, Nothing} = ○,
 				 tol     	:: Real = 0.,
@@ -86,10 +87,10 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	  decr = 0.
 	  for i = 2:n
 		for j = 1:i-1
-		  c1 = c[i, i:n:nk]
-		  c2 = c[j, j:n:nk]
-		  g₁₂ = mean(c[i, j:n:nk]./c1)		# this is g_{ij}
-		  g₂₁ = mean(c[i, j:n:nk]./c2)		# conjugate of g_{ji}
+		  c1 = 𝐜[i, i:n:nk]
+		  c2 = 𝐜[j, j:n:nk]
+		  g₁₂ = mean(𝐜[i, j:n:nk]./c1)		# this is g_{ij}
+		  g₂₁ = mean(𝐜[i, j:n:nk]./c2)		# conjugate of g_{ji}
 		  𝜔₂₁ = mean(c1./c2)
 		  𝜔₁₂ = mean(c2./c1)
 		  𝜔 = √(𝜔₁₂*𝜔₂₁)
@@ -104,9 +105,9 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 		  𝜏 = 1. + 0.5im*imag(h₁₂*h₂₁)	# = 1 + (h₁₂*h₂₁ - conj(h₁₂*h₂₁))/4
 		  𝜏 = 𝜏 + √(𝜏^2 - h₁₂*h₂₁) #
 		  T = [1 -h₁₂/𝜏; -h₂₁/𝜏 1]
-		  c[[i, j], :] = T*c[[i, j], :]		# new i, j rows of c
+		  𝐜[[i, j], :] = T*𝐜[[i, j], :]		# new i, j rows of 𝐜
 		  ijInd = vcat(collect(i:n:nk), collect(j:n:nk))
-		  c[:, ijInd] = reshape(reshape(c[:, ijInd], n*k, 2)*T', n, k*2)		# new i,j columns of c
+		  𝐜[:, ijInd] = reshape(reshape(𝐜[:, ijInd], n*k, 2)*T', n, k*2)		# new i,j columns of 𝐜
 		  B[[i, j], :] = T*B[[i, j], :]
 		end
 	  end
@@ -120,13 +121,13 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	# pre-whiten, initialize and stack matrices horizontally
 	if preWhite
 		W=whitening(PosDefManifold.mean(Jeffrey, 𝐂); eVar=eVar, eVarMeth=eVarMeth)
-		c=hcat([(W.F'*C*W.F) for C∈𝐂]...)
+		𝐜=hcat([(W.F'*C*W.F) for C∈𝐂]...)
 	else
 		# initialization only if preWhite is false
-		init≠nothing ? c=hcat([(init'*C*init) for C∈𝐂]...) : c=hcat(𝐂...)
+		init≠nothing ? 𝐜=hcat([(init'*C*init) for C∈𝐂]...) : 𝐜=hcat(𝐂...)
 	end
 
-	(n, nk) = size(c)
+	(n, nk) = size(𝐜)
 	tol==0. ? tolerance = √eps(real(type)) : tolerance = tol
 	iter, conv, converged, e = 1, 0., false, type(eps(real(type)))
 
@@ -143,15 +144,16 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	verbose && @info("Convergence has "*converged ? "" : "not "*"been attained.\n")
 	verbose && println("")
 
-	B=Matrix(B') # get B such B'*C[k]*B is diagonal
+	# get B such B'*C[k]*B is diagonal
+
+	B = preWhite ? W.F*Matrix(B') : Matrix(B')
 
 	# sort the vectors of solver
 	M=mean(𝐂)
 	D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
 	λ = sort ? _permute!(B, D, n) : diag(D)
 
-	return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
-					  (B, pinv(B), λ, iter, conv)
+	return (B, pinv(B), λ, iter, conv)
 end
 
 
@@ -291,6 +293,7 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	verbose && @info("Convergence has "*converged ? "" : "not "*"been attained.\n")
 	verbose && println("")
 
+	#=
 	B=Matrix(B') # get B such B'*C[k]*B is diagonal
 
 	# sort the vectors of solver
@@ -300,4 +303,15 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 
 	return preWhite ? 	(W.F*B, pinv(B)*W.iF, λ, iter, conv) :
 						(B, pinv(B), λ, iter, conv)
+	=#
+
+	# get B such B'*C[k]*B is diagonal
+	B = preWhite ? W.F*Matrix(B') : Matrix(B')
+
+	# sort the vectors of solver
+	M=mean(𝐂)
+	D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
+	λ = sort ? _permute!(B, D, n) : diag(D)
+
+	return (B, pinv(B), λ, iter, conv)
 end
