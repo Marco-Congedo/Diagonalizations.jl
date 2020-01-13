@@ -12,11 +12,12 @@ Solvers differ from one another in several fashions:
 - the diagonalization methods they support
 - their initialization
 
-To date three solvers are implemented:
+To date four solvers are implemented:
 
 - **Orthogonal joint blind source separation** (OJOB: Congedo et al., 2012[🎓](@ref))
 - **Non-orthogonal joint blind source separation** (NoJOB: Congedo et al., 2012[🎓](@ref))
 - **Log-likelyhood** (LogLike: Pham, 2001[🎓](@ref))
+- **Log-likelyhood Real** (LogLikeR: Pham, 2001[🎓](@ref))
 
 Their main characteristics and domain of application are summarized in the following table:
 
@@ -24,7 +25,8 @@ Their main characteristics and domain of application are summarized in the follo
 |:-----------|:---------|:-------------|:----------|:--------|
 | OJoB       | Orthogonal/Unitary| yes       | least-squares | gMCA, gCCA, AJD, mAJD |
 | NoJoB      | non-singular| yes       | least-squares | gMCA, AJD, mAJD |
-| Log-Like   | non-singular| no        | log-likelihood | AJD |
+| LogLike    | non-singular| yes       | log-likelihood | AJD |
+| LogLikeR   | non-singular| no        | log-likelihood | AJD |
 
 ## using solvers
 
@@ -52,10 +54,10 @@ Argument `maxiter` is the maximum number of iterations allowed to the solver. Th
 
 | Algorithm  | max iterations |
 |:-----------|:---------------|
-| OJoB       | 1000 for real data, 2000 for complex data |
-| NoJoB      | 1000 for real data, 2000 for complex data |
-| Log-Like   | 100 (real data only)|
-
+| OJoB       | 1000 for real data, 3000 for complex data |
+| NoJoB      | 1000 for real data, 3000 for complex data |
+| Log-Like   | 60 for real data, 180 for complex data |
+| Log-LikeR  | 40 (real data only) |
 
 If the maximum number of iteration
 is attained, a warning will be printed in the REPL.
