@@ -542,10 +542,11 @@ _minDim(𝑿::VecVecMat) = minimum((minimum(minimum(size(X)) for X ∈ 𝑿[i]) 
 # get the maximum number of iterations for each algorithm depending on the
 # data input type if the algorithm supports both real and complex data input
 _maxiter(algorithm, type) =
-   if       algorithm∈(:OJoB, :NoJoB)
-            return type<:Real ? 1000 : 2000
-   elseif   algorithm==(:LogLike)
-            return 100
+   if       algorithm ∈ (:OJoB, :NoJoB)
+            return type<:Real ? 1000 : 3000
+   elseif   algorithm ∈ (:LogLike, :LogLikeR)
+            return type<:Real ? 60 : 180
+   else throw(ArgumentError("The `algorithm` keyword is uncorrect"))
    end
 
 

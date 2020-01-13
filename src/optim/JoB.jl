@@ -114,9 +114,9 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
           preWhite  :: Bool = false,
           sort      :: Bool = true,
           init      = nothing,
-          tol       :: Real=0.,
-          maxiter   :: Int=1000,
-          verbose   :: Bool=false,
+          tol       :: Real = 0.,
+          maxiter   :: Int = 1000,
+          verbose   :: Bool= false,
       eVar     :: TeVaro = ○,
       eVarMeth :: Function = searchsortedfirst)
 

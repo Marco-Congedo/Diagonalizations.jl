@@ -132,6 +132,7 @@ Cset = ℍVector([ℍ((Xset[s]'*Xset[s])/t) for s=1:k])
 aC=ajd(Cset; algorithm=:OJoB, simple=true)
 aC2=ajd(Cset; algorithm=:NoJoB, simple=true)
 aC3=ajd(Cset; algorithm=:LogLike, simple=true)
+aC4=ajd(Cset; algorithm=:LogLikeR, simple=true)
 
 # method (1) complex
 t, n, k=50, 10, 4
@@ -142,22 +143,26 @@ for i=1:length(Xcset) Xcset[i]+=Xcfixed end
 Ccset = ℍVector([ℍ((Xcset[s]'*Xcset[s])/t) for s=1:k])
 aCc=ajd(Ccset; algorithm=:OJoB, simple=true)
 aCc2=ajd(Ccset; algorithm=:NoJoB, simple=true)
+aCc3=ajd(Ccset; algorithm=:LogLike, simple=true)
 
 
 # method (2) real
 aX=ajd(Xset; algorithm=:OJoB, simple=true)
 aX2=ajd(Xset; algorithm=:NoJoB, simple=true)
 aX3=ajd(Xset; algorithm=:LogLike, simple=true)
+aX4=ajd(Xset; algorithm=:LogLikeR, simple=true)
 @test aX≈aC
 @test aX2≈aC2
 @test aX3≈aC3
+@test aX4≈aC4
 
 # method (2) complex
 aXc=ajd(Xcset; algorithm=:OJoB, simple=true)
 aXc2=ajd(Xcset; algorithm=:NoJoB, simple=true)
+aXc3=ajd(Xcset; algorithm=:LogLike, simple=true)
 @test aXc≈aCc
 @test aXc2≈aCc2
-
+@test aXc3≈aCc3
 
 # create 20 REAL random commuting matrices
 # they all have the same eigenvectors
@@ -177,16 +182,20 @@ Dest=PosDefManifold.randΛ(eigvalsSNR=100, n, k)
 A=randn(n, n) # mixing matrix
 Cset3=Vector{Hermitian}([Hermitian(A*D*A') for D ∈ Dest])
 a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
-@test spForm(a.F'*A)<0.0001
+@test spForm(a.F'*A)<0.001
 a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
-@test spForm(a.F'*A)<0.0001
+@test spForm(a.F'*A)<0.001
+a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
+@test spForm(a.F'*A)<0.001
+
 # repeat the test adding noise; now the model is no more exactly identifiable
 for k=1:length(Cset3) Cset3[k]+=randP(n)/1000 end
 a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
 @test spForm(a.F'*A)<0.1
 a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
 @test spForm(a.F'*A)<0.1
-
+a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
+@test spForm(a.F'*A)<0.1
 
 # create 20 COMPLEX random commuting matrices
 # they all have the same eigenvectors
@@ -195,11 +204,13 @@ Ccset2=PosDefManifold.randP(ComplexF64, 3, 20; eigvalsSNR=Inf, commuting=true)
 ac=ajd(Ccset2; algorithm=:OJoB)
 # he AJD must be equivalent to the eigenvector matrix of any of the matrices in Cset
 # just a sanity check as rounding errors appears for complex data
-@test norm([spForm(ac.F'*eigvecs(C)) for C ∈ Ccset2])/3<0.001
+@test norm([spForm(ac.F'*eigvecs(C)) for C ∈ Ccset2])/3<0.01
 
-# the same thing using the NoJoB algorithm. Require less precision
+# the same thing using the NoJoB and LogLike algorithms. Require less precision
 # as the NoJoB solution is not constrained in the orthogonal group
 ac=ajd(Ccset2; algorithm=:NoJoB)
+@test norm([spForm(ac.F'*eigvecs(C)) for C ∈ Ccset2])/3<0.01
+ac=ajd(Ccset2; algorithm=:LogLike)
 @test norm([spForm(ac.F'*eigvecs(C)) for C ∈ Ccset2])/3<0.01
 
 # REAL data:
@@ -212,6 +223,8 @@ Cset=PosDefManifold.randP(8, 20; eigvalsSNR=10, SNR=2, commuting=false)
 a=ajd(Cset; trace1=true, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 
 a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+
+a=ajd(Cset; algorithm=:LogLikeR, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 
 # AJD for plots below
 a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true)
@@ -256,6 +269,9 @@ ac=ajd(Ccset; trace1=true, w=nonD, preWhite=true,
 
 # run NoJoB
 ac=ajd(Ccset; eVarC=8, eVar=0.99)
+
+# run logLike
+ac=ajd(Ccset; algorithm=:LogLike, eVarC=8, eVar=0.99)
 ```
 
 """
@@ -282,8 +298,12 @@ function ajd(𝐂::ℍVector;
                trace1=trace1, w=w, preWhite=preWhite, sort=sort,
                      init=init, tol=tol, maxiter=maxiter, verbose=verbose,
                      eVar=eVarC, eVarMeth=eVarMeth)
-   elseif algorithm==:LogLike
+   elseif algorithm == :LogLike
           U, V, λ, iter, conv=logLike(𝐂; w=w, preWhite=preWhite, sort=sort,
+                init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+                eVar=eVarC, eVarMeth=eVarMeth)
+   elseif algorithm == :LogLikeR
+          U, V, λ, iter, conv=logLikeR(𝐂; w=w, preWhite=preWhite, sort=sort,
                 init=init, tol=tol, maxiter=maxiter, verbose=verbose,
                 eVar=eVarC, eVarMeth=eVarMeth)
    #=
