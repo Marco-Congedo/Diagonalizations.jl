@@ -145,7 +145,6 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	verbose && println("")
 
 	# get B such B'*C[k]*B is diagonal
-
 	B = preWhite ? W.F*Matrix(B') : Matrix(B')
 
 	# sort the vectors of solver
