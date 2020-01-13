@@ -71,14 +71,14 @@ function _logLikeWeights(w, 𝐂, type)
 end
 
 
-function logLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
-			      w 		:: Union{Tw, Function} = ○,
-				  preWhite  :: Bool = false,
-				  sort      :: Bool = true,
-				  init 	 :: Union{Symmetric, Hermitian, Nothing} = ○,
-				  tol     :: Real = 0.,
-				  maxiter :: Int  = 60,
-				  verbose :: Bool = false,
+function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
+				 w			:: Union{Tw, Function} = ○,
+				 preWhite  	:: Bool = false,
+				 sort      	:: Bool = true,
+				 init		:: Union{Symmetric, Hermitian, Nothing} = ○,
+				 tol     	:: Real = 0.,
+				 maxiter 	:: Int  = 60,
+				 verbose 	:: Bool = false,
 			  eVar 	   :: TeVaro = ○,
 			  eVarMeth :: Function = searchsortedfirst)
 
@@ -113,59 +113,59 @@ function logLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	  return decr
 	end # phamSweep
 
-    type, k=eltype(𝐂[1]), length(𝐂)
+	type, k=eltype(𝐂[1]), length(𝐂)
 
 	w, ∑w = _logLikeWeights(w, 𝐂, type) # weights and sum of weights
 
-  	# pre-whiten, initialize and stack matrices horizontally
-  	if preWhite
-  		W=whitening(PosDefManifold.mean(Jeffrey, 𝐂); eVar=eVar, eVarMeth=eVarMeth)
-  		c=hcat([(W.F'*C*W.F) for C∈𝐂]...)
-  	else
-  		# initialization only if preWhite is false
-  		init≠nothing ? c=hcat([(init'*C*init) for C∈𝐂]...) : c=hcat(𝐂...)
-  	end
+	# pre-whiten, initialize and stack matrices horizontally
+	if preWhite
+		W=whitening(PosDefManifold.mean(Jeffrey, 𝐂); eVar=eVar, eVarMeth=eVarMeth)
+		c=hcat([(W.F'*C*W.F) for C∈𝐂]...)
+	else
+		# initialization only if preWhite is false
+		init≠nothing ? c=hcat([(init'*C*init) for C∈𝐂]...) : c=hcat(𝐂...)
+	end
 
 	(n, nk) = size(c)
-  	tol==0. ? tolerance = √eps(real(type)) : tolerance = tol
-  	iter, conv, converged, e = 1, 0., false, type(eps(real(type)))
+	tol==0. ? tolerance = √eps(real(type)) : tolerance = tol
+	iter, conv, converged, e = 1, 0., false, type(eps(real(type)))
 
-  	B=Matrix{type}(I, n, n)
+	B=Matrix{type}(I, n, n)
 
-  	verbose && @info("Iterating LogLike2 algorithm...")
-  	while true
-  	   conv=real(phamSweep!())
-  		verbose && println("iteration: ", iter, "; convergence: ", conv)
-  		(overRun = iter == maxiter) && @warn("LogLike: reached the max number of iterations before convergence:", iter)
-  		(converged = conv <= tolerance) || overRun==true ? break : nothing
-  		iter += 1
-  	end
-  	verbose && @info("Convergence has "*converged ? "" : "not "*"been attained.\n")
-  	verbose && println("")
+	verbose && @info("Iterating LogLike2 algorithm...")
+	while true
+	   conv=real(phamSweep!())
+		verbose && println("iteration: ", iter, "; convergence: ", conv)
+		(overRun = iter == maxiter) && @warn("LogLike: reached the max number of iterations before convergence:", iter)
+		(converged = conv <= tolerance) || overRun==true ? break : nothing
+		iter += 1
+	end
+	verbose && @info("Convergence has "*converged ? "" : "not "*"been attained.\n")
+	verbose && println("")
 
-  	B=Matrix(B') # get B such B'*C[k]*B is diagonal
+	B=Matrix(B') # get B such B'*C[k]*B is diagonal
 
-  	# sort the vectors of solver
-  	M=mean(𝐂)
-  	D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
-  	λ = sort ? _permute!(B, D, n) : diag(D)
+	# sort the vectors of solver
+	M=mean(𝐂)
+	D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
+	λ = sort ? _permute!(B, D, n) : diag(D)
 
-  	return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
-  					  (B, pinv(B), λ, iter, conv)
+	return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
+					  (B, pinv(B), λ, iter, conv)
 end
 
 
 
 function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
-			      w 		:: Union{Tw, Function} = ○,
+				  w 		:: Union{Tw, Function} = ○,
 				  preWhite  :: Bool = false,
 				  sort      :: Bool = true,
-				  init 	 :: Union{Symmetric, Hermitian, Nothing} = ○,
-				  tol     :: Real = 0.,
-				  maxiter :: Int  = 60,
-				  verbose :: Bool = false,
-			  eVar 	  :: TeVaro = ○,
-			  eVarMeth :: Function = searchsortedfirst)
+				  init 	 	:: Union{Symmetric, Hermitian, Nothing} = ○,
+				  tol     	:: Real = 0.,
+				  maxiter 	:: Int  = 60,
+				  verbose 	:: Bool = false,
+			eVar 	  :: TeVaro = ○,
+			eVarMeth  :: Function = searchsortedfirst)
 
 	function phamSweepR!()
 	   det, decr, i, ic  = 1., 0., 1, n
@@ -178,7 +178,7 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 					if w[κ]>e
 						wκ, t1, t2, t = w[κ], 𝐜[κ][ii+1], 𝐜[κ][jj+1], 𝐜[κ][ij+1]
 						p += wκ*t/t1; q += wκ*t/t2; q1 += wκ*t1/t2; p2 += wκ*t2/t1
-				   end
+					end
 				end
 
 				# find rotation
@@ -197,36 +197,35 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 
 				for κ=1:k
 					if w[κ]>e
-				   	ii, jj = i, j
-				      while ii<ij
+					   	ii, jj = i, j
+						while ii<ij
 							𝜏 = 𝐜[κ][ii+1]
 							𝐜[κ][ii+1] = 𝐜[κ][ii+1] + B₁₂*𝐜[κ][jj+1]
 							𝐜[κ][jj+1] = 𝐜[κ][jj+1] + B₂₁*𝜏 # at exit ii = ij = i + jc
 							ii += n
 							jj += n
-				      end
+						end
 						𝜏 = 𝐜[κ][i+ic+1]
 						𝐜[κ][i+ic+1] += (B₁₂*(2*𝐜[κ][ij+1] + B₁₂*𝐜[κ][jj+1]))
 						𝐜[κ][jj+1] += B₂₁*𝐜[κ][ij+1]
 						𝐜[κ][ij+1] += B₂₁*𝜏	# element of index j,i */
-
-				      while ii<ic
+						while ii<ic
 							𝜏 = 𝐜[κ][ii+1]
 							𝐜[κ][ii+1] += B₁₂*𝐜[κ][jj+1]
 							𝐜[κ][jj+1] += B₂₁*𝜏
 							ii += n
 							jj += 1
-					  end
+						end
 
-				      jj += 1
-					  ii += 1
-				      while jj<(jc+n)
+						jj += 1
+						ii += 1
+						while jj<(jc+n)
 							𝜏 = 𝐜[κ][ii+1]
 							𝐜[κ][ii+1] += B₁₂*𝐜[κ][jj+1]
 							𝐜[κ][jj+1] += B₂₁*𝜏
 							jj += 1
 							ii += 1
-				      end
+						end
 					end
 				end
 
@@ -299,6 +298,6 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
 	λ = sort ? _permute!(B, D, n) : diag(D)
 
-	return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
-					  (B, pinv(B), λ, iter, conv)
+	return preWhite ? 	(W.F*B, pinv(B)*W.iF, λ, iter, conv) :
+						(B, pinv(B), λ, iter, conv)
 end
