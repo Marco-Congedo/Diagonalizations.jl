@@ -37,10 +37,6 @@ To install the package execute the following command in Julia's REPL:
 
     ]add CovarianceEstimation PosDefManifold Diagonalizations
 
-## Disclaimer
-
-This package is throughoutly tested for real data input. Testing for complex data input is still to be done.
-
 ## Examples
 
 ```
