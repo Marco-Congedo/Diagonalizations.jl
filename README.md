@@ -4,7 +4,7 @@
 |:---------------------------------------:|
 | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
 
-**Diagonalizations.jl** is a [**Julia**](https://julialang.org/) signal processing package implementing several *closed form* and *iterative* diagonalization procedures for both **real** and **complex** data input:
+**Diagonalizations.jl** is a [**Julia**](https://julialang.org/) signal processing package implementing several *closed form* and *iterative* diagonalization procedures for both *real* and *complex* data input:
 
 | Acronym   | Full Name | Datasets ( *m* ) | Observations ( *k* ) |
 |:----------|:---------:|:---------:|:---------:|
