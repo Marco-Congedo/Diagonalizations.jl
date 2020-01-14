@@ -84,9 +84,8 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 			  eVarMeth :: Function = searchsortedfirst)
 
 	function phamSweep!()
-	  decr = 0.
-	  for i = 2:n
-		for j = 1:i-1
+	decr = 0.
+	for i = 2:n, j = 1:i-1
 		  c1 = 𝐜[i, i:n:nk]
 		  c2 = 𝐜[j, j:n:nk]
 		  g₁₂ = mean(𝐜[i, j:n:nk]./c1)		# this is g_{ij}
@@ -97,21 +96,20 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 		  𝜏 = √(𝜔₂₁/𝜔₁₂)
 		  𝜏₁ = (𝜏*g₁₂ + g₂₁)/(𝜔 + 1.)
 		  if type<:Real 𝜔=max(𝜔 - 1., e) end
-		  𝜏₂ = (𝜏*g₁₂ - g₂₁)/𝜔 #max(𝜔 - 1., e)	# in case 𝜔 = 1
-		  h₁₂ = 𝜏₁ + 𝜏₂					# this is twice h_{ij}
-		  h₂₁ = conj((𝜏₁ - 𝜏₂)/𝜏)		# this is twice h_{ji}
+		  𝜏₂ = (𝜏*g₁₂ - g₂₁)/𝜔 		#max(𝜔 - 1., e)	# in case 𝜔 = 1
+		  h₁₂ = 𝜏₁ + 𝜏₂				# this is twice h_{ij}
+		  h₂₁ = conj((𝜏₁ - 𝜏₂)/𝜏)	# this is twice h_{ji}
 		  decr += k*(g₁₂*conj(h₁₂) + g₂₁*h₂₁)/2.
 
 		  𝜏 = 1. + 0.5im*imag(h₁₂*h₂₁)	# = 1 + (h₁₂*h₂₁ - conj(h₁₂*h₂₁))/4
-		  𝜏 = 𝜏 + √(𝜏^2 - h₁₂*h₂₁) #
+		  𝜏 = 𝜏 + √(𝜏^2 - h₁₂*h₂₁)
 		  T = [1 -h₁₂/𝜏; -h₂₁/𝜏 1]
 		  𝐜[[i, j], :] = T*𝐜[[i, j], :]		# new i, j rows of 𝐜
 		  ijInd = vcat(collect(i:n:nk), collect(j:n:nk))
 		  𝐜[:, ijInd] = reshape(reshape(𝐜[:, ijInd], n*k, 2)*T', n, k*2)		# new i,j columns of 𝐜
 		  B[[i, j], :] = T*B[[i, j], :]
-		end
-	  end
-	  return decr
+	end
+	return decr
 	end # phamSweep
 
 	type, k=eltype(𝐂[1]), length(𝐂)
@@ -132,7 +130,6 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	iter, conv, converged, e = 1, 0., false, type(eps(real(type)))
 
 	B=Matrix{type}(I, n, n)
-
 	verbose && @info("Iterating LogLike2 algorithm...")
 	while true
 	   conv=real(phamSweep!())
