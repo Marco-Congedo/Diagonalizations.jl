@@ -206,6 +206,7 @@ include("csp.jl")
 include("cca.jl")
 include("../src/optim/JoB.jl")
 include("../src/optim/LogLike.jl")
+include("../src/optim/Jade.jl")
 include("ajd.jl")
 include("gcca.jl")
 

@@ -1,16 +1,16 @@
-#   Unit "LogLike.jl" of the Diagonalization.jl package for Julia language
+#  Unit "LogLike.jl" of the Diagonalization.jl package for Julia language
 #
-#   MIT License
-#   Copyright (c) 2019, 2020
-#   Marco Congedo, CNRS, Grenoble, France:
-#   https://sites.google.com/site/marcocongedo/home
+#  MIT License
+#  Copyright (c) 2019, 2020
+#  Marco Congedo, CNRS, Grenoble, France:
+#  https://sites.google.com/site/marcocongedo/home
 
 # ? CONTENTS :
-#   This unit implements two Dinh-Tuan Pham's algorithms based on the
-#   log-likelyhood (Kullback-Leibler divergence) criterion.
-#   D.-T. Pham (2000) Joint approximate diagonalization of positive definite
-#   matrices, SIAM Journal on Matrix Analysis and Applications, 22(4), 1136–1152.
-#   They are adapted in Julia from code freely made provided from the author.
+#  This unit implements two Dinh-Tuan Pham's algorithms based on the
+#  log-likelyhood (Kullback-Leibler divergence) criterion.
+#  D.-T. Pham (2000) Joint approximate diagonalization of positive definite
+#  matrices, SIAM Journal on Matrix Analysis and Applications, 22(4), 1136–1152.
+#  They are adapted in Julia from code freely made available from the author.
 #
 #  These algorithms handles the AJD diagonalization procedure, corresponding
 #  to the case m=1, k>1 according to the taxonomy adopted in this package.
@@ -57,8 +57,7 @@
 #  NB: Pham's algorithm proceeds by transforming pairs of vectors of B.
 #  A sweep goes over all (n*(n+1))/2 ij pairs, i>j. Thus it can be optimized
 #  by multi-threading the optimization of the pairs as it is done
-#  for algorithms based on Givens rotations (e.g., roun-(Robin tournament scheme)).
-# """
+#  for algorithms based on Givens rotations (e.g., round-Robin tournament scheme).
 
 
 # function to get the weights from argment `w`
@@ -86,10 +85,10 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	function phamSweep!()
 	decr = 0.
 	for i = 2:n, j = 1:i-1
-		  c1 = 𝐜[i, i:n:nk]
-		  c2 = 𝐜[j, j:n:nk]
-		  g₁₂ = mean(𝐜[i, j:n:nk]./c1)		# this is g_{ij}
-		  g₂₁ = mean(𝐜[i, j:n:nk]./c2)		# conjugate of g_{ji}
+		  c1 = C[i, i:n:nk]
+		  c2 = C[j, j:n:nk]
+		  g₁₂ = mean(C[i, j:n:nk]./c1)		# this is g_{ij}
+		  g₂₁ = mean(C[i, j:n:nk]./c2)		# conjugate of g_{ji}
 		  𝜔₂₁ = mean(c1./c2)
 		  𝜔₁₂ = mean(c2./c1)
 		  𝜔 = √(𝜔₁₂*𝜔₂₁)
@@ -104,9 +103,9 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 		  𝜏 = 1. + 0.5im*imag(h₁₂*h₂₁)	# = 1 + (h₁₂*h₂₁ - conj(h₁₂*h₂₁))/4
 		  𝜏 = 𝜏 + √(𝜏^2 - h₁₂*h₂₁)
 		  T = [1 -h₁₂/𝜏; -h₂₁/𝜏 1]
-		  𝐜[[i, j], :] = T*𝐜[[i, j], :]		# new i, j rows of 𝐜
+		  C[[i, j], :] = T*C[[i, j], :]		# new i, j rows of C
 		  ijInd = vcat(collect(i:n:nk), collect(j:n:nk))
-		  𝐜[:, ijInd] = reshape(reshape(𝐜[:, ijInd], n*k, 2)*T', n, k*2)		# new i,j columns of 𝐜
+		  C[:, ijInd] = reshape(reshape(C[:, ijInd], n*k, 2)*T', n, k*2)		# new i,j columns of C
 		  B[[i, j], :] = T*B[[i, j], :]
 	end
 	return decr
@@ -119,15 +118,15 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	# pre-whiten, initialize and stack matrices horizontally
 	if preWhite
 		W=whitening(PosDefManifold.mean(Jeffrey, 𝐂); eVar=eVar, eVarMeth=eVarMeth)
-		𝐜=hcat([(W.F'*C*W.F) for C∈𝐂]...)
+		C=hcat([(W.F'*C_*W.F) for C_∈𝐂]...)
 	else
 		# initialization only if preWhite is false
-		init≠nothing ? 𝐜=hcat([(init'*C*init) for C∈𝐂]...) : 𝐜=hcat(𝐂...)
+		init≠nothing ? C=hcat([(init'*C_*init) for C_∈𝐂]...) : C=hcat(𝐂...)
 	end
 
-	(n, nk) = size(𝐜)
+	(n, nk) = size(C)
 	tol==0. ? tolerance = √eps(real(type)) : tolerance = tol
-	iter, conv, converged, e = 1, 0., false, type(eps(real(type)))
+	iter, conv, 😋, e = 1, 0., false, type(eps(real(type)))
 
 	B=Matrix{type}(I, n, n)
 	verbose && @info("Iterating LogLike2 algorithm...")
@@ -135,21 +134,26 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	   conv=real(phamSweep!())
 		verbose && println("iteration: ", iter, "; convergence: ", conv)
 		(overRun = iter == maxiter) && @warn("LogLike: reached the max number of iterations before convergence:", iter)
-		(converged = conv <= tolerance) || overRun==true ? break : nothing
+		(😋 = conv <= tolerance) || overRun==true ? break : nothing
 		iter += 1
 	end
-	verbose && @info("Convergence has "*converged ? "" : "not "*"been attained.\n")
+	verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n")
 	verbose && println("")
 
 	# get B such B'*C[k]*B is diagonal
-	B = preWhite ? W.F*Matrix(B') : Matrix(B')
+	### B = preWhite ? W.F*Matrix(B') : Matrix(B')
+	B = Matrix(B')
 
 	# sort the vectors of solver
-	M=mean(𝐂)
-	D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
+	###M=mean(𝐂)
+	###D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
+	D=Diagonal([mean(C[i, i:n:nk]) for i=1:n])
 	λ = sort ? _permute!(B, D, n) : diag(D)
 
-	return (B, pinv(B), λ, iter, conv)
+	return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
+                      (B, pinv(B), λ, iter, conv)
+
+	### return (B, pinv(B), λ, iter, conv)
 end
 
 
@@ -262,7 +266,7 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 
 	n, k, type =size(𝐂[1], 1), length(𝐂), eltype(𝐂[1])
 	tol==0. ? tolerance = √eps(real(type)) : tolerance = tol
-	iter, conv, converged, e = 1, 0., false, eps(type)*100
+	iter, conv, 😋, e = 1, 0., false, eps(type)*100
 
 	w, ∑w = _logLikeWeights(w, 𝐂, type) # weights and sum of weights
 
@@ -283,10 +287,10 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	   conv=phamSweepR!()
 		verbose && println("iteration: ", iter, "; convergence: ", conv)
 		(overRun = iter == maxiter) && @warn("logLikeR: reached the max number of iterations before convergence:", iter)
-		(converged = conv <= tolerance) || overRun==true ? break : nothing
+		(😋 = conv <= tolerance) || overRun==true ? break : nothing
 		iter += 1
 	end
-	verbose && @info("Convergence has "*converged ? "" : "not "*"been attained.\n")
+  	verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n")
 	verbose && println("")
 
 	#=
@@ -299,9 +303,10 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 
 	return preWhite ? 	(W.F*B, pinv(B)*W.iF, λ, iter, conv) :
 						(B, pinv(B), λ, iter, conv)
-	=#
 
+	=#
 	# get B such B'*C[k]*B is diagonal
+	#=
 	B = preWhite ? W.F*Matrix(B') : Matrix(B')
 
 	# sort the vectors of solver
@@ -310,4 +315,19 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	λ = sort ? _permute!(B, D, n) : diag(D)
 
 	return (B, pinv(B), λ, iter, conv)
+	=#
+
+	# get B such B'*C[k]*B is diagonal
+	### B = preWhite ? W.F*Matrix(B') : Matrix(B')
+	B = Matrix(B')
+
+	# sort the vectors of solver
+	M=mean(𝐂)
+	D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
+	### D=Diagonal([mean(C[i, i:n:nk]) for i=1:n]) # Good!
+
+	λ = sort ? _permute!(B, D, n) : diag(D)
+
+	return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
+                      (B, pinv(B), λ, iter, conv)
 end

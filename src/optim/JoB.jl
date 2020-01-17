@@ -109,7 +109,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
               dims     :: Int64 = 1,
               meanX    :: Tmean = 0,
               trace1   :: Bool = false,
-              w        :: Union{Tw, Function} = ○,
+              w        :: Twf = ○,
           fullModel :: Bool = false,
           preWhite  :: Bool = false,
           sort      :: Bool = true,
@@ -127,13 +127,15 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
     input==:d ? 𝒞=_crossCov(𝐗, m, k;
                             covEst=covEst, dims=dims, meanX=meanX) : 𝒞=𝐗
 
-    if trace1 || w ≠ ○ _Normalize!(𝒞, m, k, trace1, w) end
 
-    if eVar isa Int && size(𝒞[1, 1, 1], 1) ≤ eVar ≤ 0
-        eVar=size(𝒞[1, 1, 1], 1)
+    𝒢=deepcopy(𝒞)
+    if trace1 || w ≠ ○ _Normalize!(𝒢, m, k, trace1, w) end
+
+    if eVar isa Int && size(𝒢[1, 1, 1], 1) ≤ eVar ≤ 0
+        eVar=size(𝒢[1, 1, 1], 1)
     end
 
-    iter, conv, oldconv, converged, conv_ = 1, 0., 1.01, false, 0.
+    iter, conv, oldconv, 😋, conv_ = 1, 0., 1.01, false, 0.
     tol==0. ? tolerance = √eps(real(type)) : tolerance = tol
 
     # pre-whitening
@@ -141,32 +143,29 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
         # for the moment being computed on the average across k and m
         # if eVar is not an Int.
         # This way for all i=1:m the dimensionality reduction is fixed
+        # for the case m=1 this is the classical whitening
         if !(eVar isa Int)
-            C=ℍ(𝛍(𝒞[κ, i, i] for κ=1:k, i=1:m))
-            #W=whitening(C; eVar=eVar, eVarMeth=eVarMeth)
-            p, arev = _getssd!(eVar, eigvals(C), size(𝒞[1, 1, 1], 1), eVarMeth)
-            𝑾=[whitening(ℍ(𝛍(𝒞[κ, i, i] for κ=1:k)); eVar=p) for i=1:m]
+            G=ℍ(𝛍(𝒢[κ, i, i] for κ=1:k, i=1:m))
+            p, arev = _getssd!(eVar, eigvals(G), size(𝒢[1, 1, 1], 1), eVarMeth)
+            𝑾=[whitening(ℍ(𝛍(𝒢[κ, i, i] for κ=1:k)); eVar=p) for i=1:m]
         else
-            𝑾=[whitening(ℍ(𝛍(𝒞[κ, i, i] for κ=1:k)); eVar=eVar) for i=1:m]
+            𝑾=[whitening(ℍ(𝛍(𝒢[κ, i, i] for κ=1:k)); eVar=eVar) for i=1:m]
         end
 
-        𝒢=Array{Matrix}(undef, k, m, m)
-        #println("k, m: ", k, " ", m)
+        #𝒢=Array{Matrix}(undef, k, m, m)
         if m==1
             @inbounds for κ=1:k
-                𝒢[κ, 1, 1] = 𝑾[1].F' * 𝒞[κ, 1, 1] * 𝑾[1].F
+                𝒢[κ, 1, 1] = 𝑾[1].F' * 𝒢[κ, 1, 1] * 𝑾[1].F
             end
         else
             @inbounds for κ=1:k, i=1:m-1, j=i+1:m
-                𝒢[κ, i, j] = 𝑾[i].F' * 𝒞[κ, i, j] * 𝑾[j].F
+                𝒢[κ, i, j] = 𝑾[i].F' * 𝒢[κ, i, j] * 𝑾[j].F
                 𝒢[κ, j, i] = 𝒢[κ, i, j]'
             end
             @inbounds for κ=1:k, i=1:m
-                𝒢[κ, i, i] = 𝑾[i].F' * 𝒞[κ, i, i] * 𝑾[i].F
+                𝒢[κ, i, i] = 𝑾[i].F' * 𝒢[κ, i, i] * 𝑾[i].F
             end
         end
-    else
-        𝒢=𝒞
     end
     n=size(𝒢[1, 1, 1], 1)
 
@@ -201,7 +200,6 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
     end
 
     function updateR!(η, i, j)  # 𝐑[η] += (𝒢[κ, i, j] * 𝐔[j][:, η]) times its transpose
-        #println("k, i, j ", k, " ", i, " ", j)
         # don't use BLAS for complex data
         if type<:Real
             @inbounds for κ=1:k
@@ -247,7 +245,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
             verbose && println("iteration: ", iter, "; convergence: ", conv)
             (diverging = conv < 0) && verbose && @warn("OJoB diverged at:", iter)
             (overRun = iter == maxiter) && @warn("OJoB: reached the max number of iterations before convergence:", iter)
-            (converged = 0. <= conv <= tolerance) || overRun==true ? break : nothing
+            (😋 = 0. <= conv <= tolerance) || overRun==true ? break : nothing
             oldconv=conv_
             iter += 1
         end # while
@@ -283,13 +281,13 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
             verbose && println("iteration: ", iter, "; convergence: ", conv)
             (diverging = conv < 0) && verbose && @warn("NoJoB diverged at:", iter)
             (overRun = iter == maxiter) && @warn("NoJoB: reached the max number of iterations before convergence:", iter)
-            (converged = 0. <= conv <= tolerance) || overRun==true ? break : nothing
+            (😋 = 0. <= conv <= tolerance) || overRun==true ? break : nothing
             oldconv=conv_
             iter += 1
         end # while
     end
 
-    verbose ? (converged ? @info("Convergence has been attained.\n") : @warn("Convergence has not been attained.")) : nothing
+    verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n")
     verbose && println("")
 
     # auto-sort the eigenvectors
