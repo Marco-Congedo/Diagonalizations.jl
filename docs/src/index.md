@@ -101,7 +101,7 @@ this package supports :
 
 ## Code units
 
-**Diagonalizations.jl** includes nine code units (.jl files):
+**Diagonalizations.jl** includes ten code units (.jl files):
 
 | Unit   | Description |
 |:----------|:----------|
@@ -114,7 +114,7 @@ this package supports :
 | tools.jl | Unit containing general tools and internal functions|
 | JoB.jl | Unit implementing the OJoB and NoJoB iterative algorithms (in the 'optim' folder)|
 | LogLike.jl | Unit implementing the Log-Likelyhood iterative algorithms (in the 'optim' folder)|
-
+| Jade.jl | Unit implementing the Givens rotation iterative algorithms (in the 'optim' folder)|
 
 Furthermore, all examples given at the end of the documentation of the filter
 constructors are collected as .jl units in the 'examples' folder.

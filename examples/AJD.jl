@@ -11,6 +11,7 @@ aC=ajd(Cset; algorithm=:OJoB, simple=true)
 aC2=ajd(Cset; algorithm=:NoJoB, simple=true)
 aC3=ajd(Cset; algorithm=:LogLike, simple=true)
 aC4=ajd(Cset; algorithm=:LogLikeR, simple=true)
+aC5=ajd(Cset; algorithm=:JADE, simple=true)
 
 # method (1) complex
 t, n, k=50, 10, 4
@@ -22,6 +23,7 @@ Ccset = ℍVector([ℍ((Xcset[s]'*Xcset[s])/t) for s=1:k])
 aCc=ajd(Ccset; algorithm=:OJoB, simple=true)
 aCc2=ajd(Ccset; algorithm=:NoJoB, simple=true)
 aCc3=ajd(Ccset; algorithm=:LogLike, simple=true)
+aCc4=ajd(Ccset; algorithm=:JADE, simple=true)
 
 
 # method (2) real
@@ -29,18 +31,24 @@ aX=ajd(Xset; algorithm=:OJoB, simple=true)
 aX2=ajd(Xset; algorithm=:NoJoB, simple=true)
 aX3=ajd(Xset; algorithm=:LogLike, simple=true)
 aX4=ajd(Xset; algorithm=:LogLikeR, simple=true)
+aX5=ajd(Xset; algorithm=:JADE, simple=true)
+
 @test aX≈aC
 @test aX2≈aC2
 @test aX3≈aC3
 @test aX4≈aC4
+@test aX5≈aC5
+
 
 # method (2) complex
 aXc=ajd(Xcset; algorithm=:OJoB, simple=true)
 aXc2=ajd(Xcset; algorithm=:NoJoB, simple=true)
 aXc3=ajd(Xcset; algorithm=:LogLike, simple=true)
+aXc4=ajd(Xcset; algorithm=:JADE, simple=true)
 @test aXc≈aCc
 @test aXc2≈aCc2
 @test aXc3≈aCc3
+@test aXc4≈aCc4
 
 # create 20 REAL random commuting matrices
 # they all have the same eigenvectors
@@ -51,13 +59,18 @@ a=ajd(Cset2; algorithm=:OJoB)
 # of any of the matrices in Cset
 @test [spForm(a.F'*eigvecs(C))+1. for C ∈ Cset2] ≈
       ones(eltype(Cset2[1]), length(Cset2))
+# do the same for JADE algorithm
+a=ajd(Cset2; algorithm=:JADE)
+@test [spForm(a.F'*eigvecs(C))+1. for C ∈ Cset2] ≈
+      ones(eltype(Cset2[1]), length(Cset2))
+
 
 # generate positive definite matrices with model A*D_κ*D, where
 # A is the mixing matrix and D_κ, for all κ=1:k, are diagonal matrices.
 # The estimated AJD matrix must be the inverse of A
 n, k=3, 10
 Dest=PosDefManifold.randΛ(eigvalsSNR=100, n, k)
-A=randn(n, n) # mixing matrix
+A=randn(n, n) # non-singular mixing matrix
 Cset3=Vector{Hermitian}([Hermitian(A*D*A') for D ∈ Dest])
 a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
 @test spForm(a.F'*A)<0.001
@@ -65,6 +78,14 @@ a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
 @test spForm(a.F'*A)<0.001
 a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
 @test spForm(a.F'*A)<0.001
+# Do the same thing for orthogonal diagonalizers:
+# now A will be orthogonal
+O=randU(n) # orthogonal mixing matrix
+Cset4=Vector{Hermitian}([Hermitian(O*D*O') for D ∈ Dest])
+a=ajd(Cset4; algorithm=:OJoB, eVarC=n)
+@test spForm(a.F'*O)<0.001
+a=ajd(Cset4; algorithm=:JADE, eVarC=n)
+@test spForm(a.F'*O)<0.001
 
 # repeat the test adding noise; now the model is no more exactly identifiable
 for k=1:length(Cset3) Cset3[k]+=randP(n)/1000 end
@@ -74,6 +95,13 @@ a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
 @test spForm(a.F'*A)<0.1
 a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
 @test spForm(a.F'*A)<0.1
+# the same thing for orthogonal diagonalizers
+for k=1:length(Cset4) Cset4[k]+=randP(n)/1000 end
+a=ajd(Cset4; algorithm=:OJoB, eVarC=n)
+@test spForm(a.F'*O)<0.1
+a=ajd(Cset4; algorithm=:JADE, eVarC=n)
+@test spForm(a.F'*O)<0.1
+
 
 # create 20 COMPLEX random commuting matrices
 # they all have the same eigenvectors
@@ -82,6 +110,9 @@ Ccset2=PosDefManifold.randP(ComplexF64, 3, 20; eigvalsSNR=Inf, commuting=true)
 ac=ajd(Ccset2; algorithm=:OJoB)
 # he AJD must be equivalent to the eigenvector matrix of any of the matrices in Cset
 # just a sanity check as rounding errors appears for complex data
+@test norm([spForm(ac.F'*eigvecs(C)) for C ∈ Ccset2])/3<0.01
+# do the same for JADE algorithm
+ac=ajd(Ccset2; algorithm=:JADE)
 @test norm([spForm(ac.F'*eigvecs(C)) for C ∈ Ccset2])/3<0.01
 
 # the same thing using the NoJoB and LogLike algorithms. Require less precision
@@ -98,11 +129,11 @@ ac=ajd(Ccset2; algorithm=:LogLike)
 # at the pre-whitening level and at the level of final vector selection
 Cset=PosDefManifold.randP(8, 20; eigvalsSNR=10, SNR=2, commuting=false)
 
-a=ajd(Cset; trace1=true, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
-
+a=ajd(Cset; algorithm=:OJoB, trace1=true, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+a=ajd(Cset; algorithm=:NoJoB, trace1=true, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
-
 a=ajd(Cset; algorithm=:LogLikeR, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+a=ajd(Cset; algorithm=:JADE, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 
 
 # AJD for plots below
@@ -136,12 +167,8 @@ Dset=[a.F'*C*a.F for C ∈ Cset];
 # at the pre-whitening level and at the level of final vector selection
 Ccset=PosDefManifold.randP(3, 20; eigvalsSNR=10, SNR=2, commuting=false)
 
-# run OJoB
 ac=ajd(Ccset; trace1=true, w=nonD, preWhite=true,
        algorithm=:OJoB, eVarC=8, eVar=0.99)
-
-# run NoJoB
 ac=ajd(Ccset; eVarC=8, eVar=0.99)
-
-# run logLike
 ac=ajd(Ccset; algorithm=:LogLike, eVarC=8, eVar=0.99)
+ac=ajd(Ccset; algorithm=:JADE, eVarC=8, eVar=0.99)

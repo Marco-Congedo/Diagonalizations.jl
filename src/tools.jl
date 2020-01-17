@@ -544,7 +544,7 @@ _minDim(𝑿::VecVecMat) = minimum((minimum(minimum(size(X)) for X ∈ 𝑿[i]) 
 _maxiter(algorithm, type) =
    if       algorithm ∈ (:OJoB, :NoJoB)
             return type<:Real ? 1000 : 3000
-   elseif   algorithm ∈ (:LogLike, :LogLikeR)
+   elseif   algorithm ∈ (:LogLike, :LogLikeR, :JADE)
             return type<:Real ? 60 : 180
    else throw(ArgumentError("The `algorithm` keyword is uncorrect"))
    end
