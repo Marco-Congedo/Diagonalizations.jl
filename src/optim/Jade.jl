@@ -1,4 +1,4 @@
-#  Unit "JADE.jl" of the Diagonalization.jl Package for Julia language
+#  Unit "Jade.jl" of the Diagonalization.jl Package for Julia language
 #
 #  MIT License
 #  Copyright (c) 2019,
