@@ -21,6 +21,7 @@ function ajd(𝐂::ℍVector;
           tol       :: Real   = 0.,
           maxiter   :: Int    = _maxiter(algorithm, eltype(𝐂[1])),
           verbose   :: Bool   = false,
+          threaded  :: Bool   = true,
         eVar     :: TeVaro    = _minDim(𝐂),
         eVarC    :: TeVaro    = ○,
         eVarMeth :: Function  = searchsortedfirst,
@@ -40,6 +41,7 @@ function ajd(𝐗::VecMat;
        tol       :: Real = 0.,
        maxiter   :: Int  = _maxiter(algorithm, eltype(𝐗[1])),
        verbose   :: Bool = false,
+       threaded  :: Bool = true,
      eVar     :: TeVaro    = _minDim(𝐗),
      eVarC    :: TeVaro    = ○,
      eVarMeth :: Function  = searchsortedfirst,
@@ -106,6 +108,13 @@ If `simple` is set to `true`, ``p`` is set equal to the dimension
 of the matrices ``{C_1,...,C_k}`` and only the fields `.F` and `.iF`
 are written in the constructed object.
 This corresponds to the typical output of AJD algorithms.
+
+if `threaded`=true (default) and the number of threads Julia is instructed
+to use (the output of Threads.nthreads()), is higher than 1,
+AJD algorithms supporting multi-threading run in multi-threaded mode.
+See [Algorithms](@ref) and
+[these notes](https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#Threads-1)
+on multi-threading.
 
 **(2) Approximate joint diagonalization**
 with a set of ``k`` data matrices `𝐗` as input; the
@@ -315,6 +324,7 @@ function ajd(𝐂::ℍVector;
           tol       :: Real   = 1e-06,
           maxiter   :: Int    = _maxiter(algorithm, eltype(𝐂[1])),
           verbose   :: Bool   = false,
+          threaded  :: Bool   = true,
         eVar     :: TeVaro    = _minDim(𝐂),
         eVarC    :: TeVaro    = ○,
         eVarMeth :: Function  = searchsortedfirst,
@@ -325,19 +335,25 @@ function ajd(𝐂::ℍVector;
 
    if     algorithm ∈(:OJoB, :NoJoB)
           U, V, λ, iter, conv=JoB(reshape(𝕄Vector(𝐂), (k, 1, 1)), 1, k, :c, algorithm, eltype(𝐂[1]);
-               trace1=trace1, w=w, preWhite=preWhite, sort=sort,
-                     init=init, tol=tol, maxiter=maxiter, verbose=verbose,
-                     eVar=eVarC, eVarMeth=eVarMeth)
+               trace1=trace1, w=w, preWhite=preWhite, sort=sort, init=init,
+                  tol=tol, maxiter=maxiter, verbose=verbose,
+               eVar=eVarC, eVarMeth=eVarMeth,
+               threaded=threaded)
    elseif algorithm == :LogLike
           U, V, λ, iter, conv=logLike(𝐂; w=w, preWhite=preWhite, sort=sort,
-               init=init, tol=tol, maxiter=maxiter, verbose=verbose,
-               eVar=eVarC, eVarMeth=eVarMeth)
+            init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+            eVar=eVarC, eVarMeth=eVarMeth)
    elseif algorithm == :LogLikeR
           U, V, λ, iter, conv=logLikeR(𝐂; w=w, preWhite=preWhite, sort=sort,
-               init=init, tol=tol, maxiter=maxiter, verbose=verbose,
-               eVar=eVarC, eVarMeth=eVarMeth)
+            init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+            eVar=eVarC, eVarMeth=eVarMeth)
    elseif algorithm==:JADE
           U, V, λ, iter, conv=jade(𝐂;
+               trace1=trace1, w=w, preWhite=preWhite, sort=sort,
+               init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+               eVar=eVarC, eVarMeth=eVarMeth)
+   elseif algorithm==:GAJD
+          U, V, λ, iter, conv=gajd(𝐂;
                trace1=trace1, w=w, preWhite=preWhite, sort=sort,
                init=init, tol=tol, maxiter=maxiter, verbose=verbose,
                eVar=eVarC, eVarMeth=eVarMeth)
@@ -369,6 +385,7 @@ function ajd(𝐗::VecMat;
        tol       :: Real   = 1e-06,
        maxiter   :: Int    = _maxiter(algorithm, eltype(𝐗[1])),
        verbose   :: Bool   = false,
+       threaded  :: Bool   = true,
      eVar     :: TeVaro   = _minDim(𝐗),
      eVarC    :: TeVaro   = ○,
      eVarMeth :: Function = searchsortedfirst,
@@ -378,8 +395,8 @@ function ajd(𝐗::VecMat;
    _check_data(𝐗, dims, covEst, meanX, w)===○ && return
    # check algo
    ajd(_cov(𝐗; covEst=covEst, dims=dims, meanX=meanX);
-       trace1=trace1, w=w, algorithm=algorithm, preWhite=preWhite,
-       sort=sort, init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+       trace1=trace1, w=w, algorithm=algorithm, preWhite=preWhite, sort=sort,
+       init=init, tol=tol, maxiter=maxiter, verbose=verbose, threaded=threaded,
        eVar=eVar, eVarC=eVarC, eVarMeth=eVarMeth, simple=simple)
 end
 
@@ -399,6 +416,7 @@ function majd(𝑿::VecVecMat;
           tol       :: Real      = 0.,
           maxiter   :: Int       = _maxiter(algorithm, eltype(𝑿[1][1])),
           verbose   :: Bool      = false,
+          threaded  :: Bool      = true,
         eVar     :: TeVaro   = _minDim(𝑿),
         eVarC    :: TeVaro   = ○,
         eVarMeth :: Function = searchsortedfirst,
@@ -447,6 +465,13 @@ and only the fields `.F` and `.iF`
 are written in the constructed object.
 This corresponds to the typical output of approximate diagonalization
 algorithms.
+
+if `threaded`=true (default) and the number of threads Julia is instructed
+to use (the output of Threads.nthreads()), is higher than 1,
+solving algorithms supporting multi-threading run in multi-threaded mode.
+See [Algorithms](@ref) and
+[these notes](https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#Threads-1)
+on multi-threading.
 
 **See also:** [gMCA](@ref), [gCCA](@ref), [AJD](@ref).
 
@@ -586,6 +611,7 @@ function majd(𝑿::VecVecMat;
           tol       :: Real      = 0.,
           maxiter   :: Int       = _maxiter(algorithm, eltype(𝑿[1][1])),
           verbose   :: Bool      = false,
+          threaded  :: Bool      = true,
         eVar     :: TeVaro   = _minDim(𝑿),
         eVarC    :: TeVaro   = ○,
         eVarMeth :: Function = searchsortedfirst,
@@ -600,8 +626,8 @@ function majd(𝑿::VecVecMat;
    if algorithm ∈(:OJoB, :NoJoB)
       𝐔, 𝐕, λ, iter, conv=JoB(𝑿, m, k, :d, algorithm, eltype(𝑿[1][1]);
                covEst=covEst, dims=dims, meanX=meanX,
-               fullModel=fullModel, preWhite=preWhite, sort=sort,
-                  init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+               fullModel=fullModel, preWhite=preWhite, sort=sort, init=init,
+               tol=tol, maxiter=maxiter, verbose=verbose, threaded=threaded,
                eVar=eVarC, eVarMeth=eVarMeth)
    # elseif...
    else

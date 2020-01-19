@@ -14,50 +14,6 @@
 #
 #  These algorithms handles the AJD diagonalization procedure, corresponding
 #  to the case m=1, k>1 according to the taxonomy adopted in this package.
-#  The first (logLike) handles both real and complex data input,
-#  the second (logLikeR) only real data.
-#  They take as input a vector of k positive
-#  definite matrices 𝐂 and find a non-singular matrix B such that the
-#  congruences B'*𝐂_κ*B are as diagonal as possible for all κ=1:k.
-#  They have exactly the same API:
-#
-#  `w` is an optional vector of k non-negative weights for each matrix in 𝐂.
-#  Pham's criterion being invariant by scaling, the weights act on the cost
-#  function, not as a weights for the entries of the matrices.
-#  Notice that the weights can be zero, amounting to ignoring the
-#  corresponding matrices. By default all weights are equal to one.
-#  A function can be passed as the `w` argument, in which case the kth weight
-#  is found as the output of the function applied to the kth matrix in 𝐂.
-#  A good choice in general is the `nonD` function declared in tools.jl unit.
-#
-#  if `whitening` = true is passed, the Jeffrey mean of the matrices in 𝐂 is
-#  computed (using the PosDefManifold.jl package) and the matrices in 𝐂
-#  are pre-transformed using the whitening matrix of the mean.
-#  Dimensionality reduction can be obtained at this stage using optional
-#  arguments `eVar` and `eVarMeth` (see documentation of the AJD constructors).
-#
-#  if sort=true (default) the column vectors of the B matrix are reordered
-#  so as to sort in descending order the diagonal elements of B'*mean(𝐂)*B,
-#  where mean(𝐂) is the arithmetic mean of the matrices in 𝐂.
-#
-#  if  `whitening` = false (default), a matrix can be provided with the `init`
-#  argument in order to initialize B. In this case the actual AJD
-#  will be given by init*B, where B is the output of the algorithms.
-#
-#  `tol` is the convergence to be attained.
-#
-#  `maxiter` is the maximum number of iterations allowed.
-#
-#  if `verbose`=true, the convergence attained at each iteration and other
-#  information will be printed.
-#
-#  return: B, its pseudo-inverse, the diagonal elements of B'*mean(𝐂)*B,
-#          the number of iterations and the convergence attained
-#
-#  NB: Pham's algorithm proceeds by transforming pairs of vectors of B.
-#  A sweep goes over all (n*(n+1))/2 ij pairs, i>j. Thus it can be optimized
-#  by multi-threading the optimization of the pairs as it is done
-#  for algorithms based on Givens rotations (e.g., round-Robin tournament scheme).
 
 
 # function to get the weights from argment `w`
@@ -71,6 +27,109 @@ function _logLikeWeights(w, 𝐂, type)
 end
 
 
+#  PRIMITIVE LogLike algorithm:
+#  It takes as input a n·nk matrix holding k horizontally stacked n·n real or
+#  complex matrices, such as C=[C_1...C_k].
+#  It find a non-singular matrix B such that the
+#  congruences B'*C_κ*B are as diagonal as possible for all κ=1:k.
+#  `tol` is the convergence to be attained.
+#  `maxiter` is the maximum number of iterations allowed.
+#  if `verbose`=true, the convergence attained at each iteration and other
+#  information will be printed.
+#
+#  NB: Pham's algorithm proceeds by transforming pairs of vectors of B.
+#  A sweep goes over all (n*(n+1))/2 ij pairs, i>j. Thus it can be optimized
+#  by multi-threading the optimization of the pairs as it is done for
+#  algorithms based on Givens rotations (e.g., round-Robin tournament scheme).
+#
+#  RETURN: B, the number of iterations and the convergence attained (a 3-tuple)
+function logLike(C::Matrix{T};
+	     		 tol 	 = 0.,
+				 maxiter = 60,
+				 verbose = false) where T<:Union{Real, Complex}
+
+	function phamSweep!()
+	decr = 0.
+	for i = 2:n, j = 1:i-1
+		c1 = C[i, i:n:nk]
+		c2 = C[j, j:n:nk]
+		g₁₂ = mean(C[i, j:n:nk]./c1)		# this is g_{ij}
+		g₂₁ = mean(C[i, j:n:nk]./c2)		# conjugate of g_{ji}
+		𝜔₂₁ = mean(c1./c2)
+		𝜔₁₂ = mean(c2./c1)
+		𝜔 = √(𝜔₁₂*𝜔₂₁)
+		𝜏 = √(𝜔₂₁/𝜔₁₂)
+		𝜏₁ = (𝜏*g₁₂ + g₂₁)/(𝜔 + 1.)
+		if type<:Real 𝜔=max(𝜔 - 1., e) end
+		𝜏₂ = (𝜏*g₁₂ - g₂₁)/𝜔 		#max(𝜔 - 1., e)	# in case 𝜔 = 1
+		h₁₂ = 𝜏₁ + 𝜏₂				# this is twice h_{ij}
+		h₂₁ = conj((𝜏₁ - 𝜏₂)/𝜏)	# this is twice h_{ji}
+		decr += k*(g₁₂*conj(h₁₂) + g₂₁*h₂₁)/2.
+
+		𝜏 = 1. + 0.5im*imag(h₁₂*h₂₁)	# = 1 + (h₁₂*h₂₁ - conj(h₁₂*h₂₁))/4
+		𝜏 = 𝜏 + √(𝜏^2 - h₁₂*h₂₁)
+		Γ = [1 conj(-h₂₁/𝜏); conj(-h₁₂/𝜏) 1]
+		C[[i, j], :] = Γ'*C[[i, j], :]		# new i, j rows of C
+		ijInd = vcat(collect(i:n:nk), collect(j:n:nk))
+		C[:, ijInd] = reshape(reshape(C[:, ijInd], n*k, 2)*Γ, n, k*2) # new i,j columns of C
+		B[:, [i, j]] = B[:, [i, j]]*Γ # update the columns of B
+	end
+	return decr
+	end # phamSweep
+
+	type, (n, nk) = eltype(C), size(C)
+	tol==0. ? tolerance = √eps(real(type)) : tolerance = tol
+	k, iter, conv, 😋, e = nk÷n, 1, 0., false, type(eps(real(type)))
+
+	B=Matrix{type}(I, n, n)
+	verbose && @info("Iterating LogLike algorithm...")
+	while true
+	   conv=real(phamSweep!())
+		verbose && println("iteration: ", iter, "; convergence: ", conv)
+		(overRun = iter == maxiter) && @warn("LogLike: reached the max number of iterations before convergence:", iter)
+		(😋 = conv <= tolerance) || overRun==true ? break : iter += 1
+	end
+	verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n\n")
+
+    return B, iter, conv
+end
+
+
+#  ADVANCED LogLike algorithm:
+#  It takes as input a vector of k real symmetric or complex Hermitian
+#  matrices 𝐂 and find a non-singular matrix B such that the
+#  congruences B'*𝐂_κ*B are as diagonal as possible for all κ=1:k.
+#  It handles both real and complex data input.
+#
+#  NB: For the moment being the weights are not supported. The `w` argument
+#  left in for compatibility with other AJD procedures.
+#
+#  if `whitening` = true is passed, the Jeffrey mean of the matrices in 𝐂 is
+#  computed (using the PosDefManifold.jl package) and the matrices in 𝐂
+#  are pre-transformed using the whitening matrix of the mean.
+#  Dimensionality reduction can be obtained at this stage using optional
+#  arguments `eVar` and `eVarMeth` (see documentation of the AJD constructors).
+#
+#  if sort=true (default) the column vectors of the B matrix are normalized
+#  to unit norm and permuted so as to sort in descending order the mean over
+#  κ=1:k of the diagonal elements of B'*𝐂_κ*B.
+#  Note that if `whitening` is true the output B will not have unit norm columns
+#  as it is multiplied by the whitener after being scaled and sorted
+#  and before being returned.
+#
+#  if  `whitening` = false (default), a matrix can be provided with the `init`
+#  argument in order to initialize B. In this case the actual AJD
+#  will be given by init*B, where B is the output of the algorithms.
+#
+#  `tol` is the convergence to be attained.
+#
+#  `maxiter` is the maximum number of iterations allowed.
+#
+#  if `verbose`=true, the convergence attained at each iteration and other
+#  information will be printed.
+#
+#  return: B, its pseudo-inverse, the mean diagonal elements of B'*mean(𝐂)*B,
+#          the number of iterations and the convergence attained
 function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 				 w			:: Union{Tw, Function} = ○,
 				 preWhite	:: Bool = false,
@@ -82,39 +141,6 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 			  eVar 	   :: TeVaro = ○,
 			  eVarMeth :: Function = searchsortedfirst)
 
-	function phamSweep!()
-	decr = 0.
-	for i = 2:n, j = 1:i-1
-		  c1 = C[i, i:n:nk]
-		  c2 = C[j, j:n:nk]
-		  g₁₂ = mean(C[i, j:n:nk]./c1)		# this is g_{ij}
-		  g₂₁ = mean(C[i, j:n:nk]./c2)		# conjugate of g_{ji}
-		  𝜔₂₁ = mean(c1./c2)
-		  𝜔₁₂ = mean(c2./c1)
-		  𝜔 = √(𝜔₁₂*𝜔₂₁)
-		  𝜏 = √(𝜔₂₁/𝜔₁₂)
-		  𝜏₁ = (𝜏*g₁₂ + g₂₁)/(𝜔 + 1.)
-		  if type<:Real 𝜔=max(𝜔 - 1., e) end
-		  𝜏₂ = (𝜏*g₁₂ - g₂₁)/𝜔 		#max(𝜔 - 1., e)	# in case 𝜔 = 1
-		  h₁₂ = 𝜏₁ + 𝜏₂				# this is twice h_{ij}
-		  h₂₁ = conj((𝜏₁ - 𝜏₂)/𝜏)	# this is twice h_{ji}
-		  decr += k*(g₁₂*conj(h₁₂) + g₂₁*h₂₁)/2.
-
-		  𝜏 = 1. + 0.5im*imag(h₁₂*h₂₁)	# = 1 + (h₁₂*h₂₁ - conj(h₁₂*h₂₁))/4
-		  𝜏 = 𝜏 + √(𝜏^2 - h₁₂*h₂₁)
-		  T = [1 -h₁₂/𝜏; -h₂₁/𝜏 1]
-		  C[[i, j], :] = T*C[[i, j], :]		# new i, j rows of C
-		  ijInd = vcat(collect(i:n:nk), collect(j:n:nk))
-		  C[:, ijInd] = reshape(reshape(C[:, ijInd], n*k, 2)*T', n, k*2)		# new i,j columns of C
-		  B[[i, j], :] = T*B[[i, j], :]
-	end
-	return decr
-	end # phamSweep
-
-	type, k=eltype(𝐂[1]), length(𝐂)
-
-	w, ∑w = _logLikeWeights(w, 𝐂, type) # weights and sum of weights
-
 	# pre-whiten, initialize and stack matrices horizontally
 	if preWhite
 		W=whitening(PosDefManifold.mean(Jeffrey, 𝐂); eVar=eVar, eVarMeth=eVarMeth)
@@ -123,41 +149,34 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 		# initialization only if preWhite is false
 		init≠nothing ? C=hcat([(init'*C_*init) for C_∈𝐂]...) : C=hcat(𝐂...)
 	end
-
 	(n, nk) = size(C)
-	tol==0. ? tolerance = √eps(real(type)) : tolerance = tol
-	iter, conv, 😋, e = 1, 0., false, type(eps(real(type)))
 
-	B=Matrix{type}(I, n, n)
-	verbose && @info("Iterating LogLike2 algorithm...")
-	while true
-	   conv=real(phamSweep!())
-		verbose && println("iteration: ", iter, "; convergence: ", conv)
-		(overRun = iter == maxiter) && @warn("LogLike: reached the max number of iterations before convergence:", iter)
-		(😋 = conv <= tolerance) || overRun==true ? break : nothing
-		iter += 1
-	end
-	verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n")
-	verbose && println("")
+	B, iter, conv = logLike(C; tol=tol, maxiter=maxiter, verbose=verbose)
 
-	# get B such B'*C[k]*B is diagonal
-	### B = preWhite ? W.F*Matrix(B') : Matrix(B')
-	B = Matrix(B')
-
-	# sort the vectors of solver
-	###M=mean(𝐂)
-	###D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
-	D=Diagonal([mean(C[i, i:n:nk]) for i=1:n])
-	λ = sort ? _permute!(B, D, n) : diag(D)
+	# scale and permute the vectors of B
+    D=Diagonal([mean(C[i, i:n:nk]) for i=1:n])
+    λ = sort ? _permute!(_scale!(B, D, n)...) : diag(D)
 
 	return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
                       (B, pinv(B), λ, iter, conv)
-
-	### return (B, pinv(B), λ, iter, conv)
 end
 
-
-
+######################################################
+#  ADVANCED 'c-style' version of the LogLike algorithm
+#  It supports only real data.
+#  It uses the same API as 'logLike' function.
+#  It supports weights:
+#  `w` is an optional vector of k non-negative weights for each matrix in 𝐂.
+#  Pham's criterion being invariant by scaling, the weights act on the cost
+#  function, not as a weights for the entries of the matrices.
+#  Notice that in this algorithm the weights can be zero,
+#  amounting to ignoring the corresponding matrices.
+#  By default all weights are equal to one.
+#  A function can be passed as the `w` argument, in which case the kth weight
+#  is found as the output of the function applied to the kth matrix in 𝐂.
+#  A good choice in general is the `nonD` function declared in tools.jl unit.
+#
+#  All other arguments are in 'logLike' function
 function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 				  w 		:: Union{Tw, Function} = ○,
 				  preWhite  :: Bool = false,
@@ -293,40 +312,13 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
   	verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n")
 	verbose && println("")
 
-	#=
-	B=Matrix(B') # get B such B'*C[k]*B is diagonal
-
-	# sort the vectors of solver
-	M=mean(𝐂)
-	D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
-	λ = sort ? _permute!(B, D, n) : diag(D)
-
-	return preWhite ? 	(W.F*B, pinv(B)*W.iF, λ, iter, conv) :
-						(B, pinv(B), λ, iter, conv)
-
-	=#
-	# get B such B'*C[k]*B is diagonal
-	#=
-	B = preWhite ? W.F*Matrix(B') : Matrix(B')
-
-	# sort the vectors of solver
-	M=mean(𝐂)
-	D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
-	λ = sort ? _permute!(B, D, n) : diag(D)
-
-	return (B, pinv(B), λ, iter, conv)
-	=#
-
-	# get B such B'*C[k]*B is diagonal
-	### B = preWhite ? W.F*Matrix(B') : Matrix(B')
 	B = Matrix(B')
 
 	# sort the vectors of solver
 	M=mean(𝐂)
 	D=Diagonal([PosDefManifold.quadraticForm(B[:, i], M) for i=1:n])
-	### D=Diagonal([mean(C[i, i:n:nk]) for i=1:n]) # Good!
-
-	λ = sort ? _permute!(B, D, n) : diag(D)
+	# scale and permute the vectors of B
+    λ = sort ? _permute!(_scale!(B, D, n)...) : diag(D)
 
 	return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
                       (B, pinv(B), λ, iter, conv)

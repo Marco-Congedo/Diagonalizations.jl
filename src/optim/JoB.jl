@@ -87,7 +87,12 @@
 #
 #  if sort=true (default) the column vectors of the 𝐔 matrices are reordered
 #  so as to allow positive and sorted in descending order
-#  diagonal elements of the products ``U_i'𝒞(κij)U_j``.
+#  diagonal elements of the products ``U_i'𝒞(κij)U_j`` as much as possible.
+#  If the NoJoB algorithm is used the column vectors of the matrices U_i
+#  are normalized to unit norm.
+#  Note that if `whitening` is true the output matrices U_i will not have
+#  unit norm columns as they are multiplied by the whiteners after being
+#  scaled and sorted and before being returned.
 
 #  By passing a matrix if k=1 or a vector of k matrices if k>1 as `init`,
 #  you can smartly initialize `𝐔`, for example, when excluding some subjects
@@ -100,9 +105,16 @@
 #  if `verbose`=true, the convergence attained at each iteration and other
 #  information will be printed.
 #
-#  These algorithms are not multi_threaded, instead they heavely use BLAS.
-#  Before running this function you may want to set:
-#  `BLAS.set_num_threads(Sys.CPU_THREADS)`
+#  if `threaded`=true (default) and n>x and x>1, where x is the number
+#  of threads Julia is instructed to use (the output of Threads.nthreads())
+#  the algorithms run in multithreaded mode paralellising several comptations
+#  over n.
+#
+#  Besides optionally multi-threaded, these algorithms heavely use BLAS.
+#  Before running this function you may want to set the number of threades
+#  Julia is instructed to use to the number of logical CPUs of your machine
+#  and set `BLAS.set_num_threads(Sys.CPU_THREADS)`. See:
+#  https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#Threads-1
 # """
 function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, type;
               covEst   :: StatsBase.CovarianceEstimator=SCM,
@@ -115,8 +127,9 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
           sort      :: Bool = true,
           init      = nothing,
           tol       :: Real = 0.,
-          maxiter   :: Int = 1000,
-          verbose   :: Bool= false,
+          maxiter   :: Int  = 1000,
+          verbose   :: Bool = false,
+          threaded  :: Bool = true,
       eVar     :: TeVaro = ○,
       eVarMeth :: Function = searchsortedfirst)
 
@@ -152,7 +165,6 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
             𝑾=[whitening(ℍ(𝛍(𝒢[κ, i, i] for κ=1:k)); eVar=eVar) for i=1:m]
         end
 
-        #𝒢=Array{Matrix}(undef, k, m, m)
         if m==1
             @inbounds for κ=1:k
                 𝒢[κ, 1, 1] = 𝑾[1].F' * 𝒢[κ, 1, 1] * 𝑾[1].F
@@ -169,11 +181,13 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
     end
     n=size(𝒢[1, 1, 1], 1)
 
+    ⏩ = n>=Threads.nthreads() && Threads.nthreads()>1 && threaded
+
     # initialization of 𝐔[i], i=1:m, as the eigenvectors of sum_k,j(𝒢_k,i,j*𝒢_k,i,j')
     # see Eq. 17 of Congedo, Phlypo and Pham, 2011, or with the provided matrices
     # note: gemm supports complex matrices
     ggt(κ::Int, i::Int, j::Int) = BLAS.gemm('N', 'T', 𝒢[κ, i, j], 𝒢[κ, i, j])
-    if m>1 #gmca, gcca, majd
+    if m>1 # gmca, gcca, majd
         if init === nothing
             if algo==:NoJoB
                 𝐔 = [Matrix{type}(I, n, n) for i=1:m]
@@ -187,7 +201,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
         else
             𝐔 = init
         end
-    else  #ajd
+    else  # ajd
         if init === nothing
             if algo==:NoJoB
                 𝐔 = [Matrix{type}(I, n, n)]
@@ -201,45 +215,78 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
 
     function updateR!(η, i, j)  # 𝐑[η] += (𝒢[κ, i, j] * 𝐔[j][:, η]) times its transpose
         # don't use BLAS for complex data
-        if type<:Real
-            @inbounds for κ=1:k
-                Ω[:, κ] = BLAS.gemv('N', 𝒢[κ, i, j], 𝐔[j][:, η])
+        if ⏩ # if threaded don't share memory for Ω but use 𝛀
+            if type<:Real
+                @inbounds for κ=1:k
+                    𝛀[η][:, κ] = BLAS.gemv('N', 𝒢[κ, i, j], 𝐔[j][:, η])
+                end
+                𝐑[η] += Hermitian(BLAS.gemm('N', 'T', 𝛀[η], 𝛀[η])) # (Ω * Ω')
+            else
+                @inbounds for κ=1:k
+                    𝛀[η][:, κ] = 𝒢[κ, i, j] * 𝐔[j][:, η]
+                end
+                𝐑[η] += Hermitian(𝛀[η] * 𝛀[η]') # (Ω * Ω')
             end
-            𝐑[η] += Hermitian(BLAS.gemm('N', 'T', Ω, Ω)) # (Ω * Ω')
         else
-            @inbounds for κ=1:k
-                Ω[:, κ] = 𝒢[κ, i, j] * 𝐔[j][:, η]
+            if type<:Real
+                @inbounds for κ=1:k
+                    Ω[:, κ] = BLAS.gemv('N', 𝒢[κ, i, j], 𝐔[j][:, η])
+                end
+                𝐑[η] += Hermitian(BLAS.gemm('N', 'T', Ω, Ω)) # (Ω * Ω')
+            else
+                @inbounds for κ=1:k
+                    Ω[:, κ] = 𝒢[κ, i, j] * 𝐔[j][:, η]
+                end
+                𝐑[η] += Hermitian(Ω * Ω') # (Ω * Ω')
             end
-            𝐑[η] += Hermitian(Ω * Ω') # (Ω * Ω')
         end
     end
 
+    function update!(m, n, i)
+
+        function udR1!(η) # case m=1
+            fill!(𝐑[η], type(0))
+            updateR!(η, 1, 1)
+        end
+
+        function udRm!(η, i)  # case m>1
+            fill!(𝐑[η], type(0))
+            for j=1:m i≠j ? updateR!(η, i, j) : nothing end # j ≠ i
+            fullModel ? updateR!(η, i, i) : nothing         # j = i
+        end
+
+        if m==1
+            ⏩ ? (@threads for η=1:n udR1!(η) end) : (for η=1:n udR1!(η) end)
+        else
+            ⏩ ? (@threads for η=1:n udRm!(η, i) end) : (for η=1:n udRm!(η, i) end)
+        end
+    end
+
+    # pre-allocate memory
     𝐑 = HermitianVector([Hermitian(zeros(type, n, n)) for η=1:n])
-    Ω = Matrix{type}(undef, n, k)
+    ⏩ ? (𝛀 = [Matrix{type}(undef, n, k) for η=1:n]) :
+         (Ω = Matrix{type}(undef, n, k))
+
+    # # # # # here starts the algorithm
 
     if algo==:OJoB
         verbose && @info("Iterating OJoB algorithm...")
         while true
             conv_ =0.
             @inbounds for i=1:m # m optimizations for updating 𝐔[1]...𝐔[m]
-                for η=1:n
-                    fill!(𝐑[η], zero(type))
-                    if m==1
-                        updateR!(η, 1, 1)
-                    else
-                        for j=1:m i≠j ? updateR!(η, i, j) : nothing end # j ≠ i
-                        fullModel ? updateR!(η, i, i) : nothing         # j = i
-                    end
-                    # 1 power iteration
-                    𝐔[i][:, η] = 𝐑[η] * 𝐔[i][:, η]
-                end
-                conv_ += PosDefManifold.ss(𝐔[i])/n # square of the norms of power iteration vectors
+
+                update!(m, n, i)
+
+                # do 1 power iteration, not worth threading here
+                for η=1:n 𝐔[i][:, η] = 𝐑[η] * 𝐔[i][:, η] end
+
+                conv_ += PosDefManifold.ss(𝐔[i]) # square of the norms of power iteration vectors
 
                 # Lodwin Orthogonalization and update 𝐔[i]<-UV', with svd(𝐔[i])=UwV'
                 𝐔[i] = PosDefManifold.nearestOrth(𝐔[i])
             end
 
-            conv_ =sqrt(conv_ /m)
+            conv_ =sqrt(conv_ /(n^2*m))
             iter==1 ? conv=1. : conv = abs((conv_-oldconv)/oldconv)  # relative change
 
             verbose && println("iteration: ", iter, "; convergence: ", conv)
@@ -251,27 +298,30 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
         end # while
     else
         verbose && @info("Iterating NoJoB algorithm...")
+
+        # solve Lx=𝐑[η]*𝐔[i][:, η] for x and L'y=x for y
+        # and scale the ηth column as 𝐔[i][:, η] <- y/sqrt(y'𝐑[η]t)
+        function triS!(cho, η,  i)
+            y=cho.U\(cho.L\(𝐑[η]*𝐔[i][:, η]))
+            𝐔[i][:, η]=y*inv(sqrt(PosDefManifold.qf(y, 𝐑[η])))
+        end
+
+        # thread sum of 𝐑[η] and the solutions to triangular systems
+        # only if n is at least Threads.nthreads()*2 (no worth otherwise)
+        ⏩x = ⏩ && n≥Threads.nthreads()*2
+
         while true
             conv_ =0.
             @inbounds for e2=1:2, i=1:m # m optimizations for updating 𝐔[1]...𝐔[m]
-                for η=1:n      # double loop to avoid oscillating convergence
-                    fill!(𝐑[η], type(0))
-                    if m==1
-                        updateR!(η, 1, 1)
-                    else
-                        for j=1:m i≠j ? updateR!(η, i, j) : nothing end # j ≠ i
-                        fullModel ? updateR!(η, i, i) : nothing         # j = i
-                    end
-                end
+                                        # double loop to avoid oscillating convergence
+                update!(m, n, i)
 
-                #1 power iteration
-                cho=cholesky(sum(𝐑)) # Cholesky LL'of 𝐑[1]+...+𝐑[n]
-                for η=1:n
-                    # solve Lx=𝐑[η]*𝐔[i][:, η] for x and L'y=x for y
-                    y=cho.U\(cho.L\(𝐑[η]*𝐔[i][:, η]))
-                    # 𝐔[i][:, η] <- y/sqrt(y'𝐑[η]t)
-                    𝐔[i][:, η]=y*inv(sqrt(PosDefManifold.quadraticForm(y, 𝐑[η])))
-                end
+                # do 1 power iteration
+                cho=cholesky(⏩x ? fVec(sum, 𝐑) : sum(𝐑)) # Cholesky LL'of 𝐑[1]+...+𝐑[n]
+
+                ⏩x ? (@threads for η=1:n triS!(cho, η,  i) end) :
+                            (for η=1:n triS!(cho, η,  i) end)
+
                 conv_+=PosDefManifold.ss(𝐔[i])
             end
 
@@ -287,13 +337,14 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
         end # while
     end
 
-    verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n")
-    verbose && println("")
+    verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n\n")
 
-    # auto-sort the eigenvectors
+
+    # scale and permute the vectors of U_1,...,U_m
     if sort
+        algo==:NoJoB ? for i=1:m normalizeCol!(𝐔[i], 1:size(𝐔[i], 2)) end : nothing
         λ = m==1 ? _permute!(𝐔[1], 𝒢, k, :c) :
-                   _scaleAndPermute!(𝐔, 𝒢, m, k, :c)
+                   _flipAndPermute!(𝐔, 𝒢, m, k, :c)
     else
         λ = m==1 ? 𝛍([𝐔[1][:, η]'*𝒢[l, 1, 1]*𝐔[1][:, η] for η=1:n] for l=1:k) :
                    𝛍([𝐔[i][:, η]'*𝒢[l, i, j]*𝐔[j][:, η] for η=1:n] for l=1:k, j=1:m, i=1:m if i≠j)
@@ -301,11 +352,11 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
 
     if preWhite
         algo==:OJoB ? 𝐕=[𝐔[i]'*𝑾[i].iF for i=1:m] :
-                      𝐕=[pinv(𝐔[i])*𝑾[i].iF for i=1:m]
+                      𝐕=[pinv(𝐔[i])*𝑾[i].iF for i=1:m] # algo==:NoJoB
         for i=1:m 𝐔[i] = 𝑾[i].F * 𝐔[i] end
     else
         algo==:OJoB ? 𝐕=[Matrix(𝐔[i]') for i=1:m] :
-                      𝐕=[pinv(𝐔[i]) for i=1:m]
+                      𝐕=[pinv(𝐔[i]) for i=1:m] # algo==:NoJoB
     end
 
     return m>1 ? (𝐔, 𝐕, λ, iter, conv) : (𝐔[1], 𝐕[1], λ, iter, conv)

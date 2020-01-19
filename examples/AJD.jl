@@ -12,6 +12,7 @@ aC2=ajd(Cset; algorithm=:NoJoB, simple=true)
 aC3=ajd(Cset; algorithm=:LogLike, simple=true)
 aC4=ajd(Cset; algorithm=:LogLikeR, simple=true)
 aC5=ajd(Cset; algorithm=:JADE, simple=true)
+aC6=ajd(Cset; algorithm=:GAJD, simple=true)
 
 # method (1) complex
 t, n, k=50, 10, 4
@@ -32,12 +33,14 @@ aX2=ajd(Xset; algorithm=:NoJoB, simple=true)
 aX3=ajd(Xset; algorithm=:LogLike, simple=true)
 aX4=ajd(Xset; algorithm=:LogLikeR, simple=true)
 aX5=ajd(Xset; algorithm=:JADE, simple=true)
+aX6=ajd(Xset; algorithm=:GAJD, simple=true)
 
 @test aX≈aC
 @test aX2≈aC2
 @test aX3≈aC3
 @test aX4≈aC4
 @test aX5≈aC5
+@test aX6≈aC6
 
 
 # method (2) complex
@@ -68,39 +71,62 @@ a=ajd(Cset2; algorithm=:JADE)
 # generate positive definite matrices with model A*D_κ*D, where
 # A is the mixing matrix and D_κ, for all κ=1:k, are diagonal matrices.
 # The estimated AJD matrix must be the inverse of A
+# and all transformed matruces bust be diagonal
 n, k=3, 10
 Dest=PosDefManifold.randΛ(eigvalsSNR=100, n, k)
+# make the problem identifiable
+for i=1:k Dest[k][1, 1]*=i/(k/2) end
+for i=1:k Dest[k][3, 3]/=i/(k/2) end
 A=randn(n, n) # non-singular mixing matrix
 Cset3=Vector{Hermitian}([Hermitian(A*D*A') for D ∈ Dest])
 a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
-@test spForm(a.F'*A)<0.001
+@test spForm(a.F'*A)<0.01
+@test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.00001
 a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
-@test spForm(a.F'*A)<0.001
+@test spForm(a.F'*A)<0.01
+@test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.00001
 a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
-@test spForm(a.F'*A)<0.001
+@test spForm(a.F'*A)<0.01
+@test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.00001
+a=ajd(Cset3; algorithm=:GAJD, eVarC=n)
+@test spForm(a.F'*A)<0.01
+@test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.00001
+
+
 # Do the same thing for orthogonal diagonalizers:
 # now A will be orthogonal
 O=randU(n) # orthogonal mixing matrix
 Cset4=Vector{Hermitian}([Hermitian(O*D*O') for D ∈ Dest])
 a=ajd(Cset4; algorithm=:OJoB, eVarC=n)
-@test spForm(a.F'*O)<0.001
+@test spForm(a.F'*O)<0.01
+@test mean(nonD(a.F'*Cset4[i]*a.F) for i=1:k)<0.00001
 a=ajd(Cset4; algorithm=:JADE, eVarC=n)
-@test spForm(a.F'*O)<0.001
+@test spForm(a.F'*O)<0.01
+@test mean(nonD(a.F'*Cset4[i]*a.F) for i=1:k)<0.00001
 
 # repeat the test adding noise; now the model is no more exactly identifiable
 for k=1:length(Cset3) Cset3[k]+=randP(n)/1000 end
 a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
 @test spForm(a.F'*A)<0.1
+@test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.001
 a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
 @test spForm(a.F'*A)<0.1
+@test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.001
 a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
 @test spForm(a.F'*A)<0.1
+@test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.001
+a=ajd(Cset3; algorithm=:GAJD, eVarC=n)
+@test spForm(a.F'*A)<0.1
+@test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.001
+
 # the same thing for orthogonal diagonalizers
 for k=1:length(Cset4) Cset4[k]+=randP(n)/1000 end
 a=ajd(Cset4; algorithm=:OJoB, eVarC=n)
 @test spForm(a.F'*O)<0.1
+@test mean(nonD(a.F'*Cset4[i]*a.F) for i=1:k)<0.001
 a=ajd(Cset4; algorithm=:JADE, eVarC=n)
 @test spForm(a.F'*O)<0.1
+@test mean(nonD(a.F'*Cset4[i]*a.F) for i=1:k)<0.001
 
 
 # create 20 COMPLEX random commuting matrices
@@ -134,7 +160,7 @@ a=ajd(Cset; algorithm=:NoJoB, trace1=true, w=nonD, preWhite=true, eVarC=4, eVar=
 a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 a=ajd(Cset; algorithm=:LogLikeR, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 a=ajd(Cset; algorithm=:JADE, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
-
+a=ajd(Cset; algorithm=:GAJD, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 
 # AJD for plots below
 a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true)
