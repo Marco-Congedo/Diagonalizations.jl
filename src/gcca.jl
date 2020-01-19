@@ -21,6 +21,7 @@ function gmca(𝐗::VecMat;
           tol       :: Real      = 0.,
           maxiter   :: Int       = _maxiter(algorithm, eltype(𝐗[1])),
           verbose   :: Bool      = false,
+          threaded  :: Bool      = true,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
         simple   :: Bool     = false)
@@ -61,6 +62,13 @@ and only the fields `.F` and `.iF`
 are written in the constructed object.
 This corresponds to the typical output of approximate diagonalization
 algorithms.
+
+if `threaded`=true (default) and the number of threads Julia is instructed
+to use (the output of Threads.nthreads()), is higher than 1,
+solving algorithms supporting multi-threading run in multi-threaded mode.
+See [Algorithms](@ref) and
+[these notes](https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#Threads-1)
+on multi-threading.
 
 **See also:** [MCA](@ref), [gCCA](@ref), [mAJD](@ref).
 
@@ -205,6 +213,7 @@ function gmca(𝐗::VecMat;
           tol       :: Real      = 0.,
           maxiter   :: Int       = _maxiter(algorithm, eltype(𝐗[1])),
           verbose   :: Bool      = false,
+          threaded  :: Bool      = true,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
         simple   :: Bool     = false)
@@ -219,8 +228,8 @@ function gmca(𝐗::VecMat;
    if algorithm ∈(:OJoB, :NoJoB)
       𝐔, 𝐕, λ, iter, conv=JoB(𝐗, m, 1, :d, algorithm, eltype(𝐗[1]);
                covEst=covEst, dims=dims, meanX=meanX,
-               fullModel=fullModel, sort=sort,
-                  init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+               fullModel=fullModel, sort=sort, init=init,
+                  tol=tol, maxiter=maxiter, verbose=verbose, threaded=threaded,
                eVar=eVar, eVarMeth=eVarMeth)
    # elseif...
    else
@@ -249,6 +258,7 @@ function gcca(𝐗::VecMat;
           tol       :: Real      = 0.,
           maxiter   :: Int       = _maxiter(algorithm, eltype(𝐗[1])),
           verbose   :: Bool      = false,
+          threaded  :: Bool      = true,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
         simple   :: Bool     = false)
@@ -286,6 +296,13 @@ and only the fields `.F` and `.iF`
 are written in the constructed object.
 This corresponds to the typical output of approximate diagonalization
 algorithms.
+
+if `threaded`=true (default) and the number of threads Julia is instructed
+to use (the output of Threads.nthreads()), is higher than 1,
+solving algorithms supporting multi-threading run in multi-threaded mode.
+See [Algorithms](@ref) and
+[these notes](https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#Threads-1)
+on multi-threading.
 
 
 **See also:** [MCA](@ref), [gCCA](@ref), [mAJD](@ref).
@@ -439,6 +456,7 @@ function gcca(𝐗::VecMat;
           tol       :: Real      = 0.,
           maxiter   :: Int       = _maxiter(algorithm, eltype(𝐗[1])),
           verbose   :: Bool      = false,
+          threaded  :: Bool      = true,
         eVar     :: TeVaro   = _minDim(𝐗),
         eVarMeth :: Function = searchsortedfirst,
         simple   :: Bool     = false)
@@ -453,8 +471,8 @@ function gcca(𝐗::VecMat;
    if algorithm ==:OJoB #∈(:OJoB)
       𝐔, 𝐕, λ, iter, conv=JoB(𝐗, m, 1, :d, algorithm, eltype(𝐗[1]);
                covEst=covEst, dims=dims, meanX=meanX,
-               fullModel=false, preWhite=true, sort=sort,
-                  init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+               fullModel=false, preWhite=true, sort=sort, init=init,
+                  tol=tol, maxiter=maxiter, verbose=verbose, threaded=threaded,
                eVar=eVar, eVarMeth=eVarMeth)
    # elseif...
    else

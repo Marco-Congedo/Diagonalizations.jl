@@ -15,63 +15,29 @@
 
 #  The algorithm handles the AJD diagonalization procedure, corresponding
 #  to the case m=1, k>1 according to the taxonomy adopted in this package.
-#  It handles both real and complex data input.
-#  It takes as input a vector of k positive
-#  definite matrices 𝐂 and find a non-singular matrix B such that the
-#  congruences B'*𝐂_κ*B are as diagonal as possible for all κ=1:k.
-#
-#  if `trace1` is true (false by default), all input matrices are normalized
-#  so as to have unit trace. Note that the diagonal elements
-#  of the input matrices must be all positive.
-#
-#  `w` is an optional vector of k positive weights for each matrix in 𝐂.
-#  if `w` is different from `nothing` (default), the input matrices are
-#  weighted with these weights (after trace normalization if `trace1` is true).
-#  A function can be passed as the `w` argument, in which case the kth weight
-#  is found as the output of the function applied to the kth matrix in 𝐂.
-#  A good choice in general is the `nonD` function declared in tools.jl unit.
-#
-#  if `whitening` = true is passed, the Arithmetic mean of the matrices in 𝐂 is
-#  computed (using the PosDefManifold.jl package) and the matrices in 𝐂
-#  are pre-transformed using the whitening matrix of the mean.
-#  Dimensionality reduction can be obtained at this stage using optional
-#  arguments `eVar` and `eVarMeth` (see documentation of the AJD constructors).
-#
-#  if sort=true (default) the column vectors of the B matrix are reordered
-#  so as to sort in descending order the diagonal elements of B'*mean(𝐂)*B,
-#  where mean(𝐂) is the arithmetic mean of the matrices in 𝐂.
-#
-#  if  `whitening` = false (default), a matrix can be provided with the `init`
-#  argument in order to initialize B. In this case the actual AJD
-#  will be given by init*B, where B is the output of the algorithms.
-#
+
+
+
+#  PRIMITIVE JADE algorithm:
+#  It takes as input a n·nk matrix holding k horizontally stacked n·n real or
+#  complex matrices, such as C=[C_1...C_k].
+#  It find an orthogoanl/unitary matrix U such that the
+#  congruences U'*C_κ*U are as diagonal as possible for all κ=1:k.
 #  `tol` is the convergence to be attained.
-#
 #  `maxiter` is the maximum number of iterations allowed.
-#
 #  if `verbose`=true, the convergence attained at each iteration and other
 #  information will be printed.
 #
-#  return: B, its pseudo-inverse, the diagonal elements of B'*mean(𝐂)*B,
-#          the number of iterations and the convergence attained
-#
 #  NB: Cardoso and Souloumiac's algorithm proceeds by planar rotations of
-#  pairs of vectors of B. A sweep goes over all (n*(n+1))/2 ij pairs, i>j.
+#  pairs of vectors of U. A sweep goes over all (n*(n+1))/2 ij pairs, i>j.
 #  Thus it can be optimized by multi-threading the optimization of the pairs
 #  e.g., using the round-Robin tournament scheme.
-
-
-function jade( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
-               trace1   :: Bool  = false,
-               w        :: Twf   = ○,
-               preWhite :: Bool  = false,
-               sort     :: Bool  = true,
-               init     :: Union{Symmetric, Hermitian, Nothing} = ○,
-               tol      :: Real  = 0.,
-               maxiter  :: Int   = 60,
-               verbose  :: Bool  = false,
-            eVar     :: TeVaro = ○,
-            eVarMeth :: Function = searchsortedfirst)
+#
+#  RETURN: B, the number of iterations and the convergence attained (a 3-tuple)
+function jade( C::Matrix{T};
+					tol 	 = 0.,
+					maxiter = 60,
+					verbose = false) where T<:Union{Real, Complex}
 
    # Compute the Givens angle θ (scalar) for real data
    function givensAngles(::Type{T}, p, q, 𝓹, 𝓺) where T <:Real
@@ -115,29 +81,12 @@ function jade( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
             ∡ = max(∡, 𝓈)    # 𝓈 is abs(sine of the angle)
          end
       end
-      return ∡    # convergence: maximum abs(sine of the angle) over all pairs
-   end
-
-   T, k = eltype(𝐂[1]), length(𝐂)
-
-   # trace normalization and weighting
-   trace1 || w ≠ ○ ? begin
-      𝐆=deepcopy(𝐂)
-      _Normalize!(𝐆, trace1, w)
-   end : 𝐆=𝐂
-
-   # pre-whiten, initialize and stack matrices horizontally
-   if preWhite
-      W = whitening(mean(Euclidean, 𝐆); eVar=eVar, eVarMeth=eVarMeth)
-      C = hcat([(W.F'*G*W.F) for G∈𝐆]...)
-   else
-      # initialization only if preWhite is false
-      init≠nothing ? C = hcat([(init'*G*init) for G∈𝐆]...) : C = hcat(𝐆...)
+      return ∡   # convergence: maximum abs(sine of the angle) over all pairs
    end
 
    (n, nk), 𝟘 = size(C), zeros
    tolerance = tol==0. ? √eps(real(T)) : tol
-   iter, conv, 😋 = 1, 0., false
+   k, iter, conv, 😋 = nk÷n, 1, 0., false
 
    # pre-allocate memory
    e₁ = 𝟘(T, k)
@@ -156,16 +105,86 @@ function jade( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
       conv=cardosoSweep!()
       verbose && println("iteration: ", iter, "; convergence: ", conv)
       (overRun = iter == maxiter) && @warn("JADE: reached the max number of iterations before convergence:", iter)
-      (😋 = conv <= tolerance) || overRun==true ? break : nothing
-      iter += 1
+      (😋 = conv <= tolerance) || overRun==true ? break : iter += 1
    end
-   verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n")
-   verbose && println("")
+   verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n\n")
 
-   # sort the vectors of solver
+	return U, iter, conv
+end
+
+
+#  ADVANCED JADE algorithm:
+#  It takes as input a vector of k real symmetric or complex Hermitian
+#  matrices 𝐂 and find an orthogoanl/Unitary matrix U such that the
+#  congruences U'*𝐂_κ*U are as diagonal as possible for all κ=1:k.
+#
+#  if `trace1` is true (false by default), all input matrices are normalized
+#  so as to have unit trace. Note that the diagonal elements
+#  of the input matrices must be all positive.
+#
+#  `w` is an optional vector of k positive weights for each matrix in 𝐂.
+#  if `w` is different from `nothing` (default), the input matrices are
+#  weighted with these weights (after trace normalization if `trace1` is true).
+#  A function can be passed as the `w` argument, in which case the kth weight
+#  is found as the output of the function applied to the kth matrix in 𝐂.
+#  A good choice in general is the `nonD` function declared in tools.jl unit.
+#
+#  if `whitening` = true is passed, the Arithmetic mean of the matrices in 𝐂 is
+#  computed (using the PosDefManifold.jl package) and the matrices in 𝐂
+#  are pre-transformed using the whitening matrix of the mean.
+#  Dimensionality reduction can be obtained at this stage using optional
+#  arguments `eVar` and `eVarMeth` (see documentation of the AJD constructors).
+#
+#  if sort=true (default) the column vectors of the B matrix are reordered
+#  so as to sort in descending order the mean of the diagonal elements
+#  of B'*𝐂_κ* over k.
+#
+#  if  `whitening` = false (default), a matrix can be provided with the `init`
+#  argument in order to initialize B. In this case the actual AJD
+#  will be given by init*B, where B is the output of the algorithms.
+#
+#  `tol` is the convergence to be attained.
+#
+#  `maxiter` is the maximum number of iterations allowed.
+#
+#  if `verbose`=true, the convergence attained at each iteration and other
+#  information will be printed.
+#
+#  return: B, its pseudo-inverse, the mean diagonal elements of B'*mean(𝐂)*B,
+#          the number of iterations and the convergence attained
+function jade( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
+               trace1   :: Bool  = false,
+               w        :: Twf   = ○,
+               preWhite :: Bool  = false,
+               sort     :: Bool  = true,
+               init     :: Union{Symmetric, Hermitian, Nothing} = ○,
+               tol      :: Real  = 0.,
+               maxiter  :: Int   = 60,
+               verbose  :: Bool  = false,
+            eVar     :: TeVaro = ○,
+            eVarMeth :: Function = searchsortedfirst)
+
+   # trace normalization and weighting
+   trace1 || w ≠ ○ ? begin
+      𝐆=deepcopy(𝐂)
+      _Normalize!(𝐆, trace1, w)
+   end : 𝐆=𝐂
+
+   # pre-whiten, initialize and stack matrices horizontally
+   if preWhite
+      W = whitening(mean(Euclidean, 𝐆); eVar=eVar, eVarMeth=eVarMeth)
+      C = hcat([(W.F'*G*W.F) for G∈𝐆]...)
+   else
+      # initialization only if preWhite is false
+      init≠nothing ? C = hcat([(init'*G*init) for G∈𝐆]...) : C = hcat(𝐆...)
+   end
+	(n, nk) = size(C)
+
+	U, iter, conv = jade(C; tol=tol, maxiter=maxiter, verbose=verbose)
+
+   # permute the vectors of U
    D=Diagonal([mean(C[i, i:n:nk]) for i=1:n])
-   # λ = sort ? _permute!(U, D, n) : diag(D)
-   λ = diag(D) # temp !
+   λ = sort ? _permute!(U, D, n) : diag(D)
 
    return preWhite ? (W.F*U, U'*W.iF, λ, iter, conv) :
                      (U, Matrix(U'), λ, iter, conv)

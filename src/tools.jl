@@ -184,8 +184,15 @@ function _getWhi(C :: Union{Hermitian, Symmetric, Mat}, eVar::TeVaro,
                  eVarMeth::Function, simple::Bool)
 
   U, Uⁱ, D, eVar, λ, arev=_getEVD(C, eVar, eVarMeth, simple)
-  simple ? (U*D^-0.5, D^0.5*Uⁱ, D, ○, ○, ○) :
-           (U*D^-0.5, D^0.5*Uⁱ, D, eVar, λ, arev)
+  if simple
+     if eltype(C)<:Real
+        ispos(λ; tol=eps(eltype(C)), rev=true, 🔔=true,
+        msg="negative or almost zero eigenvalue") || throw(ArgumentError("A `simple` linear filter cannot be created. See the warning that has been printed in Julia's REPL"))
+     end
+     (U*D^-0.5, D^0.5*Uⁱ, D, ○, ○, ○)
+  else
+     (U*D^-0.5, D^0.5*Uⁱ, D, eVar, λ, arev)
+  end
 end
 
 # Whitening with a data matrix as input
@@ -546,6 +553,9 @@ _maxiter(algorithm, type) =
             return type<:Real ? 1000 : 3000
    elseif   algorithm ∈ (:LogLike, :LogLikeR, :JADE)
             return type<:Real ? 60 : 180
+   elseif   algorithm == :GAJD
+            type<:Real ? (return 120) :
+            throw(ArgumentError("The GAJD algorithm does not support complex data input"))
    else throw(ArgumentError("The `algorithm` keyword is uncorrect"))
    end
 
@@ -558,11 +568,23 @@ function _checkλ(λ::Vec)
    rePart=sum(real(λ).^2)
    imPart=sum(imag(λ).^2)
    if imPart/rePart > 1e-6
-      @warn "📌, internal function _permute!: sum_κ=1^k trace(imag(Diagonal(F'*C_k*F))^2) / trace(imag(Diagonal(F'*C_k*F))^2) > 1e-6. The elements of fields `D`, `ev` and `arev` of the constructed LinearFilter will be complex. See documentation"
+      @warn "📌, internal function _checkλ: Be careful, the elements of fields `D`, `ev` and `arev` of the constructed LinearFilter will be complex"
       return λ
    else
       return real(λ)
    end
+end
+
+# scale column vectors of B to unit norm and correct the quadratic forms
+# provided by D=mean(Diagonal(B'C_kB)) to reflect the unit norm of cols of B.
+# This is used for AJD algorithms that do not constraint the norm of the
+# columns of the solution to unity before calling _permute!, since
+# otherwise the elements of D are arbitrary.
+function _scale!(B::AbstractArray, D::Diagonal, n::Int)
+   inorms=[inv(norm(B[:, i])) for i=1:n]
+   for i=1:n B[:, i]*=inorms[i] end     # unit norm
+   for i=1:n D[i, i]*=inorms[i]^2 end   # quadr. forms with unit norm
+   return B, D, n
 end
 
 
@@ -627,7 +649,7 @@ end # function _Permute!
 # return a vector holding the n 'average eigenvalues' λ1,...,λn,
 # trying to make them all positive and in descending order as much as possible,
 # where λη=𝛍_i≠j=1:m(Dij[η, η])
-function _scaleAndPermute!( 𝐔::AbstractArray, 𝐗::AbstractArray,
+function _flipAndPermute!( 𝐔::AbstractArray, 𝐗::AbstractArray,
                             m::Int, k::Int, input::Symbol;
                             covEst   :: StatsBase.CovarianceEstimator=SCM,
                             dims     :: Int64 = 1,
@@ -685,4 +707,4 @@ function _scaleAndPermute!( 𝐔::AbstractArray, 𝐗::AbstractArray,
     end
 
     return diag(𝛍(𝑫[i][j] for i=1:m for j=1:m if i≠j))
-end # function _scaleAndPermute!
+end # function _flipAndPermute!
