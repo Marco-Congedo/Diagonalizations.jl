@@ -21,7 +21,7 @@
 #  PRIMITIVE JADE algorithm:
 #  It takes as input a n·nk matrix holding k horizontally stacked n·n real or
 #  complex matrices, such as C=[C_1...C_k].
-#  It find an orthogoanl/unitary matrix U such that the
+#  It finds an orthogoanl/unitary matrix U such that the
 #  congruences U'*C_κ*U are as diagonal as possible for all κ=1:k.
 #  `tol` is the convergence to be attained.
 #  `maxiter` is the maximum number of iterations allowed.
@@ -115,7 +115,7 @@ end
 
 #  ADVANCED JADE algorithm:
 #  It takes as input a vector of k real symmetric or complex Hermitian
-#  matrices 𝐂 and find an orthogoanl/Unitary matrix U such that the
+#  matrices 𝐂 and finds an orthogoanl/Unitary matrix U such that the
 #  congruences U'*𝐂_κ*U are as diagonal as possible for all κ=1:k.
 #
 #  if `trace1` is true (false by default), all input matrices are normalized
@@ -164,28 +164,28 @@ function jade( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
             eVar     :: TeVaro = ○,
             eVarMeth :: Function = searchsortedfirst)
 
-   # trace normalization and weighting
-   trace1 || w ≠ ○ ? begin
-      𝐆=deepcopy(𝐂)
-      _Normalize!(𝐆, trace1, w)
-   end : 𝐆=𝐂
+	# trace normalization and weighting
+	trace1 || w ≠ ○ ? begin
+	  𝐆=deepcopy(𝐂)
+	  _Normalize!(𝐆, trace1, w)
+	end : 𝐆=𝐂
 
-   # pre-whiten, initialize and stack matrices horizontally
-   if preWhite
-      W = whitening(mean(Euclidean, 𝐆); eVar=eVar, eVarMeth=eVarMeth)
-      C = hcat([(W.F'*G*W.F) for G∈𝐆]...)
-   else
-      # initialization only if preWhite is false
-      init≠nothing ? C = hcat([(init'*G*init) for G∈𝐆]...) : C = hcat(𝐆...)
-   end
+	# pre-whiten, initialize and stack matrices horizontally
+	if preWhite
+	  W = whitening(mean(Euclidean, 𝐆); eVar=eVar, eVarMeth=eVarMeth)
+	  C = hcat([(W.F'*G*W.F) for G∈𝐆]...)
+	else
+	  # initialization only if preWhite is false
+	  init≠nothing ? C = hcat([(init'*G*init) for G∈𝐆]...) : C = hcat(𝐆...)
+	end
 	(n, nk) = size(C)
 
 	U, iter, conv = jade(C; tol=tol, maxiter=maxiter, verbose=verbose)
 
-   # permute the vectors of U
-   D=Diagonal([mean(C[i, i:n:nk]) for i=1:n])
-   λ = sort ? _permute!(U, D, n) : diag(D)
+	# permute the vectors of U
+	D=Diagonal([mean(C[i, i:n:nk]) for i=1:n])
+	λ = sort ? _permute!(U, D, n) : diag(D)
 
-   return preWhite ? (W.F*U, U'*W.iF, λ, iter, conv) :
-                     (U, Matrix(U'), λ, iter, conv)
+	return preWhite ? (W.F*U, U'*W.iF, λ, iter, conv) :
+	                  (U, Matrix(U'), λ, iter, conv)
 end
