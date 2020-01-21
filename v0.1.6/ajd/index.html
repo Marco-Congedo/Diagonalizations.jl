@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>AJD · Diagonalizations</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Diagonalizations logo"/></a><div class="docs-package-name"><span class="docs-autofit">Diagonalizations</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Documentation</a></li><li><a class="tocitem" href="../Diagonalizations/">Diagonalizations</a></li><li><span class="tocitem">Filters</span><ul><li><input class="collapse-toggle" id="menuitem-3-1" type="checkbox" checked/><label class="tocitem" for="menuitem-3-1"><span class="docs-label">One dataset (m=1)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../pca/">PCA</a></li><li><a class="tocitem" href="../whitening/">Whitening</a></li><li><a class="tocitem" href="../csp/">CSP</a></li><li><a class="tocitem" href="../cstp/">CSTP</a></li><li class="is-active"><a class="tocitem" href>AJD</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-2" type="checkbox"/><label class="tocitem" for="menuitem-3-2"><span class="docs-label">Two datasets (m=2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../mca/">MCA</a></li><li><a class="tocitem" href="../cca/">CCA</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-3" type="checkbox"/><label class="tocitem" for="menuitem-3-3"><span class="docs-label">Several datasets (m&gt;2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../gmca/">gMCA</a></li><li><a class="tocitem" href="../gcca/">gCCA</a></li><li><a class="tocitem" href="../majd/">mAJD</a></li></ul></li></ul></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../algorithms/">Algorithms</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Filters</a></li><li><a class="is-disabled">One dataset (m=1)</a></li><li class="is-active"><a href>AJD</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>AJD</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/master/docs/src/ajd.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="AJD-1"><a class="docs-heading-anchor" href="#AJD-1">AJD</a><a class="docs-heading-anchor-permalink" href="#AJD-1" title="Permalink"></a></h1><p><em>Approximate Joint Diagonalization</em> (AJD) is a diagonalization prodedure generalizing the eigenvalue-eigenvector decomposition to more then two matrices. This corresponds to the situation <span>$m=1$</span> (one dataset) and <span>$k&gt;2$</span> (number of observations). As such, is a very general procedure with a myriad of potential applications. It was first proposed by Flury and Gautschi (1986) in statistics and by Cardoso and Souloumiac(1996) in signal processing <a href="../#-1">🎓</a>. Since, it has become a fundamental tool for solving the <a href="https://en.wikipedia.org/wiki/Signal_separation#EEG">blind source separation</a>(BSS) problem.</p><p>Let <span>${C_1,...,C_k}$</span> be a set of <span>$n⋅n$</span> symmetric or Hermitian matrices. In BSS typically those are covariance matrices, Fourier cross-spectral matrices, lagged covariance matrices or slices of 4th order cumulants, where <span>$n$</span> is the number of variables.</p><p>An AJD algorithm seeks a matrix <span>$F$</span> diagonalizing all matrices in the set as much as possible, according to some diagonalization criterion, that is, we want to achieve</p><p><span>$F^HC_lF≈Λ_l$</span>, for all <span>$l∈[1...k]$</span>. <span>$\hspace{1cm}$</span> [ajd.1]</p><p>In some algorithm, such as <em>OJoB</em>, <span>$F$</span> is constrained to be orthogonal, in others, like <em>NoJoB</em> only to be non-singular.</p><h4 id="pre-whitening-for-AJD-1"><a class="docs-heading-anchor" href="#pre-whitening-for-AJD-1">pre-whitening for AJD</a><a class="docs-heading-anchor-permalink" href="#pre-whitening-for-AJD-1" title="Permalink"></a></h4><p>Similarly to the two-step procedures encountered in other filters, e.g., for the <a href="../cca/#CCA-1">CCA</a>, for solving the AJD problem often pre-whitening is applied: first a whitening matrix <span>$W$</span> if found such that</p><p><span>$W^H\Big(\frac{1}{k}\sum_{l=1}^kC_k\Big)W_k=I$</span>, <span>$\hspace{1cm}$</span> [ajd.2]</p><p>then the following transformed AJD problem if solved for <span>$U$</span>:</p><p><span>$U^H(W^HC_lW)U≈Λ_l$</span>, for all <span>$l∈[1...k]$</span>.</p><p>Finally, <span>$F$</span> is obtained as</p><p><span>$F=WU$</span>. <span>$\hspace{1cm}$</span> [ajd.3]</p><p>Notice that:</p><ul><li>matrix <span>$W$</span> may be taken rectangular so as to engender a dimensionality reduction at this stage. This may improve the convergence behavior of AJD algorithms if the matrices <span>${C_1,...,C_k}$</span> are not well-conditioned.  </li><li>if this two-step procedure is employed, the final solution <span>$F$</span> is never orthogonal, even if the solving AJD algorithm constrains the solution within the orthogonal group.</li></ul><h4 id="permutation-for-AJD-1"><a class="docs-heading-anchor" href="#permutation-for-AJD-1">permutation for AJD</a><a class="docs-heading-anchor-permalink" href="#permutation-for-AJD-1" title="Permalink"></a></h4><p>Approximate joint diagonalizers are arbitrary up to a <a href="../Diagonalizations/#scale-and-permutation-1">scale and permutation</a>. <em>Diagonalizations.jl</em> attempts to solve the permutation ambiguity by reordering the columns of <span>$F$</span> so as to sort in descending order the diagonal elements of</p><p><span>$\frac{1}{k}\sum_{l=1}^kF^HC_kF$</span>. <span>$\hspace{1cm}$</span> [ajd.4]</p><p>This sorting mimics the sorting of exact diagonalization procedures such as the <a href="../pca/#PCA-1">PCA</a>, of which the AJD is a generalization, however it is meaningful only if the input matrices <span>${C_1,...,C_k}$</span> are positive definite.</p><p>In analogy with <a href="../pca/#PCA-1">PCA</a>, let</p><p><span>$λ=[λ_1...λ_n]$</span>  <span>$\hspace{1cm}$</span> [ajd.5]</p><p>be the diagonal elements of [ajd.4] and let</p><p><span>$σ_{TOT}=\sum_{i=1}^nλ_i$</span> be the total variance.</p><p>We denote <span>$\widetilde{F}=[f_1 \ldots f_p]$</span> the matrix holding the first <span>$p&lt;n$</span> column vectors of <span>$F$</span>, where <span>$p$</span> is the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>. The <em>explained variance</em> is given by</p><p><span>$σ_p=\frac{\sum_{i=1}^pλ_i}{σ_{TOT}}$</span> <span>$\hspace{1cm}$</span> [ajd.6]</p><p>and the <em>accumulated regularized eigenvalues</em> (arev) by</p><p><span>$σ_j=\sum_{i=1}^j{σ_i}$</span>, for <span>$j=[1 \ldots n]$</span>. <span>$\hspace{1cm}$</span> [ajd.7]</p><p>For setting the subspace dimension <span>$p$</span> manually, set the <code>eVar</code> optional keyword argument of the MCA constructors either to an integer or to a real number, this latter establishing <span>$p$</span> in conjunction with argument <code>eVarMeth</code> using the <code>arev</code> vector (see <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>). By default, <code>eVar</code> is set to 0.999.</p><p><strong>Solution</strong></p><p>There is no closed-form solution to the AJD problem in general. See <a href="../algorithms/#Algorithms-1">Algorithms</a>.</p><p><strong>Constructors</strong></p><p>Two constructors are available (see here below). The constructed <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object holding the AJD will have fields:</p><p><code>.F</code>: matrix <span>$\widetilde{F}$</span> with columns holding the first <span>$p$</span> eigenvectors in <span>$F$</span>, or just <span>$F$</span> if <span>$p=n$</span></p><p><code>.iF</code>: the left-inverse of <code>.F</code></p><p><code>.D</code>: the leading <span>$p⋅p$</span> block of <span>$Λ$</span>, i.e., the elements [ajd.5] associated to <code>.F</code> in diagonal form.</p><p><code>.eVar</code>: the explained variance [ajd.6] for the chosen value of <span>$p$</span>.</p><p><code>.ev</code>: the vector <span>$λ$</span> [ajd.5].</p><p><code>.arev</code>: the accumulated regularized eigenvalues, defined in [ajd.7].</p><article class="docstring"><header><a class="docstring-binding" id="Diagonalizations.ajd" href="#Diagonalizations.ajd"><code>Diagonalizations.ajd</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">(1)
+function ajd(𝐂::ℍVector;
+             trace1    :: Bool   = false,
+             w         :: Union{Tw, Function} = ○,
+          algorithm :: Symbol = :NoJoB,
+          preWhite  :: Bool   = false,
+          sort      :: Bool   = true,
+          init      :: Mato   = ○,
+          tol       :: Real   = 0.,
+          maxiter   :: Int    = _maxiter(algorithm, eltype(𝐂[1])),
+          verbose   :: Bool   = false,
+          threaded  :: Bool   = true,
+        eVar     :: TeVaro    = _minDim(𝐂),
+        eVarC    :: TeVaro    = ○,
+        eVarMeth :: Function  = searchsortedfirst,
+        simple   :: Bool      = false)
+
+(2)
+function ajd(𝐗::VecMat;
+             covEst     :: StatsBase.CovarianceEstimator = SCM,
+             dims       :: Into = ○,
+             meanX      :: Into = 0,
+          trace1     :: Bool = false,
+          w          :: Twf  = ○,
+       algorithm :: Symbol = :NoJoB,
+       preWhite  :: Bool = false,
+       sort      :: Bool = true,
+       init      :: Mato = ○,
+       tol       :: Real = 0.,
+       maxiter   :: Int  = _maxiter(algorithm, eltype(𝐗[1])),
+       verbose   :: Bool = false,
+       threaded  :: Bool = true,
+     eVar     :: TeVaro    = _minDim(𝐗),
+     eVarC    :: TeVaro    = ○,
+     eVarMeth :: Function  = searchsortedfirst,
+     simple   :: Bool      = false)
+</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object:</p><p><strong>(1) Approximate joint diagonalization</strong> of the set of <span>$k$</span> symmetric or Hermitian matrices <code>𝐂</code>, of type <a href="https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#%E2%84%8DVector-type-1">ℍVector</a> using the given solving <code>algorithm</code> (<em>NoJoB</em> by default).</p><p>If <code>trace1</code> is true, all matrices in the set <code>𝐂</code> are normalized so as to have trace equal to 1. It is false by default. This option applies only for solving algorithms that are not invariante by scaling, that is, those based on the least-squares (Frebenius) criterion. See <a href="../algorithms/#Algorithms-1">Algorithms</a>.</p><p>if <code>w</code> is a <code>StatsBase.AbstractWeights</code>, the weights are applied to the set <code>𝐂</code>. If <code>w</code> is a <code>Function</code>, the weights are found passing each matrix in the set to such function. An appropriate choice for AJD algorithms minimizing a least-squares criterion, like <em>OJoB</em> and <em>NoJoB</em>, is the <a href="../tools/#Diagonalizations.nonDiagonality"><code>nonDiagonality</code></a> function (Congedo et al.(2008)<a href="../#-1">🎓</a>). By default, no weights are applied.</p><p>If <code>preWhite</code> is true the solution is found by the two-step procedure described here above in section <a href="#pre-whitening-for-AJD-1">pre-whitening for AJD</a>. By default, it is false. Dimensionality reduction can be obtained at this stage using arguments <code>eVarC</code> and <code>eVarMeth</code>, in the same way they are used to find the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span>, but using the accumulated regularized eigenvalues of</p><p><span>$\frac{1}{k}\sum_{l=1}^kC_k$</span>.</p><p>The default values are:</p><ul><li><code>eVarC</code> is set to 0.999</li><li><code>eVarMeth=searchsortedfirst</code>.</li></ul><p>If <code>sort</code> is true (default), the vectors in <code>.F</code> are permuted as explained here above in <a href="#permutation-for-AJD-1">permutation for AJD</a>, otherwise they will be in arbitrary order.</p><p>Regarding arguments <code>init</code>, <code>tol</code> and <code>maxiter</code>, see <a href="../algorithms/#Algorithms-1">Algorithms</a>.</p><p>If <code>verbose</code> is true (false by default), the convergence attained at each iteration will be printed in the REPL.</p><p><code>eVar</code> and <code>eVarMeth</code> are used to define a <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the accumulated regularized eigenvalues in Eq. [ajd.7].</p><p>The default values are:</p><ul><li><code>eVar</code> is set to the dimension of the matrices in <code>𝐂</code></li><li><code>eVarMeth=searchsortedfirst</code>.</li></ul><p>Note that passing <code>nothing</code> or a real nummber as <code>eVar</code> (see <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>) is meningful only if <code>sort</code> is set to true (default) and if the input matrices <span>${C_1,...,C_k}$</span> are positive definite.</p><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to the dimension of the matrices <span>${C_1,...,C_k}$</span> and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This corresponds to the typical output of AJD algorithms.</p><p>if <code>threaded</code>=true (default) and the number of threads Julia is instructed to use (the output of Threads.nthreads()), is higher than 1, AJD algorithms supporting multi-threading run in multi-threaded mode. See <a href="../algorithms/#Algorithms-1">Algorithms</a> and <a href="https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#Threads-1">these notes</a> on multi-threading.</p><p><strong>(2) Approximate joint diagonalization</strong> with a set of <span>$k$</span> data matrices <code>𝐗</code> as input; the covariance matrices of the set are estimated using arguments <code>covEst</code>, <code>dims</code> and <code>meanX</code> (see <a href="../Diagonalizations/#covariance-matrix-estimations-1">covariance matrix estimations</a>) and passed to method (1) with the remaining arguments of method (2).</p><p><strong>See also:</strong> <a href="../pca/#PCA-1">PCA</a>, <a href="../csp/#CSP-1">CSP</a>, <a href="../majd/#mAJD-1">mAJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+
+# method (1) real
+t, n, k=50, 10, 4
+A=randn(n, n) # mixing matrix in model x=As
+Xset = [genDataMatrix(t, n) for i = 1:k]
+Xfixed=randn(t, n)./1
+for i=1:length(Xset) Xset[i]+=Xfixed end
+Cset = ℍVector([ℍ((Xset[s]&#39;*Xset[s])/t) for s=1:k])
+aC=ajd(Cset; algorithm=:OJoB, simple=true)
+aC2=ajd(Cset; algorithm=:NoJoB, simple=true)
+aC3=ajd(Cset; algorithm=:LogLike, simple=true)
+aC4=ajd(Cset; algorithm=:LogLikeR, simple=true)
+aC5=ajd(Cset; algorithm=:JADE, simple=true)
+
+# method (1) complex
+t, n, k=50, 10, 4
+Ac=randn(ComplexF64, n, n) # mixing matrix in model x=As
+Xcset = [genDataMatrix(ComplexF64, t, n) for i = 1:k]
+Xcfixed=randn(ComplexF64, t, n)./1
+for i=1:length(Xcset) Xcset[i]+=Xcfixed end
+Ccset = ℍVector([ℍ((Xcset[s]&#39;*Xcset[s])/t) for s=1:k])
+aCc=ajd(Ccset; algorithm=:OJoB, simple=true)
+aCc2=ajd(Ccset; algorithm=:NoJoB, simple=true)
+aCc3=ajd(Ccset; algorithm=:LogLike, simple=true)
+aCc4=ajd(Ccset; algorithm=:JADE, simple=true)
+
+
+# method (2) real
+aX=ajd(Xset; algorithm=:OJoB, simple=true)
+aX2=ajd(Xset; algorithm=:NoJoB, simple=true)
+aX3=ajd(Xset; algorithm=:LogLike, simple=true)
+aX4=ajd(Xset; algorithm=:LogLikeR, simple=true)
+aX5=ajd(Xset; algorithm=:JADE, simple=true)
+
+@test aX≈aC
+@test aX2≈aC2
+@test aX3≈aC3
+@test aX4≈aC4
+@test aX5≈aC5
+
+
+# method (2) complex
+aXc=ajd(Xcset; algorithm=:OJoB, simple=true)
+aXc2=ajd(Xcset; algorithm=:NoJoB, simple=true)
+aXc3=ajd(Xcset; algorithm=:LogLike, simple=true)
+aXc4=ajd(Xcset; algorithm=:JADE, simple=true)
+@test aXc≈aCc
+@test aXc2≈aCc2
+@test aXc3≈aCc3
+@test aXc4≈aCc4
+
+# create 20 REAL random commuting matrices
+# they all have the same eigenvectors
+Cset2=PosDefManifold.randP(3, 20; eigvalsSNR=Inf, commuting=true)
+# estimate the approximate joint diagonalizer (AJD)
+a=ajd(Cset2; algorithm=:OJoB)
+# the orthogonal AJD must be equivalent to the eigenvector matrix
+# of any of the matrices in Cset
+@test [spForm(a.F&#39;*eigvecs(C))+1. for C ∈ Cset2] ≈
+      ones(eltype(Cset2[1]), length(Cset2))
+# do the same for JADE algorithm
+a=ajd(Cset2; algorithm=:JADE)
+@test [spForm(a.F&#39;*eigvecs(C))+1. for C ∈ Cset2] ≈
+      ones(eltype(Cset2[1]), length(Cset2))
+
+
+# generate positive definite matrices with model A*D_κ*D, where
+# A is the mixing matrix and D_κ, for all κ=1:k, are diagonal matrices.
+# The estimated AJD matrix must be the inverse of A
+n, k=3, 10
+Dest=PosDefManifold.randΛ(eigvalsSNR=100, n, k)
+A=randn(n, n) # non-singular mixing matrix
+Cset3=Vector{Hermitian}([Hermitian(A*D*A&#39;) for D ∈ Dest])
+a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
+@test spForm(a.F&#39;*A)&lt;0.001
+a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
+@test spForm(a.F&#39;*A)&lt;0.001
+a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
+@test spForm(a.F&#39;*A)&lt;0.001
+# Do the same thing for orthogonal diagonalizers:
+# now A will be orthogonal
+O=randU(n) # orthogonal mixing matrix
+Cset4=Vector{Hermitian}([Hermitian(O*D*O&#39;) for D ∈ Dest])
+a=ajd(Cset4; algorithm=:OJoB, eVarC=n)
+@test spForm(a.F&#39;*O)&lt;0.001
+a=ajd(Cset4; algorithm=:JADE, eVarC=n)
+@test spForm(a.F&#39;*O)&lt;0.001
+
+# repeat the test adding noise; now the model is no more exactly identifiable
+for k=1:length(Cset3) Cset3[k]+=randP(n)/1000 end
+a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
+@test spForm(a.F&#39;*A)&lt;0.1
+a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
+@test spForm(a.F&#39;*A)&lt;0.1
+a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
+@test spForm(a.F&#39;*A)&lt;0.1
+# the same thing for orthogonal diagonalizers
+for k=1:length(Cset4) Cset4[k]+=randP(n)/1000 end
+a=ajd(Cset4; algorithm=:OJoB, eVarC=n)
+@test spForm(a.F&#39;*O)&lt;0.1
+a=ajd(Cset4; algorithm=:JADE, eVarC=n)
+@test spForm(a.F&#39;*O)&lt;0.1
+
+
+# create 20 COMPLEX random commuting matrices
+# they all have the same eigenvectors
+Ccset2=PosDefManifold.randP(ComplexF64, 3, 20; eigvalsSNR=Inf, commuting=true)
+# estimate the approximate joint diagonalizer (AJD)
+ac=ajd(Ccset2; algorithm=:OJoB)
+# he AJD must be equivalent to the eigenvector matrix of any of the matrices in Cset
+# just a sanity check as rounding errors appears for complex data
+@test norm([spForm(ac.F&#39;*eigvecs(C)) for C ∈ Ccset2])/3&lt;0.01
+# do the same for JADE algorithm
+ac=ajd(Ccset2; algorithm=:JADE)
+@test norm([spForm(ac.F&#39;*eigvecs(C)) for C ∈ Ccset2])/3&lt;0.01
+
+# the same thing using the NoJoB and LogLike algorithms. Require less precision
+# as the NoJoB solution is not constrained in the orthogonal group
+ac=ajd(Ccset2; algorithm=:NoJoB)
+@test norm([spForm(ac.F&#39;*eigvecs(C)) for C ∈ Ccset2])/3&lt;0.01
+ac=ajd(Ccset2; algorithm=:LogLike)
+@test norm([spForm(ac.F&#39;*eigvecs(C)) for C ∈ Ccset2])/3&lt;0.01
+
+# REAL data:
+# normalize the trace of input matrices,
+# give them weights according to the `nonDiagonality` function
+# apply pre-whitening and limit the explained variance both
+# at the pre-whitening level and at the level of final vector selection
+Cset=PosDefManifold.randP(8, 20; eigvalsSNR=10, SNR=2, commuting=false)
+
+a=ajd(Cset; algorithm=:OJoB, trace1=true, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+a=ajd(Cset; algorithm=:NoJoB, trace1=true, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+a=ajd(Cset; algorithm=:LogLikeR, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+a=ajd(Cset; algorithm=:JADE, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+
+
+# AJD for plots below
+a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true)
+
+using Plots
+# plot the original covariance matrices
+# and their transformed counterpart
+CMax=maximum(maximum(abs.(C)) for C ∈ Cset);
+ h1 = heatmap(Cset[1], clim=(-CMax, CMax), title=&quot;C1&quot;, yflip=true, c=:bluesreds);
+ h2 = heatmap(Cset[2], clim=(-CMax, CMax), title=&quot;C2&quot;, yflip=true, c=:bluesreds);
+ h3 = heatmap(Cset[3], clim=(-CMax, CMax), title=&quot;C3&quot;, yflip=true, c=:bluesreds);
+ h4 = heatmap(Cset[4], clim=(-CMax, CMax), title=&quot;C4&quot;, yflip=true, c=:bluesreds);
+ 📈=plot(h1, h2, h3, h4, size=(700,400))
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigAJD1.png&quot;)
+
+Dset=[a.F&#39;*C*a.F for C ∈ Cset];
+ DMax=maximum(maximum(abs.(D)) for D ∈ Dset);
+ h5 = heatmap(Dset[1], clim=(-DMax, DMax), title=&quot;F&#39;*C1*F&quot;, yflip=true, c=:bluesreds);
+ h6 = heatmap(Dset[2], clim=(-DMax, DMax), title=&quot;F&#39;*C2*F&quot;, yflip=true, c=:bluesreds);
+ h7 = heatmap(Dset[3], clim=(-DMax, DMax), title=&quot;F&#39;*C3*F&quot;, yflip=true, c=:bluesreds);
+ h8 = heatmap(Dset[4], clim=(-DMax, DMax), title=&quot;F&#39;*C4*F&quot;, yflip=true, c=:bluesreds);
+ 📉=plot(h5, h6, h7, h8, size=(700,400))
+# savefig(📉, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigAJD2.png&quot;)
+</code></pre><p><img src="../assets/FigAJD1.png" alt="Figure AJD1"/></p><p><img src="../assets/FigAJD2.png" alt="Figure AJD2"/></p><pre><code class="language-none">
+# COMPLEX data:
+# normalize the trace of input matrices,
+# give them weights according to the `nonDiagonality` function
+# apply pre-whitening and limit the explained variance both
+# at the pre-whitening level and at the level of final vector selection
+Ccset=PosDefManifold.randP(3, 20; eigvalsSNR=10, SNR=2, commuting=false)
+
+ac=ajd(Ccset; trace1=true, w=nonD, preWhite=true,
+       algorithm=:OJoB, eVarC=8, eVar=0.99)
+ac=ajd(Ccset; eVarC=8, eVar=0.99)
+ac=ajd(Ccset; algorithm=:LogLike, eVarC=8, eVar=0.99)
+ac=ajd(Ccset; algorithm=:JADE, eVarC=8, eVar=0.99)
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/2632c7436d719c17db344e461c426c052376e7cb/src/ajd.jl#L11-L316">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cstp/">« CSTP</a><a class="docs-footer-nextpage" href="../mca/">MCA »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 21 January 2020 10:48">Tuesday 21 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
