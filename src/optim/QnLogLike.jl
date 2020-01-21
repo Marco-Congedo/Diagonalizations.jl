@@ -97,16 +97,13 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     function _linesearch(; StartAt::Real = 1.)
         for i ∈ 1:lsmax
             M = (StartAt * →) + I
-            𝐃₊ = [Hermitian(M'*D*M) for D ∈ 𝐃]
             B₊ = B * M
-            loss₊ = _getLoss(B₊, 𝐃₊)
-            loss₊ < loss && break
-            StartAt /= 2.0
+            (loss₊ = _hmtld(𝐃) - logabsdet(B₊)[1]) < loss ? break : StartAt /= 2.0
         end
-        return 𝐃₊, B₊, loss₊
+        return [Hermitian(M'*D*M) for D ∈ 𝐃], B₊, loss₊
     end
-    _htmld(𝐃) = 0.5*sum(mean(log, 𝔻(D) for D ∈ 𝐃)) # half trace mean log diag
-    _getLoss(B, 𝐃) = _htmld(𝐃) - logabsdet(B)[1]
+    _htmld(𝐃) = 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃])) # loss as half trace mean log diag
+    _hmtld(𝐃) = 0.5*mean(sum(log(qf(M[:, i], D)) for i=1:n) for D ∈ 𝐃) # loss as half mean trace log diag
 
     # pre-whiten or initialize or nothing
     if preWhite
@@ -121,7 +118,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     tol==0. ? tolerance = √eps(real(T)) : tolerance = tol
     iter, conv, 😋 = 1, 0., false
     B, loss, = Matrix{T}(I, n, n), _htmld(𝐃) - 1.
-    B₊, →, M, 𝐃₊ = similar(B), similar(B), similar(B), similar(𝐃)
+    B₊, →, M = similar(B), similar(B), similar(B)
 
     # here we go
     verbose && println("Iterating quasi-Newton LogLike algorithm...")
