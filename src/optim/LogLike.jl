@@ -102,7 +102,7 @@ end
 #  It handles both real and complex data input.
 #
 #  NB: For the moment being the weights are not supported. The `w` argument
-#  left in for compatibility with other AJD procedures.
+#  is left in for syntax homogeneity with other AJD procedures.
 #
 #  if `whitening` = true is passed, the Jeffrey mean of the matrices in 𝐂 is
 #  computed (using the PosDefManifold.jl package) and the matrices in 𝐂

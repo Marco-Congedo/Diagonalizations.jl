@@ -335,10 +335,10 @@ function ajd(𝐂::ℍVector;
 
    if     algorithm ∈(:OJoB, :NoJoB)
           U, V, λ, iter, conv=JoB(reshape(𝕄Vector(𝐂), (k, 1, 1)), 1, k, :c, algorithm, eltype(𝐂[1]);
-               trace1=trace1, w=w, preWhite=preWhite, sort=sort, init=init,
-                  tol=tol, maxiter=maxiter, verbose=verbose,
-               eVar=eVarC, eVarMeth=eVarMeth,
-               threaded=threaded)
+            trace1=trace1, w=w, preWhite=preWhite, sort=sort, init=init,
+            tol=tol, maxiter=maxiter, verbose=verbose,
+            eVar=eVarC, eVarMeth=eVarMeth,
+            threaded=threaded)
    elseif algorithm == :LogLike
           U, V, λ, iter, conv=logLike(𝐂; w=w, preWhite=preWhite, sort=sort,
             init=init, tol=tol, maxiter=maxiter, verbose=verbose,
@@ -347,16 +347,20 @@ function ajd(𝐂::ℍVector;
           U, V, λ, iter, conv=logLikeR(𝐂; w=w, preWhite=preWhite, sort=sort,
             init=init, tol=tol, maxiter=maxiter, verbose=verbose,
             eVar=eVarC, eVarMeth=eVarMeth)
+   elseif algorithm == :QNLogLike
+          U, V, λ, iter, conv=qnLogLike(𝐂; w=w, preWhite=preWhite, sort=sort,
+            init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+            eVar=eVarC, eVarMeth=eVarMeth)
    elseif algorithm==:JADE
           U, V, λ, iter, conv=jade(𝐂;
-               trace1=trace1, w=w, preWhite=preWhite, sort=sort,
-               init=init, tol=tol, maxiter=maxiter, verbose=verbose,
-               eVar=eVarC, eVarMeth=eVarMeth)
+            trace1=trace1, w=w, preWhite=preWhite, sort=sort,
+            init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+            eVar=eVarC, eVarMeth=eVarMeth)
    elseif algorithm==:GAJD
           U, V, λ, iter, conv=gajd(𝐂;
-               trace1=trace1, w=w, preWhite=preWhite, sort=sort,
-               init=init, tol=tol, maxiter=maxiter, verbose=verbose,
-               eVar=eVarC, eVarMeth=eVarMeth)
+            trace1=trace1, w=w, preWhite=preWhite, sort=sort,
+            init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+            eVar=eVarC, eVarMeth=eVarMeth)
    else
       throw(ArgumentError(📌*", ajd constructor: invalid `algorithm` argument: $algorithm"))
    end

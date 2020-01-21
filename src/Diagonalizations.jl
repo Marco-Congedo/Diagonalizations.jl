@@ -208,6 +208,7 @@ include("../src/optim/JoB.jl")
 include("../src/optim/LogLike.jl")
 include("../src/optim/Jade.jl")
 include("../src/optim/Gajd.jl")
+include("../src/optim/QnLogLike.jl")
 include("ajd.jl")
 include("gcca.jl")
 

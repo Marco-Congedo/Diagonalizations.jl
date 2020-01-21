@@ -13,6 +13,8 @@ aC3=ajd(Cset; algorithm=:LogLike, simple=true)
 aC4=ajd(Cset; algorithm=:LogLikeR, simple=true)
 aC5=ajd(Cset; algorithm=:JADE, simple=true)
 aC6=ajd(Cset; algorithm=:GAJD, simple=true)
+aC7=ajd(Cset; algorithm=:QNLogLike, simple=true)
+
 
 # method (1) complex
 t, n, k=50, 10, 4
@@ -34,6 +36,8 @@ aX3=ajd(Xset; algorithm=:LogLike, simple=true)
 aX4=ajd(Xset; algorithm=:LogLikeR, simple=true)
 aX5=ajd(Xset; algorithm=:JADE, simple=true)
 aX6=ajd(Xset; algorithm=:GAJD, simple=true)
+aX7=ajd(Xset; algorithm=:QNLogLike, simple=true)
+
 
 @test aX≈aC
 @test aX2≈aC2
@@ -41,6 +45,7 @@ aX6=ajd(Xset; algorithm=:GAJD, simple=true)
 @test aX4≈aC4
 @test aX5≈aC5
 @test aX6≈aC6
+@test aX7≈aC7
 
 
 # method (2) complex
@@ -91,6 +96,10 @@ a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
 a=ajd(Cset3; algorithm=:GAJD, eVarC=n)
 @test spForm(a.F'*A)<0.01
 @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.00001
+a=ajd(Cset3; algorithm=:QNLogLike, eVarC=n)
+@test spForm(a.F'*A)<0.01
+@test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.00001
+
 
 
 # Do the same thing for orthogonal diagonalizers:
@@ -118,6 +127,10 @@ a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
 a=ajd(Cset3; algorithm=:GAJD, eVarC=n)
 @test spForm(a.F'*A)<0.1
 @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.001
+a=ajd(Cset3; algorithm=:QNLogLike, eVarC=n)
+@test spForm(a.F'*A)<0.1
+@test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<0.001
+
 
 # the same thing for orthogonal diagonalizers
 for k=1:length(Cset4) Cset4[k]+=randP(n)/1000 end
@@ -161,9 +174,12 @@ a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 a=ajd(Cset; algorithm=:LogLikeR, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 a=ajd(Cset; algorithm=:JADE, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 a=ajd(Cset; algorithm=:GAJD, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+a=ajd(Cset; algorithm=:QNLogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
+
 
 # AJD for plots below
 a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true)
+
 
 using Plots
 # plot the original covariance matrices

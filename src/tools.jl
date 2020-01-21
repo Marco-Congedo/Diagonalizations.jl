@@ -553,10 +553,10 @@ _maxiter(algorithm, type) =
             return type<:Real ? 1000 : 3000
    elseif   algorithm ∈ (:LogLike, :LogLikeR, :JADE)
             return type<:Real ? 60 : 180
-   elseif   algorithm == :GAJD
+   elseif   algorithm ∈ (:GAJD, :QNLogLike)
             type<:Real ? (return 120) :
             throw(ArgumentError("The GAJD algorithm does not support complex data input"))
-   else throw(ArgumentError("The `algorithm` keyword is uncorrect"))
+   else throw(ArgumentError("The `algorithm` keyword argument is uncorrect. Valid options are: :OJoB, :NoJoB, :LogLike, :LogLikeR, :QNLogLike, :JADE and :GAJD."))
    end
 
 
