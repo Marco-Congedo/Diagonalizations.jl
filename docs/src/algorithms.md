@@ -14,14 +14,16 @@ Solvers differ from one another in several fashions:
 - their initialization
 - whether they support multi-threading or not
 
-To date six solvers are implemented:
+To date seven solvers are implemented:
 
 - **Orthogonal joint blind source separation** (OJOB: Congedo et al., 2012[🎓](@ref))
 - **Non-orthogonal joint blind source separation** (NoJOB: Congedo et al., 2012[🎓](@ref))
 - **Log-likelyhood** (LogLike: Pham, 2001[🎓](@ref))
 - **Log-likelyhood Real** (LogLikeR: Pham, 2001[🎓](@ref))
+- **Quasi-Newton Log-likelyhood** (QNLogLike: Ablin et **al.**, 2019[🎓](@ref))
 - **Joint Approximate Diagonalization of Eigenmatrices** (JADE: Cardoso and Souloumiac, 1996[🎓](@ref))
 - **Gauss Approximate Joint Diagonalization** (GAJD, unpublished, from the author)
+
 
 Their main characteristics and domain of application are summarized in the following table:
 
@@ -31,6 +33,7 @@ Their main characteristics and domain of application are summarized in the follo
 | NoJoB    | non-singular| yes       | no |least-squares | yes | gMCA, AJD, mAJD |
 | LogLike  | non-singular| yes       | yes| log-likelihood | no | AJD |
 | LogLikeR | non-singular| no        | yes| log-likelihood | no | AJD |
+| QNLogLike| non-singular| no        | yes| log-likelihood | no | AJD |
 | JADE     | Orthogonal/Unitary| yes | no | least-squares | no | AJD |
 | GAJD     | non-singular| no        | no | least-squares | no | AJD |
 
@@ -66,6 +69,7 @@ Argument `maxiter` is the maximum number of iterations allowed to the solver. Th
 | NoJoB      | 1000 for real data, 3000 for complex data |
 | Log-Like   | 60 for real data, 180 for complex data |
 | Log-LikeR  | 40 (real data only) |
+| GAJD       | 120 (real data only) |
 | JADE       | 60 for real data, 180 for complex data |
 | GAJD       | 120 (real data only) |
 
@@ -156,3 +160,8 @@ an algorithm depending on ``n`` and ``k``:
 | small | large   | GAJD              | JADE         |
 | large | small   | LogLike           | OJoB         |
 | large | large   | NoJOB             | OJoB         |
+
+Keep in mind that if the input matrices are positive-definite,
+e.g., covariance or co-spectral matrices of real-world data,
+an algorithm using the log-likelihood criterion
+is expected to perform better in term of the quality of the solution.

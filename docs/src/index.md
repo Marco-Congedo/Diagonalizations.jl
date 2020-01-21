@@ -123,6 +123,10 @@ constructors are collected as .jl units in the 'examples' folder.
 
 **References**
 
+P. Ablin, J.F. Cardoso, A. Gramfort (2019) [Beyond Pham's algorithm
+for joint diagonalization](https://hal.archives-ouvertes.fr/hal-01936887v1),
+Proc. ESANN Conference.
+
 A. Belouchrani, K. Abed-Meraim, J. Cardoso, E. Moulines (1997), [A blind
 source separation technique using second order statistics](https://pdfs.semanticscholar.org/1889/e9f39f76abf8a64b9d6a8167b04f9f790115.pdf?_ga=2.189686571.124228321.1577610632-183244851.1563047228), IEEE Transactions
 on Signal Processing, 45(2), 434–444.
