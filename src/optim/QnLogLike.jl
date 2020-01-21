@@ -60,14 +60,14 @@
 #
 #  return: B, its pseudo-inverse, the mean diagonal elements of B'*mean(𝐂)*B,
 #           the number of iterations and the convergence attained.
-
+#
 #  Note on the implementation:
 #  GRADIENT:
 #  D_1,...,D_n are the matrices in 𝐃;
 #  the jth column in D_i is divided by D_i[j, j],
 #  the mean of these matrices is then taken and finally
 #  the identity is subtracted
-
+#
 #  HESSIAN COEFFICIENTS
 #  for each COLUMN vector dg_1,...,dg_n
 #  (the diagonal part of the n matrices in 𝐃)
@@ -93,7 +93,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
                  eVar     :: TeVaro = ○,
                  eVarMeth :: Function = searchsortedfirst)
 
-    # internal functions #
+    # internal functions
     function _linesearch(; StartAt::Real = 1.)
         for i ∈ 1:lsmax
             M = (StartAt * →) + I
@@ -141,7 +141,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
         → = -(∇' .* ℌ - ∇)./replace(x -> x<𝜆min ? 𝜆min : x, @. (ℌ'*ℌ) - 1.)
 
         𝐃, B, loss = _linesearch(StartAt=T(1.)) # Line Search
-    end #
+    end
     verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n\n")
 
     # scale and permute the vectors of B
