@@ -98,12 +98,12 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
         for i ∈ 1:lsmax
             M = (StartAt * →) + I
             B₊ = B * M
-            (loss₊ = _hmtld(𝐃) - logabsdet(B₊)[1]) < loss ? break : StartAt /= 2.0
+            (loss₊ = _hmtld() - logabsdet(B₊)[1]) < loss ? break : StartAt /= 2.0
         end
         return [Hermitian(M'*D*M) for D ∈ 𝐃], B₊, loss₊
     end
-    _htmld(𝐃) = 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃])) # loss as half trace mean log diag
-    _hmtld(𝐃) = 0.5*mean(sum(log(qf(M[:, i], D)) for i=1:n) for D ∈ 𝐃) # loss as half mean trace log diag
+    _htmld() = 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃])) # loss as half trace mean log diag
+    _hmtld() = 0.5*mean(sum(log(qf(M[:, i], D)) for i=1:n) for D ∈ 𝐃) # loss as half mean trace log diag
 
     # pre-whiten or initialize or nothing
     if preWhite
@@ -117,7 +117,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     n, T, loss, loss₊ = size(𝐃[1], 1), eltype(𝐃[1]), ○, 0.
     tol==0. ? tolerance = √eps(real(T)) : tolerance = tol
     iter, conv, 😋 = 1, 0., false
-    B, loss, = Matrix{T}(I, n, n), _htmld(𝐃) - 1.
+    B, loss, = Matrix{T}(I, n, n), _htmld() - 1.
     B₊, →, M = similar(B), similar(B), similar(B)
 
     # here we go
