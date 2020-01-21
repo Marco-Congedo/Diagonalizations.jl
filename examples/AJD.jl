@@ -179,7 +179,7 @@ a=ajd(Cset; algorithm=:QNLogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 
 # AJD for plots below
 a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true)
-
+# a=ajd(Cset; algorithm=:QNLogLike, w=nonD, preWhite=true)
 
 using Plots
 # plot the original covariance matrices
