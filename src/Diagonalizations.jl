@@ -1,5 +1,5 @@
 #   Main Module of the Diagonalization.jl Package for Julia language
-#   v 0.1.6 - last update 16th of January 2020
+#   v 0.1.7 - last update 16th of January 2020
 
 #   MIT License
 #   Copyright (c) 2019, 2020
@@ -208,6 +208,7 @@ include("../src/optim/JoB.jl")
 include("../src/optim/LogLike.jl")
 include("../src/optim/Jade.jl")
 include("../src/optim/Gajd.jl")
+include("../src/optim/QnLogLike.jl")
 include("ajd.jl")
 include("gcca.jl")
 

@@ -17,7 +17,7 @@
 #  holding in its elements vectors of k real numbers.
 #  From data in matrix form given as k symmetric C_κ matrices of size nxn,
 #  we have 𝐋[i, j][κ] = C_κ[i, j], for κ=1:k, i>j=1:n.
-#  It find a non-singular matrix B such that the
+#  It finds a non-singular matrix B such that the
 #  congruences B'*C_κ*B are as diagonal as possible for all κ=1:k.
 #  `tol` is the convergence to be attained.
 #  `maxiter` is the maximum number of iterations allowed.
@@ -72,7 +72,7 @@ function gajd(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
 end
 
 #  ADVANCED GAJD algorithm:
-#  It takes as input a vector of k real symmetric matrices 𝐂 and find a
+#  It takes as input a vector of k real symmetric matrices 𝐂 and finds a
 #  non-singular matrix B such that the congruences B'*𝐂_κ*B are as diagonal
 #  as possible for all κ=1:k.
 

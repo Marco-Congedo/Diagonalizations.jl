@@ -30,7 +30,7 @@ end
 #  PRIMITIVE LogLike algorithm:
 #  It takes as input a n·nk matrix holding k horizontally stacked n·n real or
 #  complex matrices, such as C=[C_1...C_k].
-#  It find a non-singular matrix B such that the
+#  It finds a non-singular matrix B such that the
 #  congruences B'*C_κ*B are as diagonal as possible for all κ=1:k.
 #  `tol` is the convergence to be attained.
 #  `maxiter` is the maximum number of iterations allowed.
@@ -97,12 +97,12 @@ end
 
 #  ADVANCED LogLike algorithm:
 #  It takes as input a vector of k real symmetric or complex Hermitian
-#  matrices 𝐂 and find a non-singular matrix B such that the
+#  matrices 𝐂 and finds a non-singular matrix B such that the
 #  congruences B'*𝐂_κ*B are as diagonal as possible for all κ=1:k.
 #  It handles both real and complex data input.
 #
 #  NB: For the moment being the weights are not supported. The `w` argument
-#  left in for compatibility with other AJD procedures.
+#  is left in for syntax homogeneity with other AJD procedures.
 #
 #  if `whitening` = true is passed, the Jeffrey mean of the matrices in 𝐂 is
 #  computed (using the PosDefManifold.jl package) and the matrices in 𝐂
