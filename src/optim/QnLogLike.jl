@@ -105,7 +105,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     _htmld() = 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃])) # loss as half trace mean log diag
     _hmtld() = 0.5*mean(sum(log(qf(M[:, i], D)) for i=1:n) for D ∈ 𝐃) # loss as half mean trace log diag
 
-    # pre-whiten or initialize or nothing
+    # pre-whiten or initialize or just copy input matrices otherwise they will be overwritten
     if preWhite
         W = whitening(mean(Jeffrey, 𝐂); eVar=eVar, eVarMeth=eVarMeth)
         𝐃=[W.F'*C*W.F for C ∈ 𝐂]

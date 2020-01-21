@@ -332,6 +332,7 @@ function ajd(𝐂::ℍVector;
 
    args=("Approximate Joint Diagonalization", false)
    k, n=length(𝐂), size(𝐂[1], 1)
+   if simple whitening=false end
 
    if     algorithm ∈(:OJoB, :NoJoB)
           U, V, λ, iter, conv=JoB(reshape(𝕄Vector(𝐂), (k, 1, 1)), 1, k, :c, algorithm, eltype(𝐂[1]);
