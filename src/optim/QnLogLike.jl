@@ -98,12 +98,15 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
         for i ∈ 1:lsmax
             M = (StartAt * →) + I
             B₊ = B * M
-            (loss₊ = _hmtld() - logabsdet(B₊)[1]) < loss ? break : StartAt /= 2.0
+            for j=1:k
+               @threads for i=1:n x[i]=log(qf(M[:, i], 𝐃[j])) end
+               y[j] = sum(x)
+            end
+            (loss₊ = 0.5*mean(y) - logabsdet(B₊)[1]) < loss ? break : StartAt /= 2.0
         end
         return [Hermitian(M'*D*M) for D ∈ 𝐃], B₊, loss₊
     end
     _htmld() = 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃])) # loss as half trace mean log diag
-    _hmtld() = 0.5*mean(sum(log(qf(M[:, i], D)) for i=1:n) for D ∈ 𝐃) # loss as half mean trace log diag
 
     # pre-whiten or initialize or just copy input matrices otherwise they will be overwritten
     if preWhite
@@ -114,11 +117,13 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     end
 
     # set variables
-    n, T, loss, loss₊ = size(𝐃[1], 1), eltype(𝐃[1]), ○, 0.
+    n, k, T, loss, loss₊ = size(𝐃[1], 1), length(𝐃), eltype(𝐃[1]), ○, 0.
     tol==0. ? tolerance = √eps(real(T)) : tolerance = tol
     iter, conv, 😋 = 1, 0., false
     B, loss, = Matrix{T}(I, n, n), _htmld() - 1.
     B₊, →, M = similar(B), similar(B), similar(B)
+    x=Vector{Float64}(undef, n)
+    y=Vector{Float64}(undef, k)
 
     # here we go
     verbose && println("Iterating quasi-Newton LogLike algorithm...")
