@@ -97,16 +97,14 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     function _linesearch(; StartAt::Real = 1.)
         for i ∈ 1:lsmax
             M = (StartAt * →) + I
+            𝐃₊ = [Hermitian(M'*D*M) for D ∈ 𝐃]
             B₊ = B * M
-            for j=1:k
-               @threads for i=1:n x[i]=log(qf(M[:, i], 𝐃[j])) end
-               y[j] = sum(x)
-            end
-            (loss₊ = 0.5*mean(y) - logabsdet(B₊)[1]) < loss ? break : StartAt /= 2.0
+            loss₊ = _getLoss(B₊, 𝐃₊)
+            loss₊ < loss ? break : StartAt /= 2.0
         end
-        return [Hermitian(M'*D*M) for D ∈ 𝐃], B₊, loss₊
+        return 𝐃₊, B₊, loss₊
     end
-    _htmld() = 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃])) # loss as half trace mean log diag
+    _getLoss(B, 𝐃) = -(logabsdet(B)[1]) + 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃]))
 
     # pre-whiten or initialize or just copy input matrices otherwise they will be overwritten
     if preWhite
@@ -119,11 +117,9 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     # set variables
     n, k, T, loss, loss₊ = size(𝐃[1], 1), length(𝐃), eltype(𝐃[1]), ○, 0.
     tol==0. ? tolerance = √eps(real(T)) : tolerance = tol
-    iter, conv, 😋 = 1, 0., false
-    B, loss, = Matrix{T}(I, n, n), _htmld() - 1.
-    B₊, →, M = similar(B), similar(B), similar(B)
-    x=Vector{Float64}(undef, n)
-    y=Vector{Float64}(undef, k)
+    iter, conv, loss, 😋 = 1, 0., Inf, false
+    B = Matrix{T}(I, n, n)
+    B₊, →, M, 𝐃₊ = similar(B), similar(B), similar(B), similar(𝐃)
 
     # here we go
     verbose && println("Iterating quasi-Newton LogLike algorithm...")
@@ -131,7 +127,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
         diagonals = [diag(D) for D ∈ 𝐃]
 
         ∇ = mean(d./diagd for (d, diagd) ∈ zip(𝐃, diagonals)) - I
-        conv = norm(∇) # the convergence is the norm of the gradient
+        conv = norm(∇)/n # the convergence is the norm of the gradient/n
 
         verbose && println("iteration: ", iter, "; convergence: ", conv)
         (overRun = iter > maxiter) && @warn("qnLogLike: reached the max number of iterations before convergence:", iter)
