@@ -157,7 +157,7 @@ function jade( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
                w        :: Twf   = ○,
                preWhite :: Bool  = false,
                sort     :: Bool  = true,
-               init     :: Union{Symmetric, Hermitian, Nothing} = ○,
+               init     :: Union{Matrix, Nothing} = ○,
                tol      :: Real  = 0.,
                maxiter  :: Int   = 60,
                verbose  :: Bool  = false,

@@ -168,7 +168,7 @@ ac=ajd(Ccset2; algorithm=:LogLike)
 # give them weights according to the `nonDiagonality` function
 # apply pre-whitening and limit the explained variance both
 # at the pre-whitening level and at the level of final vector selection
-Cset=PosDefManifold.randP(8, 20; eigvalsSNR=10, SNR=2, commuting=false)
+Cset=PosDefManifold.randP(20, 80; eigvalsSNR=10, SNR=10, commuting=false)
 
 a=ajd(Cset; algorithm=:OJoB, trace1=true, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 a=ajd(Cset; algorithm=:NoJoB, trace1=true, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
@@ -180,7 +180,7 @@ a=ajd(Cset; algorithm=:QNLogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 
 
 # AJD for plots below
-a=ajd(Cset; algorithm=:QNLogLike, w=nonD, preWhite=true)
+a=ajd(Cset; algorithm=:QNLogLike, verbose=true)
 
 using Plots
 # plot the original covariance matrices

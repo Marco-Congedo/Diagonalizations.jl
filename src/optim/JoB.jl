@@ -125,7 +125,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
           fullModel :: Bool = false,
           preWhite  :: Bool = false,
           sort      :: Bool = true,
-          init      = nothing,
+          init      :: Union{Matrix, Nothing} = ○,
           tol       :: Real = 0.,
           maxiter   :: Int  = 1000,
           verbose   :: Bool = false,
