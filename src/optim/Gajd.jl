@@ -165,3 +165,107 @@ function gajd( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
    return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
                      (B, pinv(B), λ, iter, conv)
 end
+
+
+
+
+function gajd2(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
+
+   function congedoSweep!()
+      ∡ = T(0.)
+      @inbounds for i ∈ 1:n
+         #lᵢᵢ = 𝐋[i, i]
+         #h = -inv(sum(lᵢᵢ.^2))
+         fill!(prod, T(1))
+         for κ=1:k
+            for l=1:i-1 prod[κ]*= i≥l ? 𝐋[i, l][κ] : 𝐋[l, i][κ] end
+            for l=i+1:n prod[κ]*= i≥l ? 𝐋[i, l][κ] : 𝐋[l, i][κ] end
+         end
+
+         # transform all other columns of B with respect to its ith column
+         for j ∈ filter(x->x≠i, 1:n)
+            ⊶ = j>i ? (j, i) : (i, j) # pick from lower triangular part only
+            for κ=1:k prod2[κ]=prod[κ]/𝐋[j, j][κ] end
+            θ  = -sum((𝐋[(⊶ )...].*𝐋[j, j]).*prod2) / sum(𝐋[j, j].^2 .*prod2) # find optimal theta
+            θ² = θ^2
+            ∡ += θ²         # update convergence (∡)
+
+            # update 𝐂 (lower triangular part only)
+            # this is RECURSIVE, hence no multi-threading is possible
+            𝐋[j, j] += θ²*𝐋[i, i] + (2*θ)*(𝐋[(⊶ )...]+𝐋[j, j])
+            for p = 1:j-1 𝐋[j, p] += i≥p ? θ*𝐋[i, p] : θ*𝐋[p, i] end
+            for p = j+1:n 𝐋[p, j] += i≥p ? θ*𝐋[i, p] : θ*𝐋[p, i] end
+
+            B[:, j] += θ*B[:, i]    # update B
+         end # for j
+      end
+      return ∡*e # convergence: average squared theta over all n(n-1) pairs
+   end
+
+   T, n, k = eltype(𝐋[1, 1]), size(𝐋, 1), length(𝐋[1, 1])
+   tolerance = tol==0. ? √eps(real(T)) : tol
+   iter, conv, 😋, e = 1, 0., false, inv(n*(n-1))
+
+   prod=Vector{T}(undef,  k)
+   prod2=similar(prod)
+
+   # initialize AJD
+   B=Matrix{T}(I, n, n)
+
+   verbose && @info("Iterating GAJD algorithm...")
+   while true
+      conv=congedoSweep!()
+      verbose && println("iteration: ", iter, "; convergence: ", conv)
+      (overRun = iter == maxiter) && @warn("GAJD: reached the max number of iterations before convergence:", iter)
+      (😋 = conv <= tolerance) || overRun==true ? break : iter += 1
+   end
+   verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n\n")
+
+   return B, iter, conv
+end
+
+
+function gajd2( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
+               trace1   :: Bool  = false,
+               w        :: Twf   = ○,
+               preWhite :: Bool  = false,
+               sort     :: Bool  = true,
+               init     :: Union{Symmetric, Hermitian, Nothing} = ○,
+               tol      :: Real  = 0.,
+               maxiter  :: Int   = 120,
+               verbose  :: Bool  = false,
+            eVar     :: TeVaro = ○,
+            eVarMeth :: Function = searchsortedfirst)
+
+   # trace normalization and weighting
+   trace1 || w ≠ ○ ? begin
+      𝐆 = deepcopy(𝐂)
+      _Normalize!(𝐆, trace1, w)
+   end : 𝐆 = 𝐂
+
+   # pre-whiten or initialize
+   if preWhite
+      W = whitening(mean(Euclidean, 𝐆); eVar=eVar, eVarMeth=eVarMeth)
+      for κ=1:length(𝐆) 𝐆[κ]=Hermitian(W.F'*𝐆[κ]*W.F) end
+   else
+      if init≠nothing for κ=1:length(𝐆) 𝐆[κ]=Hermitian(W.F'*𝐆[κ]*W.F) end end
+   end
+
+   T, n, k = eltype(𝐆[1]), size(𝐆[1], 1), length(𝐆)
+
+   # arrange data in a LowerTriangular matrix of k-vectors
+   𝐋 = LowerTriangular(Matrix(undef, n, n))
+   for i=1:n, j=i:n
+      𝐋[j, i] = Vector{T}(undef, k)
+      for κ=1:k 𝐋[j, i][κ] = 𝐆[κ][j, i] end
+   end
+
+   B, iter, conv = gajd2(𝐋; tol=tol, maxiter=maxiter, verbose=verbose)
+
+   # scale and permute the vectors of B
+   D=Diagonal([mean(𝐋[i, i]) for i=1:n])
+   λ = sort ? _permute!(_scale!(B, D, n)...) : diag(D)
+
+   return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
+                     (B, pinv(B), λ, iter, conv)
+end

@@ -25,8 +25,12 @@
 #  𝐂 and find a non-singular matrix B such that the congruences
 #  B'*𝐂_κ*B are as diagonal as possible for all κ=1:k.
 #
-#  NB: For the moment being the weights are not supported. The `w` argument
-#  is left in for syntax homogeneity with other AJD procedures.
+#  `w` is an optional vector of k positive weights for each matrix in 𝐂.
+#  if `w` is different from `nothing` (default), the input matrices are
+#  weighted with these weights.
+#  A function can be passed as the `w` argument, in which case the kth weight
+#  is found as the output of the function applied to the kth matrix in 𝐂.
+#  A good choice in general is the `nonD` function declared in tools.jl unit.
 #
 #  if `whitening` = true is passed, the Jeffrey mean of the matrices in 𝐂 is
 #  computed (using the PosDefManifold.jl package) and the matrices in 𝐂
@@ -80,6 +84,12 @@
 #  _                   _
 #  finally we take the mean of all the n matrices created in this way.
 
+# function to get the weights from argment `w`
+function _qnlogLikeWeights(w, 𝐂)
+	if w isa Function w=[w(C) for C∈𝐂] end
+	return w./mean(w)
+end
+
 function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
                     w           :: Twf   = ○,
                     preWhite    :: Bool = false,
@@ -104,7 +114,9 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
         end
         return 𝐃₊, B₊, loss₊
     end
-    _getLoss(B, 𝐃) = -(logabsdet(B)[1]) + 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃]))
+    _getLoss(B, 𝐃) =
+		w===○ ? -(logabsdet(B)[1]) + 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃])) :
+				-(logabsdet(B)[1]) + 0.5*sum(mean(log, [𝔻(D*v) for (D, v) ∈ zip(𝐃, 𝐯)]))
 
     # pre-whiten or initialize or just copy input matrices otherwise they will be overwritten
     if preWhite
@@ -120,13 +132,15 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     iter, conv, loss, 😋, sqrtn = 1, Inf, Inf, false, √n
     B = Matrix{T}(I, n, n)
     B₊, →, M, 𝐃₊ = similar(B), similar(B), similar(B), similar(𝐃)
+	if w≠○ 𝐯 = _qnlogLikeWeights(w, 𝐂) end # if w is `nonD` function, apply it to the original input 𝐂
 
     # here we go
     verbose && println("Iterating quasi-Newton LogLike algorithm...")
     while true
         diagonals = [diag(D) for D ∈ 𝐃]
 
-        ∇ = mean(d./diagd for (d, diagd) ∈ zip(𝐃, diagonals)) - I
+		∇ = w===○ ?	mean(d./diagd for (d, diagd) ∈ zip(𝐃, diagonals)) - I :
+					mean(v.*(d./diagd) for (v, d, diagd) ∈ zip(𝐯, 𝐃, diagonals)) - I
         conv = norm(∇)/sqrtn # relative norm of ∇ with respect to the identity : ||∇-I||/||I||
 
         verbose && println("iteration: ", iter, "; convergence: ", conv)
@@ -134,7 +148,8 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
         (😋 = conv <= tolerance) || overRun==true ? break : iter += 1
 
         # Quasi-Newton Direction →
-        ℌ = mean(diagd'./diagd for diagd ∈ diagonals) # Hessian Coefficients
+		ℌ = w===○ ?	mean(diagd'./diagd for diagd ∈ diagonals) : # Hessian Coefficients
+					mean(v.*(diagd'./diagd) for (v, diagd) ∈ zip(𝐯, diagonals))
         → = -(∇' .* ℌ - ∇)./replace(x -> x<𝜆min ? 𝜆min : x, @. (ℌ'*ℌ) - 1.)
 
         𝐃, B, loss = _linesearch(StartAt=T(1.)) # Line Search
