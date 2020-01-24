@@ -126,7 +126,7 @@ function gajd( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
                w        :: Twf   = ○,
                preWhite :: Bool  = false,
                sort     :: Bool  = true,
-               init     :: Union{Symmetric, Hermitian, Nothing} = ○,
+               init     :: Union{Matrix, Nothing} = ○,
                tol      :: Real  = 0.,
                maxiter  :: Int   = 120,
                verbose  :: Bool  = false,
@@ -174,25 +174,26 @@ function gajd2(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
    function congedoSweep!()
       ∡ = T(0.)
       @inbounds for i ∈ 1:n
-         #lᵢᵢ = 𝐋[i, i]
+         lᵢᵢ = 𝐋[i, i]
+         lᵢᵢ² = lᵢᵢ.^2
          #h = -inv(sum(lᵢᵢ.^2))
-         fill!(prod, T(1))
-         for κ=1:k
-            for l=1:i-1 prod[κ]*= i≥l ? 𝐋[i, l][κ] : 𝐋[l, i][κ] end
-            for l=i+1:n prod[κ]*= i≥l ? 𝐋[i, l][κ] : 𝐋[l, i][κ] end
-         end
 
          # transform all other columns of B with respect to its ith column
          for j ∈ filter(x->x≠i, 1:n)
             ⊶ = j>i ? (j, i) : (i, j) # pick from lower triangular part only
-            for κ=1:k prod2[κ]=prod[κ]/𝐋[j, j][κ] end
-            θ  = -sum((𝐋[(⊶ )...].*𝐋[j, j]).*prod2) / sum(𝐋[j, j].^2 .*prod2) # find optimal theta
+
+            fill!(pr, T(1))
+            #for l=1:n, κ=1:k if l≠i && l≠j prod[κ]*= 𝐋[l, l][κ] end end
+            for l=1:n, κ=1:k pr[κ]*= 𝐋[l, l][κ] end
+
+
+            θ  = -sum((𝐋[(⊶ )...].*lᵢᵢ).*pr) / sum(lᵢᵢ².*pr) # find optimal theta
             θ² = θ^2
             ∡ += θ²         # update convergence (∡)
 
             # update 𝐂 (lower triangular part only)
             # this is RECURSIVE, hence no multi-threading is possible
-            𝐋[j, j] += θ²*𝐋[i, i] + (2*θ)*(𝐋[(⊶ )...]+𝐋[j, j])
+            𝐋[j, j] += θ²*𝐋[i, i] + (2*θ)*(𝐋[(⊶ )...])
             for p = 1:j-1 𝐋[j, p] += i≥p ? θ*𝐋[i, p] : θ*𝐋[p, i] end
             for p = j+1:n 𝐋[p, j] += i≥p ? θ*𝐋[i, p] : θ*𝐋[p, i] end
 
@@ -206,8 +207,8 @@ function gajd2(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
    tolerance = tol==0. ? √eps(real(T)) : tol
    iter, conv, 😋, e = 1, 0., false, inv(n*(n-1))
 
-   prod=Vector{T}(undef,  k)
-   prod2=similar(prod)
+   pr=Vector{T}(undef,  k)
+   lᵢᵢ, lᵢᵢ² = similar(pr), similar(pr)
 
    # initialize AJD
    B=Matrix{T}(I, n, n)
@@ -218,6 +219,7 @@ function gajd2(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
       verbose && println("iteration: ", iter, "; convergence: ", conv)
       (overRun = iter == maxiter) && @warn("GAJD: reached the max number of iterations before convergence:", iter)
       (😋 = conv <= tolerance) || overRun==true ? break : iter += 1
+      #(😋 = conv <= tolerance) ? break : iter += 1
    end
    verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n\n")
 
@@ -230,7 +232,7 @@ function gajd2( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
                w        :: Twf   = ○,
                preWhite :: Bool  = false,
                sort     :: Bool  = true,
-               init     :: Union{Symmetric, Hermitian, Nothing} = ○,
+               init     :: Union{Matrix, Nothing} = ○,
                tol      :: Real  = 0.,
                maxiter  :: Int   = 120,
                verbose  :: Bool  = false,

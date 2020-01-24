@@ -85,7 +85,7 @@
 #  finally we take the mean of all the n matrices created in this way.
 
 # function to get the weights from argment `w`
-function _qnlogLikeWeights(w, 𝐂)
+function _qnlogLikeWeights!(w, 𝐂)
 	if w isa Function w=[w(C) for C∈𝐂] end
 	return w./mean(w)
 end
@@ -94,7 +94,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
                     w           :: Twf   = ○,
                     preWhite    :: Bool = false,
                     sort        :: Bool = true,
-                    init        :: Union{Symmetric, Hermitian, Nothing} = ○,
+                    init        :: Union{Matrix, Nothing} = ○,
                     tol         :: Real = 0.,
                     maxiter     :: Int  = 200,
                     𝜆min        :: Real = 1e-4,
@@ -132,7 +132,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     iter, conv, loss, 😋, sqrtn = 1, Inf, Inf, false, √n
     B = Matrix{T}(I, n, n)
     B₊, →, M, 𝐃₊ = similar(B), similar(B), similar(B), similar(𝐃)
-	if w≠○ 𝐯 = _qnlogLikeWeights(w, 𝐂) end # if w is `nonD` function, apply it to the original input 𝐂
+	if w≠○ 𝐯 = _qnlogLikeWeights!(w, 𝐂) end # if w is `nonD` function, apply it to the original input 𝐂
 
     # here we go
     verbose && println("Iterating quasi-Newton LogLike algorithm...")
