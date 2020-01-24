@@ -15,6 +15,8 @@ aC5=ajd(Cset; algorithm=:JADE, simple=true)
 aC6=ajd(Cset; algorithm=:GAJD, simple=true)
 aC7=ajd(Cset; algorithm=:QNLogLike, simple=true)
 
+# a=ajd(Cset; algorithm=:GAJD2, simple=true, verbose=true)
+
 
 # method (1) complex
 t, n, k=50, 10, 4
@@ -178,8 +180,7 @@ a=ajd(Cset; algorithm=:QNLogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 
 
 # AJD for plots below
-a=ajd(Cset; algorithm=:LogLike, w=nonD, preWhite=true)
-# a=ajd(Cset; algorithm=:QNLogLike, w=nonD, preWhite=true)
+a=ajd(Cset; algorithm=:QNLogLike, w=nonD, preWhite=true)
 
 using Plots
 # plot the original covariance matrices
