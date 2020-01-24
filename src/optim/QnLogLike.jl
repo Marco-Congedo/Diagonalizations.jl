@@ -99,7 +99,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
             M = (StartAt * →) + I
             𝐃₊ = [Hermitian(M'*D*M) for D ∈ 𝐃]
             B₊ = B * M
-            loss₊ = _getLoss(B₊, 𝐃₊)
+            iter > 2 && (loss₊ = _getLoss(B₊, 𝐃₊))
             loss₊ < loss ? break : StartAt /= 2.0
         end
         return 𝐃₊, B₊, loss₊
@@ -117,7 +117,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     # set variables
     n, k, T, loss, loss₊ = size(𝐃[1], 1), length(𝐃), eltype(𝐃[1]), ○, 0.
     tol==0. ? tolerance = √eps(real(T)) : tolerance = tol
-    iter, conv, loss, 😋 = 1, Inf, Inf, false
+    iter, conv, loss, 😋, sqrtn = 1, Inf, Inf, false, √n
     B = Matrix{T}(I, n, n)
     B₊, →, M, 𝐃₊ = similar(B), similar(B), similar(B), similar(𝐃)
 
@@ -127,15 +127,14 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
         diagonals = [diag(D) for D ∈ 𝐃]
 
         ∇ = mean(d./diagd for (d, diagd) ∈ zip(𝐃, diagonals)) - I
-        conv = norm(∇)/n # the convergence is the norm of the gradient/n
+        conv = norm(∇)/sqrtn # relative norm of ∇ with respect to the identity : ||∇-I||/||I||
 
         verbose && println("iteration: ", iter, "; convergence: ", conv)
         (overRun = iter > maxiter) && @warn("qnLogLike: reached the max number of iterations before convergence:", iter)
         (😋 = conv <= tolerance) || overRun==true ? break : iter += 1
 
-        ℌ = mean(diagd'./diagd for diagd ∈ diagonals) # Hessian Coefficients
-
         # Quasi-Newton Direction →
+        ℌ = mean(diagd'./diagd for diagd ∈ diagonals) # Hessian Coefficients
         → = -(∇' .* ℌ - ∇)./replace(x -> x<𝜆min ? 𝜆min : x, @. (ℌ'*ℌ) - 1.)
 
         𝐃, B, loss = _linesearch(StartAt=T(1.)) # Line Search
