@@ -117,7 +117,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     # set variables
     n, k, T, loss, loss₊ = size(𝐃[1], 1), length(𝐃), eltype(𝐃[1]), ○, 0.
     tol==0. ? tolerance = √eps(real(T)) : tolerance = tol
-    iter, conv, loss, 😋 = 1, 0., Inf, false
+    iter, conv, loss, 😋 = 1, Inf, Inf, false
     B = Matrix{T}(I, n, n)
     B₊, →, M, 𝐃₊ = similar(B), similar(B), similar(B), similar(𝐃)
 
