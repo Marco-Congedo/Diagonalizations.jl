@@ -39,75 +39,69 @@ function jade( C::Matrix{T};
 					maxiter = 60,
 					verbose = false) where T<:Union{Real, Complex}
 
-   # Compute the Givens angle θ (scalar) for real data
-   function givensAngles(::Type{T}, p, q, 𝓹, 𝓺) where T <:Real
-      e₁ = C[p, 𝓹] - C[q, 𝓺]
-      e₂ = C[p, 𝓺] + C[q, 𝓹]
-      a = e₁⋅e₁ - e₂⋅e₂
-      b = 2. * e₁⋅e₂
-      θ = 0.5 * atan(b, a + √(a^2 + b^2))
-      s, c = sincos(θ)
-      return c, s, abs(s)
-   end
+	# Compute the Givens angle θ (scalar) for real data
+	@inline function givensAngles(::Type{T}, p, q, 𝓹, 𝓺) where T <:Real
+	  e₁ = C[p, 𝓹] - C[q, 𝓺]
+	  e₂ = C[p, 𝓺] + C[q, 𝓹]
+	  a = e₁⋅e₁ - e₂⋅e₂
+	  b = 2. * e₁⋅e₂
+	  θ = 0.5 * atan(b, a + √(a^2 + b^2))
+	  s, c = sincos(θ)
+	  return c, s, abs(s)
+	end
 
-   # Compute the Givens angles 𝛉 (vector) for complex data
-   function givensAngles(::Type{T}, p, q, 𝓹, 𝓺) where T <:Complex
-      e₁ = C[p, 𝓹] - C[q, 𝓺]
-      e₂ = C[p, 𝓺]
-      e₃ = C[q, 𝓹]
-      E = Hermitian(UpperTriangular{T}([e₁⋅e₁ e₂⋅e₁ e₃⋅e₁; 0. e₂⋅e₂ e₃⋅e₂; 0. 0. e₃⋅e₃]))
-      𝛉 = eigvecs(real(Γ*E*Γₜ))[:, 3] # Julia sorts the eigvecs; the 3rd<->max ev
-      if 𝛉[1]<0. 𝛉 = -𝛉 end
-      c = √(0.5 + 𝛉[1]/2.)         # cosine
-      s = 0.5*(𝛉[2] - 𝛉[3]im)/c   # sine
-      return c, s, abs(s)
-   end
+	# Compute the Givens angles 𝛉 (vector) for complex data
+	@inline function givensAngles(::Type{T}, p, q, 𝓹, 𝓺) where T <:Complex
+	  e₁ = C[p, 𝓹] - C[q, 𝓺]
+	  e₂ = C[p, 𝓺]
+	  e₃ = C[q, 𝓹]
+	  E = Hermitian(UpperTriangular{T}([e₁⋅e₁ e₂⋅e₁ e₃⋅e₁; 0. e₂⋅e₂ e₃⋅e₂; 0. 0. e₃⋅e₃]))
+	  𝛉 = eigvecs(real(Γ*E*Γₜ))[:, 3] # Julia sorts the eigvecs; the 3rd<->max ev
+	  if 𝛉[1]<0. 𝛉 = -𝛉 end
+	  c = √(0.5 + 𝛉[1]/2.)         # cosine
+	  s = 0.5*(𝛉[2] - 𝛉[3]im)/c   # sine
+	  return c, s, abs(s)
+	end
 
-   function cardosoSweep!()
-      ∡ = 0.
-      @inbounds for p = 1:n-1
-         𝓹 = p:n:nk
-         for q = p+1:n
-            𝓺 = q:n:nk
-            c, s, 𝓈 = givensAngles(T, p, q, 𝓹, 𝓺)
-            # updates U and matrices in C by a Givens rotation
-            if 𝓈 > tolerance
-               G = [c -conj(s); s c]
-               ⊶ = [p, q]  # p,q index pair
-               U[:, ⊶] = U[:, ⊶]*G
-               C[⊶, :] = G'*C[⊶, :]
-               C[:, [𝓹 𝓺]] = [c*C[:, 𝓹]+s*C[:, 𝓺] -conj(s)*C[:, 𝓹]+c*C[:, 𝓺]]
-            end
-            ∡ = max(∡, 𝓈)    # 𝓈 is abs(sine of the angle)
-         end
-      end
-      return ∡   # convergence: maximum abs(sine of the angle) over all pairs
-   end
+	@inline function cardosoSweep!()
+	  ∡ = 0.
+	  @inbounds for p = 1:n-1
+	     𝓹 = p:n:nk
+	     for q = p+1:n
+	        𝓺 = q:n:nk
+	        c, s, 𝓈 = givensAngles(T, p, q, 𝓹, 𝓺)
+	        # updates U and matrices in C by a Givens rotation
+	        if 𝓈 > tolerance
+	           G = [c -conj(s); s c]
+	           ⊶ = [p, q]  # p,q index pair
+	           U[:, ⊶] = U[:, ⊶]*G
+	           C[⊶, :] = G'*C[⊶, :]
+	           C[:, [𝓹 𝓺]] = [c*C[:, 𝓹]+s*C[:, 𝓺] -conj(s)*C[:, 𝓹]+c*C[:, 𝓺]]
+	        end
+	        ∡ = max(∡, 𝓈)    # 𝓈 is abs(sine of the angle)
+	     end
+	  end
+	  return ∡   # convergence: maximum abs(sine of the angle) over all pairs
+	end
 
-   (n, nk), 𝟘 = size(C), zeros
-   tolerance = tol==0. ? √eps(real(T)) : tol
-   k, iter, conv, 😋 = nk÷n, 1, 0., false
+	(n, nk), 𝟘 = size(C), zeros
+	k = nk÷n
+	tolerance = tol≤0. ? √eps(real(T)) : tol
 
-   # pre-allocate memory
-   e₁ = 𝟘(T, k)
-   e₂ = 𝟘(T, k)
-   if T <:Complex
-      e₃ = 𝟘(T, k)
-      Γ = convert(Matrix{T}, [1 0 0; 0 1 1; 0 -im im])
-      Γₜ = Γ'
-      𝛉 = 𝟘(T, 3)
-   end
+	# pre-allocate memory
+	e₁ = 𝟘(T, k)
+	e₂ = 𝟘(T, k)
+	if T <:Complex
+	  e₃ = 𝟘(T, k)
+	  Γ = convert(Matrix{T}, [1 0 0; 0 1 1; 0 -im im])
+	  Γₜ = Γ'
+	  𝛉 = 𝟘(T, 3)
+	end
 
-   # initialize AJD
-   U=Matrix{T}(I, n, n)
-   verbose && @info("Iterating JADE algorithm...")
-   while true
-      conv=cardosoSweep!()
-      verbose && println("iteration: ", iter, "; convergence: ", conv)
-      (overRun = iter == maxiter) && @warn("JADE: reached the max number of iterations before convergence:", iter)
-      (😋 = conv <= tolerance) || overRun==true ? break : iter += 1
-   end
-   verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n\n")
+	# initialize AJD
+	U=Matrix{T}(I, n, n)
+
+	iter, conv = _iterate!("JADE", cardosoSweep!, maxiter, T, tol, verbose)
 
 	return U, iter, conv
 end
@@ -165,19 +159,11 @@ function jade( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
             eVarMeth :: Function = searchsortedfirst)
 
 	# trace normalization and weighting
-	trace1 || w ≠ ○ ? begin
-	  𝐆=deepcopy(𝐂)
-	  _Normalize!(𝐆, trace1, w)
-	end : 𝐆=𝐂
+	𝐆 = _normalizeAndWeight(trace1, w, 𝐂)
 
-	# pre-whiten, initialize and stack matrices horizontally
-	if preWhite
-	  W = whitening(mean(Euclidean, 𝐆); eVar=eVar, eVarMeth=eVarMeth)
-	  C = hcat([(W.F'*G*W.F) for G∈𝐆]...)
-	else
-	  # initialization only if preWhite is false
-	  init≠nothing ? C = hcat([(init'*G*init) for G∈𝐆]...) : C = hcat(𝐆...)
-	end
+	# pre-whiten or initialize and stack matrices horizontally
+	W, C = _preWhiteOrInit(𝐂, preWhite, Euclidean, eVar, eVarMeth, init, :stacked)
+
 	(n, nk) = size(C)
 
 	U, iter, conv = jade(C; tol=tol, maxiter=maxiter, verbose=verbose)

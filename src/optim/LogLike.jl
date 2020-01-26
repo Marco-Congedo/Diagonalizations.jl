@@ -48,48 +48,40 @@ function logLike(C::Matrix{T};
 				 maxiter = 60,
 				 verbose = false) where T<:Union{Real, Complex}
 
-	function phamSweep!()
-	decr = 0.
-	for i = 2:n, j = 1:i-1
-		c1 = C[i, i:n:nk]
-		c2 = C[j, j:n:nk]
-		g₁₂ = mean(C[i, j:n:nk]./c1)		# this is g_{ij}
-		g₂₁ = mean(C[i, j:n:nk]./c2)		# conjugate of g_{ji}
-		𝜔₂₁ = mean(c1./c2)
-		𝜔₁₂ = mean(c2./c1)
-		𝜔 = √(𝜔₁₂*𝜔₂₁)
-		𝜏 = √(𝜔₂₁/𝜔₁₂)
-		𝜏₁ = (𝜏*g₁₂ + g₂₁)/(𝜔 + 1.)
-		if type<:Real 𝜔=max(𝜔 - 1., e) end
-		𝜏₂ = (𝜏*g₁₂ - g₂₁)/𝜔 		#max(𝜔 - 1., e)	# in case 𝜔 = 1
-		h₁₂ = 𝜏₁ + 𝜏₂				# this is twice h_{ij}
-		h₂₁ = conj((𝜏₁ - 𝜏₂)/𝜏)	# this is twice h_{ji}
-		decr += k*(g₁₂*conj(h₁₂) + g₂₁*h₂₁)/2.
+	@inline function phamSweep!()
+		decr = 0.
+		@inbounds for i = 2:n, j = 1:i-1
+			c1 = C[i, i:n:nk]
+			c2 = C[j, j:n:nk]
+			g₁₂ = mean(C[i, j:n:nk]./c1)		# this is g_{ij}
+			g₂₁ = mean(C[i, j:n:nk]./c2)		# conjugate of g_{ji}
+			𝜔₂₁ = mean(c1./c2)
+			𝜔₁₂ = mean(c2./c1)
+			𝜔 = √(𝜔₁₂*𝜔₂₁)
+			𝜏 = √(𝜔₂₁/𝜔₁₂)
+			𝜏₁ = (𝜏*g₁₂ + g₂₁)/(𝜔 + 1.)
+			if T<:Real 𝜔=max(𝜔 - 1., e) end
+			𝜏₂ = (𝜏*g₁₂ - g₂₁)/𝜔 		#max(𝜔 - 1., e)	# in case 𝜔 = 1
+			h₁₂ = 𝜏₁ + 𝜏₂				# this is twice h_{ij}
+			h₂₁ = conj((𝜏₁ - 𝜏₂)/𝜏)	# this is twice h_{ji}
+			decr += k*(g₁₂*conj(h₁₂) + g₂₁*h₂₁)/2.
 
-		𝜏 = 1. + 0.5im*imag(h₁₂*h₂₁)	# = 1 + (h₁₂*h₂₁ - conj(h₁₂*h₂₁))/4
-		𝜏 = 𝜏 + √(𝜏^2 - h₁₂*h₂₁)
-		Γ = [1 conj(-h₂₁/𝜏); conj(-h₁₂/𝜏) 1]
-		C[[i, j], :] = Γ'*C[[i, j], :]		# new i, j rows of C
-		ijInd = vcat(collect(i:n:nk), collect(j:n:nk))
-		C[:, ijInd] = reshape(reshape(C[:, ijInd], n*k, 2)*Γ, n, k*2) # new i,j columns of C
-		B[:, [i, j]] = B[:, [i, j]]*Γ # update the columns of B
-	end
-	return decr
+			𝜏 = 1. + 0.5im*imag(h₁₂*h₂₁)	# = 1 + (h₁₂*h₂₁ - conj(h₁₂*h₂₁))/4
+			𝜏 = 𝜏 + √(𝜏^2 - h₁₂*h₂₁)
+			Γ = [1 conj(-h₂₁/𝜏); conj(-h₁₂/𝜏) 1]
+			C[[i, j], :] = Γ'*C[[i, j], :]		# new i, j rows of C
+			ijInd = vcat(collect(i:n:nk), collect(j:n:nk))
+			C[:, ijInd] = reshape(reshape(C[:, ijInd], n*k, 2)*Γ, n, k*2) # new i,j columns of C
+			B[:, [i, j]] = B[:, [i, j]]*Γ # update the columns of B
+		end
+		return decr
 	end # phamSweep
 
-	type, (n, nk) = eltype(C), size(C)
-	tol==0. ? tolerance = √eps(real(type)) : tolerance = tol
-	k, iter, conv, 😋, e = nk÷n, 1, 0., false, type(eps(real(type)))
+	(n, nk) = size(C)
+	k, e = nk÷n, T(eps(real(T)))
+	B=Matrix{T}(I, n, n) # initialize AJD algorithm
 
-	B=Matrix{type}(I, n, n)
-	verbose && @info("Iterating LogLike algorithm...")
-	while true
-	   conv=real(phamSweep!())
-		verbose && println("iteration: ", iter, "; convergence: ", conv)
-		(overRun = iter == maxiter) && @warn("LogLike: reached the max number of iterations before convergence:", iter)
-		(😋 = conv <= tolerance) || overRun==true ? break : iter += 1
-	end
-	verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n\n")
+    iter, conv = _iterate!("LogLike", phamSweep!, maxiter, T, tol, verbose)
 
     return B, iter, conv
 end
@@ -141,14 +133,9 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 			  eVar 	   :: TeVaro = ○,
 			  eVarMeth :: Function = searchsortedfirst)
 
-	# pre-whiten, initialize and stack matrices horizontally
-	if preWhite
-		W=whitening(PosDefManifold.mean(Jeffrey, 𝐂); eVar=eVar, eVarMeth=eVarMeth)
-		C=hcat([(W.F'*C_*W.F) for C_∈𝐂]...)
-	else
-		# initialization only if preWhite is false
-		init≠nothing ? C=hcat([(init'*C_*init) for C_∈𝐂]...) : C=hcat(𝐂...)
-	end
+	# pre-whiten or initialize and stack matrices horizontally
+	W, C = _preWhiteOrInit(𝐂, preWhite, Jeffrey, eVar, eVarMeth, init, :stacked)
+
 	(n, nk) = size(C)
 
 	B, iter, conv = logLike(C; tol=tol, maxiter=maxiter, verbose=verbose)
@@ -188,7 +175,7 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 			eVar 	  :: TeVaro = ○,
 			eVarMeth  :: Function = searchsortedfirst)
 
-	function phamSweepR!()
+	@inline function phamSweepR!()
 	   det, decr, i, ic  = 1., 0., 1, n
 	   @inbounds while i<n
 			j, jc = 0, 0
@@ -284,8 +271,7 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	end # phamSweepR
 
 	n, k, type =size(𝐂[1], 1), length(𝐂), eltype(𝐂[1])
-	tol==0. ? tolerance = √eps(real(type)) : tolerance = tol
-	iter, conv, 😋, e = 1, 0., false, eps(type)*100
+	e = eps(type)*100
 
 	w, ∑w = _logLikeWeights(w, 𝐂, type) # weights and sum of weights
 
@@ -300,18 +286,7 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	end
 
 	B=Matrix{type}(I, n, n)
-
-	verbose && @info("Iterating logLikeR algorithm...")
-	while true
-	   conv=phamSweepR!()
-		verbose && println("iteration: ", iter, "; convergence: ", conv)
-		(overRun = iter == maxiter) && @warn("logLikeR: reached the max number of iterations before convergence:", iter)
-		(😋 = conv <= tolerance) || overRun==true ? break : nothing
-		iter += 1
-	end
-  	verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n")
-	verbose && println("")
-
+    iter, conv = _iterate!("LogLikeR", phamSweepR!, maxiter, type, tol, verbose)
 	B = Matrix(B')
 
 	# sort the vectors of solver

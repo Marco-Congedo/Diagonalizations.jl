@@ -104,7 +104,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
                  eVarMeth :: Function = searchsortedfirst)
 
     # internal functions
-    function _linesearch(; StartAt::Real = 1.)
+    @inline function _linesearch(; StartAt::Real = 1.)
         for i ∈ 1:lsmax
             M = (StartAt * →) + I
             𝐃₊ = [Hermitian(M'*D*M) for D ∈ 𝐃]
@@ -114,17 +114,16 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
         end
         return 𝐃₊, B₊, loss₊
     end
-    _getLoss(B, 𝐃) =
-		w===○ ? -(logabsdet(B)[1]) + 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃])) :
-				-(logabsdet(B)[1]) + 0.5*sum(mean(log, [𝔻(D*v) for (D, v) ∈ zip(𝐃, 𝐯)]))
 
-    # pre-whiten or initialize or just copy input matrices otherwise they will be overwritten
-    if preWhite
-        W = whitening(mean(Jeffrey, 𝐂); eVar=eVar, eVarMeth=eVarMeth)
-        𝐃=[W.F'*C*W.F for C ∈ 𝐂]
-    else
-        𝐃 = init≠nothing ? [init'*C*init for C ∈ 𝐂] : copy(𝐂)
-    end
+    _getLoss(B, 𝐃) =
+		if w===○
+			-(logabsdet(B)[1]) + 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃]))
+		else
+			-(logabsdet(B)[1]) + 0.5*sum(mean(log, [𝔻(D*v) for (D, v) ∈ zip(𝐃, 𝐯)]))
+		end
+
+	# pre-whiten or initialize or nothing
+    W, 𝐃 = _preWhiteOrInit(𝐂, preWhite, Jeffrey, eVar, eVarMeth, init, :Hvector)
 
     # set variables
     n, k, T, loss, loss₊ = size(𝐃[1], 1), length(𝐃), eltype(𝐃[1]), ○, 0.
@@ -136,24 +135,34 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 
     # here we go
     verbose && println("Iterating quasi-Newton LogLike algorithm...")
+
     while true
         diagonals = [diag(D) for D ∈ 𝐃]
 
-		∇ = w===○ ?	mean(d./diagd for (d, diagd) ∈ zip(𝐃, diagonals)) - I :
-					mean(v.*(d./diagd) for (v, d, diagd) ∈ zip(𝐯, 𝐃, diagonals)) - I
+		if w===○
+			∇ = mean(d./diagd for (d, diagd) ∈ zip(𝐃, diagonals)) - I
+		else
+			∇ = mean(v.*(d./diagd) for (v, d, diagd) ∈ zip(𝐯, 𝐃, diagonals)) - I
+		end
         conv = norm(∇)/sqrtn # relative norm of ∇ with respect to the identity : ||∇-I||/||I||
 
         verbose && println("iteration: ", iter, "; convergence: ", conv)
-        (overRun = iter > maxiter) && @warn("qnLogLike: reached the max number of iterations before convergence:", iter)
+        (overRun = iter > maxiter) && @warn("qnLogLike: reached the max number of iterations before convergence:", iter-1)
         (😋 = conv <= tolerance) || overRun==true ? break : iter += 1
 
-        # Quasi-Newton Direction →
-		ℌ = w===○ ?	mean(diagd'./diagd for diagd ∈ diagonals) : # Hessian Coefficients
-					mean(v.*(diagd'./diagd) for (v, diagd) ∈ zip(𝐯, diagonals))
+		# Hessian Coefficients
+		if w===○
+			ℌ = mean(diagd'./diagd for diagd ∈ diagonals)
+		else
+			ℌ = mean(v.*(diagd'./diagd) for (v, diagd) ∈ zip(𝐯, diagonals))
+		end
+
+		# Quasi-Newton Direction →
         → = -(∇' .* ℌ - ∇)./replace(x -> x<𝜆min ? 𝜆min : x, @. (ℌ'*ℌ) - 1.)
 
         𝐃, B, loss = _linesearch(StartAt=T(1.)) # Line Search
     end
+
     verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n\n")
 
     # scale and permute the vectors of B

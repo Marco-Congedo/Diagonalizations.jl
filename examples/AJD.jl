@@ -1,7 +1,7 @@
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 # method (1) real
-t, n, k=50, 10, 4
+t, n, k=50, 10, 10
 A=randn(n, n) # mixing matrix in model x=As
 Xset = [genDataMatrix(t, n) for i = 1:k]
 Xfixed=randn(t, n)./1
@@ -19,7 +19,7 @@ aC7=ajd(Cset; algorithm=:QNLogLike, simple=true)
 
 
 # method (1) complex
-t, n, k=50, 10, 4
+t, n, k=50, 10, 10
 Ac=randn(ComplexF64, n, n) # mixing matrix in model x=As
 Xcset = [genDataMatrix(ComplexF64, t, n) for i = 1:k]
 Xcfixed=randn(ComplexF64, t, n)./1
@@ -180,7 +180,7 @@ a=ajd(Cset; algorithm=:QNLogLike, w=nonD, preWhite=true, eVarC=4, eVar=0.99)
 
 
 # AJD for plots below
-a=ajd(Cset; algorithm=:QNLogLike, verbose=true)
+a=ajd(Cset; algorithm=:QNLogLike, verbose=true, preWhite=true)
 
 using Plots
 # plot the original covariance matrices
