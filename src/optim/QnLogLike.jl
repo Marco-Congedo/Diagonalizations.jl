@@ -125,7 +125,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 			-(logabsdet(B₊)[1]) + 0.5*sum(mean(log, [𝔻(D*v) for (D, v) ∈ zip(𝐃₊, 𝐯)]))
 		end
 
-	# pre-whiten or initialize or nothing
+	# pre-whiten or initialize or just copy
     W, 𝐃 = _preWhiteOrInit(𝐂, preWhite, Jeffrey, eVar, eVarMeth, init, :Hvector)
 
     # set variables

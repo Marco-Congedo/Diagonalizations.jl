@@ -311,7 +311,7 @@ function gLogLike_( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
             eVar     :: TeVaro = ○,
             eVarMeth :: Function = searchsortedfirst)
 
-   # pre-whiten or initialize or nothing
+   # pre-whiten or initialize or just copy
    W, 𝐆 = _preWhiteOrInit(𝐂, preWhite, Jeffrey, eVar, eVarMeth, init, :Hvector)
 
    T, n = eltype(𝐆[1]), size(𝐆[1], 1)
