@@ -158,11 +158,13 @@ function jade( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
             eVar     :: TeVaro = ○,
             eVarMeth :: Function = searchsortedfirst)
 
+    # da rifare, evita di scrivere 2 volte
+
 	# trace normalization and weighting
 	𝐆 = _normalizeAndWeight(trace1, w, 𝐂)
 
 	# pre-whiten or initialize and stack matrices horizontally
-	W, C = _preWhiteOrInit(𝐂, preWhite, Euclidean, eVar, eVarMeth, init, :stacked)
+	W, C = _preWhiteOrInit(𝐆, preWhite, Euclidean, eVar, eVarMeth, init, :stacked)
 
 	(n, nk) = size(C)
 
