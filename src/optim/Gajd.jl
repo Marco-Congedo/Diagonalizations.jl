@@ -29,8 +29,8 @@ end
 # update1! takes care of the udpate if i>j, update2! if j≥i
 @inline function _update2!(j, i, n, θ, θ², 𝐋, B) # j>i
    for p = 1:i-1 𝐋[j, p] += θ*𝐋[i, p] end     # update 𝐂 :
-   𝐋[j, j] += θ²*𝐋[i, i] + 2θ*𝐋[j, i]         # write jth row and column
-   for p = i:j-1 𝐋[j, p] += θ*𝐋[p, i] end     # only on the lower
+   for p = i:j-1 𝐋[j, p] += θ*𝐋[p, i] end     # write jth row and column
+   𝐋[j, j] += θ²*𝐋[i, i] + 2θ*𝐋[j, i]         # only on the lower
    for p = j+1:n 𝐋[p, j] += θ*𝐋[p, i] end     # triangular part.
    B[:, j] += θ*B[:, i]                       # update B
 end
@@ -72,7 +72,7 @@ function gajd(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
             _update2!(j, i, n, θ, θ², 𝐋, B) # update 𝐋 and B given θ and θ²
          end
       end
-      return ∡ * e # convergence: average squared theta over all n(n-1) pairs
+      return √(∡ * e) # convergence: average squared theta over all n(n-1) pairs
    end
 
    # declare variables
@@ -209,7 +209,7 @@ function gLogLike(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
             _update2!(j, i, n, θ, θ², 𝐋, B) # update 𝐋 and B given θ and θ²
          end
       end
-      return ∡ * e # convergence: average squared theta over all n(n-1) pairs
+      return √(∡ * e) # convergence: average squared theta over all n(n-1) pairs
    end
 
    # declare variables
@@ -285,7 +285,7 @@ function gLogLike_(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
             _update2!(j, i, n, θ, θ², 𝐋, B) # update 𝐋 and B given θ and θ²
          end
       end
-      return ∡*e # convergence: average squared theta over all n(n-1) pairs
+      return √(∡ * e) # convergence: average squared theta over all n(n-1) pairs
    end
 
    # declare variables

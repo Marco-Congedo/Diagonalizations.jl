@@ -107,28 +107,31 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     @inline function _linesearch(; StartAt::Real = 1.)
         for i ∈ 1:lsmax
             M = (StartAt * →) + I
-            𝐃₊ = [Hermitian(M'*D*M) for D ∈ 𝐃]
-            B₊ = B * M
-            iter > 2 && (loss₊ = _getLoss(B₊, 𝐃₊))
+			𝐃₊ = HermitianVector([Hermitian(M'*D*M) for D ∈ 𝐃])
+			#@threads for j=1:k 𝐃₊[j] = Hermitian(M'*𝐃[j]*M) end
+			B₊ = B * M
+            iter > 2 && (loss₊ = _getLoss())
+			#loss₊ = _getLoss()
+			#print("x",)
             loss₊ < loss ? break : StartAt /= 2.0
         end
         return 𝐃₊, B₊, loss₊
     end
 
-    _getLoss(B, 𝐃) =
+	_getLoss() =
 		if w===○
-			-(logabsdet(B)[1]) + 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃]))
+			-(logabsdet(B₊)[1]) + 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃₊]))
 		else
-			-(logabsdet(B)[1]) + 0.5*sum(mean(log, [𝔻(D*v) for (D, v) ∈ zip(𝐃, 𝐯)]))
+			-(logabsdet(B₊)[1]) + 0.5*sum(mean(log, [𝔻(D*v) for (D, v) ∈ zip(𝐃₊, 𝐯)]))
 		end
 
 	# pre-whiten or initialize or nothing
     W, 𝐃 = _preWhiteOrInit(𝐂, preWhite, Jeffrey, eVar, eVarMeth, init, :Hvector)
 
     # set variables
-    n, k, T, loss, loss₊ = size(𝐃[1], 1), length(𝐃), eltype(𝐃[1]), ○, 0.
+    n, k, T = size(𝐃[1], 1), length(𝐃), eltype(𝐃[1])
     tol==0. ? tolerance = √eps(real(T)) : tolerance = tol
-    iter, conv, loss, 😋, sqrtn = 1, Inf, Inf, false, √n
+    iter, conv, loss, loss₊, 😋, sqrtn = 1, Inf, Inf, T(1), false, √n
     B = Matrix{T}(I, n, n)
     B₊, →, M, 𝐃₊ = similar(B), similar(B), similar(B), similar(𝐃)
 	if w≠○ 𝐯 = _qnlogLikeWeights!(w, 𝐂) end # if w is `nonD` function, apply it to the original input 𝐂
@@ -139,6 +142,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     while true
         diagonals = [diag(D) for D ∈ 𝐃]
 
+		# Gradient
 		if w===○
 			∇ = mean(d./diagd for (d, diagd) ∈ zip(𝐃, diagonals)) - I
 		else
