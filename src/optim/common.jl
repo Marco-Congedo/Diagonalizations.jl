@@ -16,13 +16,13 @@ _maxiter(algorithm, type) =
    if       algorithm ∈ (:OJoB, :NoJoB)
             return type<:Real ? 1000 : 3000
    elseif   algorithm ∈ (:LogLike, :LogLikeR, :JADE)
-            return type<:Real ? 60 : 180
+            return type<:Real ? 120 : 180
    elseif   algorithm ∈ (:GAJD, :QNLogLike, :GLogLike)
-            type<:Real ? (return 120) :
-         throw(ArgumentError("The GAJD, QNLogLike and :GLogLike algorithms do not support complex data input"))
+            type<:Real ? (return 1000) :
+               throw(ArgumentError("The GAJD, QNLogLike and GLogLike algorithms do not support complex data input"))
    elseif   algorithm == :GLogLike_
             type<:Real ? (return 12) :
-            throw(ArgumentError("The GLogLike_ algorithm does not support complex data input"))
+               throw(ArgumentError("The GLogLike_ algorithm does not support complex data input"))
    else throw(ArgumentError("The `algorithm` keyword argument is uncorrect. Valid options are: :OJoB, :NoJoB, :LogLike, :LogLikeR, :QNLogLike, :JADE and :GAJD."))
    end
 
@@ -56,6 +56,7 @@ function _normalize!(𝐂::Vector{Hermitian},
    if w ≠ ○
       @inbounds for κ=1:k 𝐂[κ] *= w[κ] end
    end
+   ○
 end
 
 
@@ -92,6 +93,7 @@ function _normalize!(𝒞::AbstractArray, m::Int, k::Int,
          end
       end
    end
+   ○
 end
 
 function _normalizeAndWeight(trace1, w, 𝐂)
@@ -121,7 +123,7 @@ function _preWhiteOrInit!(𝐂, preWhite, metric, eVar, eVarMeth, init)
    if init≠nothing
       @threads for κ=1:length(𝐂) 𝐂[κ]=Hermitian(init'*𝐂[κ]*init) end
    end
-   return nothing
+   ○
 end
 
 # if `preWhite` is true the mean is computed according to the specified

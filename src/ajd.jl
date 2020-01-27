@@ -351,7 +351,8 @@ function ajd(𝐂::ℍVector;
    elseif algorithm == :QNLogLike
           U, V, λ, iter, conv=qnLogLike(𝐂; w=w, preWhite=preWhite, sort=sort,
             init=init, tol=tol, maxiter=maxiter, verbose=verbose,
-            eVar=eVarC, eVarMeth=eVarMeth)
+            eVar=eVarC, eVarMeth=eVarMeth,
+            threaded=threaded)
    elseif algorithm==:JADE
           U, V, λ, iter, conv=jade(𝐂;
             trace1=trace1, w=w, preWhite=preWhite, sort=sort,

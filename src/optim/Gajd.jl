@@ -72,7 +72,7 @@ function gajd(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
             _update2!(j, i, n, θ, θ², 𝐋, B) # update 𝐋 and B given θ and θ²
          end
       end
-      return √(∡ * e) # convergence: average squared theta over all n(n-1) pairs
+      return ∡ * e # convergence: average squared theta over all n(n-1) pairs
    end
 
    # declare variables
@@ -209,7 +209,7 @@ function gLogLike(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
             _update2!(j, i, n, θ, θ², 𝐋, B) # update 𝐋 and B given θ and θ²
          end
       end
-      return √(∡ * e) # convergence: average squared theta over all n(n-1) pairs
+      return ∡ * e # convergence: average squared theta over all n(n-1) pairs
    end
 
    # declare variables
@@ -285,7 +285,7 @@ function gLogLike_(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
             _update2!(j, i, n, θ, θ², 𝐋, B) # update 𝐋 and B given θ and θ²
          end
       end
-      return √(∡ * e) # convergence: average squared theta over all n(n-1) pairs
+      return ∡ * e # convergence: average squared theta over all n(n-1) pairs
    end
 
    # declare variables

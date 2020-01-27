@@ -91,54 +91,56 @@ function _qnlogLikeWeights!(w, 𝐂)
 end
 
 function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
-                    w           :: Twf   = ○,
-                    preWhite    :: Bool = false,
-                    sort        :: Bool = true,
-                    init        :: Union{Matrix, Nothing} = ○,
-                    tol         :: Real = 0.,
-                    maxiter     :: Int  = 200,
-                    𝜆min        :: Real = 1e-4,
-                    lsmax       :: Int  = 10,
-                    verbose     :: Bool = false,
+                    w           :: 	Twf   = ○,
+                    preWhite    :: 	Bool = false,
+                    sort        :: 	Bool = true,
+                    init        :: 	Union{Matrix, Nothing} = ○,
+                    tol         :: 	Real = 0.,
+                    maxiter     :: 	Int  = 1000,
+                    𝜆min        ::	 Real = 1e-4,
+                    lsmax       :: 	Int  = 10,
+                    verbose     :: 	Bool = false,
+					threaded	:: 	Bool =
+									begin
+										thr=Threads.nthreads()
+										length(𝐂) ≥ 2*thr && thr>1
+									end,
                  eVar     :: TeVaro = ○,
                  eVarMeth :: Function = searchsortedfirst)
 
     # internal functions
-    @inline function _linesearch(; StartAt::Real = 1.)
-        for i ∈ 1:lsmax
-            M = (StartAt * →) + I
-			𝐃₊ = HermitianVector([Hermitian(M'*D*M) for D ∈ 𝐃])
-			#@threads for j=1:k 𝐃₊[j] = Hermitian(M'*𝐃[j]*M) end
-			B₊ = B * M
-            iter > 2 && (loss₊ = _getLoss())
-			#loss₊ = _getLoss()
-			#print("x",)
-            loss₊ < loss ? break : StartAt /= 2.0
-        end
+    function _linesearch!(B, 𝐃, →, 𝐯, loss, lsmax)
+		i = 2.
+		@label linesearch
+        M = (i/2. * →) + I
+		B₊ = B * M
+		if threaded
+			𝐃₊ = HermitianVector(undef, length(𝐃))
+			@threads for j ∈ 1:length(𝐃) 𝐃₊[j] = Hermitian(M'*𝐃[j]*M) end
+		else
+			𝐃₊ = [Hermitian(M'*D*M) for D ∈ 𝐃]
+		end
+		# Kullback-Leibler loss
+		loss₊ =	w===○ ? -(logabsdet(B₊)[1]) + 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃₊])) :
+						-(logabsdet(B₊)[1]) + 0.5*sum(mean(log, [𝔻(D)*v for (D, v) ∈ zip(𝐃₊, 𝐯)]))
+        if loss₊ ≥ loss && i < lsmax
+			i /= 2.
+			@goto linesearch
+		end
         return 𝐃₊, B₊, loss₊
     end
 
-	_getLoss() =
-		if w===○
-			-(logabsdet(B₊)[1]) + 0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃₊]))
-		else
-			-(logabsdet(B₊)[1]) + 0.5*sum(mean(log, [𝔻(D*v) for (D, v) ∈ zip(𝐃₊, 𝐯)]))
-		end
-
 	# pre-whiten or initialize or just copy
     W, 𝐃 = _preWhiteOrInit(𝐂, preWhite, Jeffrey, eVar, eVarMeth, init, :Hvector)
+	𝐯 = w===○ ? ○ : _qnlogLikeWeights!(w, 𝐂) # if w is `nonD` function, apply it to the original input 𝐂
 
     # set variables
-    n, k, T = size(𝐃[1], 1), length(𝐃), eltype(𝐃[1])
-    tol==0. ? tolerance = √eps(real(T)) : tolerance = tol
-    iter, conv, loss, loss₊, 😋, sqrtn = 1, Inf, Inf, T(1), false, √n
-    B = Matrix{T}(I, n, n)
-    B₊, →, M, 𝐃₊ = similar(B), similar(B), similar(B), similar(𝐃)
-	if w≠○ 𝐯 = _qnlogLikeWeights!(w, 𝐂) end # if w is `nonD` function, apply it to the original input 𝐂
+    iter, conv, loss₊, 😋, sqrtn = 1, 0., 0., false, √size(𝐃[1], 1)
+    B = Matrix{eltype(𝐃[1])}(I, size(𝐃[1]))
+	loss = w===○ ? 	0.5*sum(mean(log, [𝔻(D) for D ∈ 𝐃])) :
+					0.5*sum(mean(log, [𝔻(D)*v for (D, v) ∈ zip(𝐃, 𝐯)]))
 
-    # here we go
-    verbose && println("Iterating quasi-Newton LogLike algorithm...")
-
+    verbose && println("Iterating "*(threaded ? "multi-threaded" : "")*" quasi-Newton LogLike algorithm...")
     while true
         diagonals = [diag(D) for D ∈ 𝐃]
 
@@ -152,7 +154,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 
         verbose && println("iteration: ", iter, "; convergence: ", conv)
         (overRun = iter > maxiter) && @warn("qnLogLike: reached the max number of iterations before convergence:", iter-1)
-        (😋 = conv <= tolerance) || overRun==true ? break : iter += 1
+        (😋 = conv <= tol) || overRun==true ? break : iter += 1
 
 		# Hessian Coefficients
 		if w===○
@@ -164,13 +166,13 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 		# Quasi-Newton Direction →
         → = -(∇' .* ℌ - ∇)./replace(x -> x<𝜆min ? 𝜆min : x, @. (ℌ'*ℌ) - 1.)
 
-        𝐃, B, loss = _linesearch(StartAt=T(1.)) # Line Search
+		# Line Search
+        𝐃, B, loss = _linesearch!(B, 𝐃, →, 𝐯, loss, lsmax)
     end
-
     verbose && @info("Convergence has "*(😋 ? "" : "not ")*"been attained.\n\n")
 
     # scale and permute the vectors of B
-    λ = sort ? _permute!(_scale!(B, mean(𝔻(D) for D ∈ 𝐃), n)...) :
+    λ = sort ? _permute!(_scale!(B, mean(𝔻(D) for D ∈ 𝐃), size(𝐃[1], 1))...) :
                 diag(mean(𝔻(D) for D ∈ 𝐃))
 
     return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
