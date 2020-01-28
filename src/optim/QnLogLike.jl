@@ -114,7 +114,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
                  eVar     :: TeVaro = ○,
                  eVarMeth :: Function = searchsortedfirst)
 
-	# # # # # # # # # internal functions
+	# # # # # # # # #  internal functions
 	# half sum of mean of lof of Diagonals
 	hsmld(𝐀) = 0.5*sum(mean(log, [𝔻(A) for A ∈ 𝐀]))
 	hsmld(𝐀, 𝛎) = 0.5*sum(mean(log, [𝔻(A)*ν for (A, ν) ∈ zip(𝐀, 𝛎)]))
