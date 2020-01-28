@@ -90,6 +90,7 @@
 #  _                   _
 #  finally we take the mean of all the n matrices created in this way.
 
+
 # function to get the weights from argment `w`
 function _qnlogLikeWeights!(w, 𝐂)
 	if w isa Function w=[w(C) for C∈𝐂] end
@@ -97,22 +98,22 @@ function _qnlogLikeWeights!(w, 𝐂)
 end
 
 function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
-                    w           :: 	Twf   = ○,
-                    preWhite    :: 	Bool = false,
-                    sort        :: 	Bool = true,
-                    init        :: 	Union{Matrix, Nothing} = ○,
-                    tol         :: 	Real = 1e-6,
-                    maxiter     :: 	Int  = 1000,
-                    𝜆min        ::	 Real = 1e-4,
-                    lsmax       :: 	Int  = 10,
-                    verbose     :: 	Bool = false,
-					threaded	:: 	Bool =
-									begin
-										thr = Threads.nthreads()
-										length(𝐂) ≥ 2*thr && thr>1
-									end,
-                 eVar     :: TeVaro = ○,
-                 eVarMeth :: Function = searchsortedfirst)
+				w           :: 	Twf   = ○,
+				preWhite    :: 	Bool = false,
+				sort        :: 	Bool = true,
+				init        :: 	Union{Matrix, Nothing} = ○,
+				tol         :: 	Real = 1e-6,
+				maxiter     :: 	Int  = 1000,
+				𝜆min        ::	 Real = 1e-4,
+				lsmax       :: 	Int  = 10,
+				verbose     :: 	Bool = false,
+				threaded	:: 	Bool =
+								begin
+									thr = Threads.nthreads()
+									length(𝐂) ≥ 2*thr && thr>1
+								end,
+			eVar     :: TeVaro = ○,
+			eVarMeth :: Function = searchsortedfirst)
 
 	# # # # # # # # #  internal functions
 	# half sum of mean of lof of Diagonals
