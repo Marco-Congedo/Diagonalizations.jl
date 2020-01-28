@@ -459,7 +459,6 @@ function whitening(C :: SorH;
 
    λ, U = eig(C) # get evd
    λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
-
    if simple
      if eltype(C)<:Real
 		  ispos(λ; tol=eps(eltype(C)), rev=true, 🔔=true,

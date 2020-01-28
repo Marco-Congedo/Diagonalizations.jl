@@ -142,7 +142,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
 
 
     𝒢=deepcopy(𝒞)
-    if trace1 || w ≠ ○ _Normalize!(𝒢, m, k, trace1, w) end
+    if trace1 || w ≠ ○ _normalize!(𝒢, m, k, trace1, w) end
 
     if eVar isa Int && size(𝒢[1, 1, 1], 1) ≤ eVar ≤ 0
         eVar=size(𝒢[1, 1, 1], 1)

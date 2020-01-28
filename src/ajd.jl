@@ -18,7 +18,7 @@ function ajd(𝐂::ℍVector;
           preWhite  :: Bool   = false,
           sort      :: Bool   = true,
           init      :: Mato   = ○,
-          tol       :: Real   = 0.,
+          tol       :: Real   = 1e-6,
           maxiter   :: Int    = _maxiter(algorithm, eltype(𝐂[1])),
           verbose   :: Bool   = false,
           threaded  :: Bool   = true,
@@ -38,7 +38,7 @@ function ajd(𝐗::VecMat;
        preWhite  :: Bool = false,
        sort      :: Bool = true,
        init      :: Mato = ○,
-       tol       :: Real = 0.,
+       tol       :: Real = 1e-6,
        maxiter   :: Int  = _maxiter(algorithm, eltype(𝐗[1])),
        verbose   :: Bool = false,
        threaded  :: Bool = true,
@@ -362,12 +362,16 @@ function ajd(𝐂::ℍVector;
             trace1=trace1, w=w, preWhite=preWhite, sort=sort,
             init=init, tol=tol, maxiter=maxiter, verbose=verbose,
             eVar=eVarC, eVarMeth=eVarMeth)
-   elseif algorithm==:GAJD2
-          U, V, λ, iter, conv=gajd2(𝐂;
-            trace1=trace1, w=w, preWhite=preWhite, sort=sort,
+   elseif algorithm==:GLogLike
+          U, V, λ, iter, conv=gLogLike(𝐂;
+            w=w, preWhite=preWhite, sort=sort,
             init=init, tol=tol, maxiter=maxiter, verbose=verbose,
             eVar=eVarC, eVarMeth=eVarMeth)
-
+    elseif algorithm==:GLogLike_
+           U, V, λ, iter, conv=gLogLike_(𝐂;
+            w=w, preWhite=preWhite, sort=sort,
+            init=init, tol=tol, maxiter=maxiter, verbose=verbose,
+            eVar=eVarC, eVarMeth=eVarMeth)
    else
       throw(ArgumentError(📌*", ajd constructor: invalid `algorithm` argument: $algorithm"))
    end
