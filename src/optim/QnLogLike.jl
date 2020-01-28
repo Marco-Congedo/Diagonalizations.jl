@@ -116,8 +116,10 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	    for i ∈ 1:lsmax
 	        M[:] = (1.0/i * 𝒟) + I
 			B₊[:] = B * M
+			### 𝐃₊ = [Hermitian(M'*D*M) for D in 𝐃]
 			@threads for j ∈ eachindex(𝐃) 𝐃₊[j] = Hermitian(M'*𝐃[j]*M) end
-			iter>2 && (loss₊ = w===○ ? mlad(B₊)+hsmld(𝐃₊) : mlad(B₊)+hsmld(𝐃₊, 𝐯))
+			### iter>2 && (loss₊ = w===○ ? mlad(B₊)+hsmld(𝐃₊) : mlad(B₊)+hsmld(𝐃₊, 𝐯))
+			loss₊ = w===○ ? mlad(B₊)+hsmld(𝐃₊) : mlad(B₊)+hsmld(𝐃₊, 𝐯)
 	        loss₊ < loss && break
 	    end
 		B[:] = B₊
@@ -136,6 +138,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
     B₊, 𝒟, M, ∇, ℌ, 𝐃₊ = ⩫(B), ⩫(B), ⩫(B), ⩫(B), ⩫(B), ⩫(𝐃)
 	𝕯 = [zeros(eltype(𝐃[1]), size(𝐃[1], 1)) for i = 1:length(𝐃)]
 	loss = w===○ ? 	hsmld(𝐃) : hsmld(𝐃, 𝐯)
+	#loss = Inf
 
     verbose && println("Iterating quasi-Newton LogLike algorithm...")
     while true
