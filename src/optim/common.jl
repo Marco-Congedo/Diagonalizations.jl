@@ -100,7 +100,7 @@ function _normalizeAndWeight(trace1, w, 𝐂)
       _normalize!(𝐆, trace1, w)
       return 𝐆
    else
-      return 𝐂
+      return deepcopy(𝐂)
    end
 end
 
@@ -152,7 +152,7 @@ function _preWhiteOrInit(𝐂, preWhite, metric, eVar, eVarMeth, init, out)
       if out == :stacked 𝐆 = hcat([(init'*C*init) for C∈𝐂]...) end
       return nothing, 𝐆
    end
-   if out == :Hvector return nothing, 𝐂 end
+   if out == :Hvector return nothing, deepcopy(𝐂) end
    if out == :stacked return nothing, hcat(𝐂...) end
 end
 
