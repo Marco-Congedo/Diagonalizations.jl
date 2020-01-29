@@ -67,11 +67,11 @@ Argument `maxiter` is the maximum number of iterations allowed to the solver. Th
 |:-----------|:---------------|
 | OJoB       | 1000 for real data, 3000 for complex data |
 | NoJoB      | 1000 for real data, 3000 for complex data |
-| Log-Like   | 60 for real data, 180 for complex data |
-| Log-LikeR  | 40 (real data only) |
-| GAJD       | 120 (real data only) |
-| JADE       | 60 for real data, 180 for complex data |
-| GAJD       | 120 (real data only) |
+| Log-Like   | 120 for real data, 369 for complex data |
+| Log-LikeR  | 120 (real data only) |
+| QNLogLike  | 1000 (real data only) |
+| JADE       | 120 for real data, 360 for complex data |
+| GAJD       | 1000 (real data only) |
 
 
 If the maximum number of iteration
@@ -80,17 +80,18 @@ In this case, try increasing `maxiter` and/or `tol`.
 
 ## Multi-threading
 
-Besides being the most versitile (they support all methods),
-the OJoB and NoJOB algorithms also supports multi-threading.
+The OJoB, NoJOB and QNLogLike algorithms supports multi-threading.
 The methods' constructors feature the `threaded` optional keyword argument,
-which is true by default. If `threaded` is true and ``n>x`` and ``x>1``,
-where ``x`` is the number of threads Julia is instructed to use and ``n``
-is the dimension of the input matrices, the algorithms run in multi-threaded
-mode paralellising several comptations over ``n``.
+which is true by default.
+For OJoB and NoJoB, the algorithms run in multi-threaded
+mode paralellising several comptations over the dimension of the
+input matrices ``n``, if `threaded` is true, ``2n>x`` and ``x>1``,
+where ``x`` is the number of threads Julia is instructed to use.
+For QNLogLike, the algorithms run in multi-threaded
+mode paralellising several comptations over the number of matrices ``k``, if `threaded` is true, ``2k>x`` and ``x>1``.
 
-Besides being optionally multi-threaded, these algorithms heavely use BLAS.
 Before running these methods you may want to set the number of threades
-Julia is instructed to use to the number of logical CPUs of your machine
-and set `BLAS.set_num_threads(Sys.CPU_THREADS)`. If you are `using` any of the
-package written by the author, this is done automatically. See
+Julia is instructed to use to the number of logical CPUs of your machine. Besides being optionally multi-threaded, OJoB and NoJoB algorithms heavely use BLAS. Before using these methods you may want to
+set `BLAS.set_num_threads(Sys.CPU_THREADS)` to the number of logical CPUs of your machine. If you are `using` any of the
+package written by the author, all this is done automatically. See
 [these notes](https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#Threads-1).
