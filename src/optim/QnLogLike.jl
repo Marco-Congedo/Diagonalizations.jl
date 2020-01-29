@@ -38,7 +38,7 @@
 #  Dimensionality reduction can be obtained at this stage using optional
 #  arguments `eVar` and `eVarMeth` (see documentation of the AJD constructors).
 #
-#  if sort=true (default) the column vectors of the B matrix are normalized
+#  if `sort`=true (default) the column vectors of the B matrix are normalized
 #  to unit norm and permuted so as to sort in descending order the mean over
 #  κ=1:k of the diagonal elements of B'*𝐂_κ*B.
 #  Note that if `whitening` is true the output B will not have unit norm
@@ -49,14 +49,14 @@
 #  argument in order to initialize B. In this case the actual AJD
 #  will be given by init*B, where B is the output of the algorithm.
 #
-#  `tol` is the convergence to be attained. It default to 1e-6.
+#  `tol` is the convergence to be attained. It defaults to 1e-6.
 #
 #  `maxiter` is the maximum number of iterations allowed. It defaults to 1000.
 #
-#  𝜆min is used to reguarize Hessian coefficients; all coefficients smaller
-#  than 𝜆min  will be set to 𝜆min.
+#  `𝜆min` is used to reguarize Hessian coefficients; all coefficients smaller
+#  than 𝜆min  will be set to 𝜆min. It defauts tp 1e-4.
 #
-#  lsmax is the maximum number of steps in the line search.
+#  `lsmax` is the maximum number of steps in the line search. It defaults to 10.
 #
 #  if `verbose`=true, the convergence attained at each iteration and other
 #  information will be printed.
@@ -68,8 +68,9 @@
 #  and/or small number of matrices, setting threaded to false may result
 #  in better performances in term of speed.
 #
-#  return: B, its pseudo-inverse, the mean diagonal elements of B'*mean(𝐂)*B,
-#           the number of iterations and the convergence attained.
+#  return a 5-tuple holding: B, its pseudo-inverse,
+# 		the mean diagonal elements of B'*mean(𝐂)*B,
+#       the number of iterations and the convergence attained.
 #
 #  Note on the implementation:
 #  GRADIENT:
@@ -116,7 +117,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 			eVarMeth :: Function = searchsortedfirst)
 
 	# # # # # # # # #  internal functions
-	# half sum of mean of lof of Diagonals
+	# half sum of mean of log of Diagonals
 	hsmld(𝐀) = 0.5*sum(mean(log, [𝔻(A) for A ∈ 𝐀]))
 	hsmld(𝐀, 𝛎) = 0.5*sum(mean(log, [𝔻(A)*ν for (A, ν) ∈ zip(𝐀, 𝛎)]))
 
@@ -149,8 +150,7 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 	B, ⩫ = Matrix{eltype(𝐃[1])}(I, size(𝐃[1])), similar
 	B₊, 𝒟, M, ∇, ℌ, 𝐃₊ = ⩫(B), ⩫(B), ⩫(B), ⩫(B), ⩫(B), ⩫(𝐃)
 	𝕯 = [zeros(eltype(𝐃[1]), size(𝐃[1], 1)) for i = 1:length(𝐃)]
-	loss = w===○ ? 	hsmld(𝐃) : hsmld(𝐃, 𝐯)
-	#loss = Inf
+	loss = w===○ ? 	hsmld(𝐃) : hsmld(𝐃, 𝐯) #loss = Inf
 
 	verbose && println("Iterating quasi-Newton LogLike algorithm...")
 	while true
