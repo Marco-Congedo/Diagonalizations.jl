@@ -16,13 +16,13 @@ _maxiter(algorithm, type) =
    if       algorithm ∈ (:OJoB, :NoJoB)
             return type<:Real ? 1000 : 3000
    elseif   algorithm ∈ (:LogLike, :LogLikeR, :JADE)
-            return type<:Real ? 120 : 180
+            return type<:Real ? 60 : 180
    elseif   algorithm ∈ (:GAJD, :QNLogLike, :GLogLike)
             type<:Real ? (return 1000) :
-               throw(ArgumentError("The GAJD, QNLogLike and GLogLike algorithms do not support complex data input"))
+         throw(ArgumentError("The GAJD, QNLogLike and :GLogLike algorithms do not support complex data input"))
    elseif   algorithm == :GLogLike_
             type<:Real ? (return 12) :
-               throw(ArgumentError("The GLogLike_ algorithm does not support complex data input"))
+            throw(ArgumentError("The GLogLike_ algorithm does not support complex data input"))
    else throw(ArgumentError("The `algorithm` keyword argument is uncorrect. Valid options are: :OJoB, :NoJoB, :LogLike, :LogLikeR, :QNLogLike, :JADE and :GAJD."))
    end
 
@@ -120,7 +120,7 @@ function _preWhiteOrInit!(𝐂, preWhite, metric, eVar, eVarMeth, init)
       @threads for κ=1:length(𝐂) 𝐂[κ]=Hermitian(W.F'*𝐂[κ]*W.F) end
       return W
    end
-   if init≠nothing
+   if init≠○
       @threads for κ=1:length(𝐂) 𝐂[κ]=Hermitian(init'*𝐂[κ]*init) end
    end
    ○
@@ -149,10 +149,10 @@ function _preWhiteOrInit(𝐂, preWhite, metric, eVar, eVarMeth, init, out)
       if out == :stacked 𝐆 = hcat([(W.F'*C*W.F) for C∈𝐂]...) end
       return W, 𝐆
    end
-   if init≠nothing
+   if init≠○
       if out == :Hvector 𝐆 = congruence(Matrix(init'), 𝐂, ℍVector) end
       if out == :stacked 𝐆 = hcat([(init'*C*init) for C∈𝐂]...) end
-      return nothing, 𝐆
+      return ○, 𝐆
    end
    if out == :Hvector return nothing, deepcopy(𝐂) end
    if out == :stacked return nothing, hcat(𝐂...) end
