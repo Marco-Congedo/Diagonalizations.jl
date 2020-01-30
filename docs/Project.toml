@@ -1,5 +1,5 @@
 authors = ["Marco-Congedo <marco.congedo@gmail.com>"]
-version = "0.1.6"
+version = "0.1.7"
 
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
