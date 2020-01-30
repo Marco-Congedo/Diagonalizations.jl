@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>PCA · Diagonalizations</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Diagonalizations logo"/></a><div class="docs-package-name"><span class="docs-autofit">Diagonalizations</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Documentation</a></li><li><a class="tocitem" href="../Diagonalizations/">Diagonalizations</a></li><li><span class="tocitem">Filters</span><ul><li><input class="collapse-toggle" id="menuitem-3-1" type="checkbox" checked/><label class="tocitem" for="menuitem-3-1"><span class="docs-label">One dataset (m=1)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>PCA</a></li><li><a class="tocitem" href="../whitening/">Whitening</a></li><li><a class="tocitem" href="../csp/">CSP</a></li><li><a class="tocitem" href="../cstp/">CSTP</a></li><li><a class="tocitem" href="../ajd/">AJD</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-2" type="checkbox"/><label class="tocitem" for="menuitem-3-2"><span class="docs-label">Two datasets (m=2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../mca/">MCA</a></li><li><a class="tocitem" href="../cca/">CCA</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-3" type="checkbox"/><label class="tocitem" for="menuitem-3-3"><span class="docs-label">Several datasets (m&gt;2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../gmca/">gMCA</a></li><li><a class="tocitem" href="../gcca/">gCCA</a></li><li><a class="tocitem" href="../majd/">mAJD</a></li></ul></li></ul></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../algorithms/">Algorithms</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Filters</a></li><li><a class="is-disabled">One dataset (m=1)</a></li><li class="is-active"><a href>PCA</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>PCA</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/master/docs/src/pca.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="PCA-1"><a class="docs-heading-anchor" href="#PCA-1">PCA</a><a class="docs-heading-anchor-permalink" href="#PCA-1" title="Permalink"></a></h1><p><em>Principal Component Analysis</em> (PCA) is obtained by <em>eigenvalue-eigenvector decomposition</em>. It was first conceived by Karl Pearson (1901)<a href="../#-1">🎓</a> as a way to fit straight lines to a multidimensional cloud of points. It corresponds to the situation <span>$m=1$</span> (one dataset) and <span>$k=1$</span> (one observation).</p><p>Let <span>$X$</span> be a <span>$n⋅t$</span> data matrix, where <span>$n$</span> is the number of variables and <span>$t$</span> the number of samples and let <span>$C$</span> be its <span>$n⋅n$</span> covariance matrix. Being <span>$C$</span> a positive semi-definite matrix, its eigenvector matrix <span>$U$</span> diagonalizes <span>$C$</span> by rotation, as</p><p><span>$U^{H}CU=Λ$</span>. <span>$\hspace{1cm}$</span> [pca.1]</p><p>The eigenvalues in the diagonal matrix <span>$Λ$</span> are all non-negative. They are all real and positive if <span>$C$</span> is positive definite, which is assumed in the remaining of this exposition. The linear transformation <span>$U^{H}X$</span> yields uncorrelated data with variance of the <span>$n^{th}$</span> component equal to the corresponding eigenvalue <span>$λ_n$</span>, that is,</p><p><span>$\frac{1}{T}U^{H}XX^{H}U=Λ$</span>. <span>$\hspace{1cm}$</span> [pca.2]</p><p>In <em>Diagonalizations.jl</em> the diagonal elements of diagonalized matrices are always arranged by descending order, such as</p><p><span>$λ_1≥\ldots≥λ_n$</span>. <span>$\hspace{1cm}$</span> [pca.3]</p><p>Then, because of the extremal properties of eigenvalues (Congedo, 2013, p. 66; Schott, 1997, p. 104-128)<a href="../#-1">🎓</a>, the first component (row) of <span>$U^{H}X$</span> holds the linear combination of <span>$X$</span> with maximal variance, the second the linear combination with maximal residual variance and so on, subject to constraint <span>$U^{H}U=UU^{H}=I$</span>.</p><p>Let <span>$σ_{TOT}=\sum_{i=1}^nλ_i=tr(C)$</span> be the total variance and let <span>$\widetilde{U}=[u_1 \ldots u_p]$</span> be the matrix holding the first <span>$p&lt;n$</span> eigenvectors, where <span>$p$</span> is the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>, then</p><p><span>$σ_p=\frac{\sum_{i=1}^pλ_i}{σ_{TOT}}=\frac{tr(\widetilde{U}^HC\widetilde{U})}{tr(C)}$</span>  <span>$\hspace{1cm}$</span> [pca.4]</p><p>is named the <em>explained variance</em> and</p><p><span>$ε_p=σ_{TOT}-σ_p$</span> <span>$\hspace{1cm}$</span> [pca.5]</p><p>is named the <em>representation error</em>. These quantities are expressed in proportions, that is, it holds <span>$σ_p+ε_p=1$</span>.</p><p>The <em>accumulated regularized eigenvalues</em> (arev) are defined as</p><p><span>$σ_j=\sum_{i=1}^j{σ_i}$</span>, for <span>$j=[1 \ldots n]$</span>, <span>$\hspace{1cm}$</span> [pca.6]</p><p>where <span>$σ_i$</span> is given by Eq. [pca.4].</p><p>For setting the subspace dimension <span>$p$</span> manually, set the <code>eVar</code> optional keyword argument of the PCA constructors either to an integer or to a real number, this latter establishing <span>$p$</span> in conjunction with argument <code>eVarMeth</code> using the <code>arev</code> vector (see <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>). By default, <code>eVar</code> is set to 0.999.</p><p><strong>Solution</strong></p><p>The PCA solution is given by the <a href="https://en.wikipedia.org/wiki/Eigendecomposition_of_a_matrix">eigenvalue-eigenvector decoposition</a> of <span>$C$</span></p><p><span>$\textrm{EVD}(C)=UΛU^{H}$</span>.</p><p>It is worth mentioning that</p><p><span>$\widetilde{U}\widetilde{Λ}\widetilde{U}^H$</span>,</p><p>where <span>$\widetilde{Λ}$</span> is the leading <span>$p⋅p$</span> block of <span>$Λ$</span>, is the best approximant to <span>$C$</span> with rank <span>$p$</span> in the least-squares sense (Good, 1969)<a href="../#-1">🎓</a>.</p><p><strong>Constructors</strong></p><p>Three constructors are available (see here below). The constructed <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object holding the PCA will have fields:</p><p><code>.F</code>: matrix <span>$\widetilde{U}$</span> with orthonormal columns holding the first <span>$p$</span> eigenvectors in <span>$U$</span>, or just <span>$U$</span> if <span>$p=n$</span></p><p><code>.iF</code>: the (conjugate) transpose of <code>.F</code></p><p><code>.D</code>: the leading <span>$p⋅p$</span> block of <span>$Λ$</span>, i.e., the eigenvalues associated to <code>.F</code> in diagonal form.</p><p><code>.eVar</code>: the explained variance [pca.4] for the chosen value of <span>$p$</span>.</p><p><code>.ev</code>: the vector <code>diag(Λ)</code> holding all <span>$n$</span> eigenvalues.</p><p><code>.arev</code>: the accumulated regularized eigenvalues in [pca.6].</p><article class="docstring"><header><a class="docstring-binding" id="Diagonalizations.pca" href="#Diagonalizations.pca"><code>Diagonalizations.pca</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">(1)
+function pca(C :: SorH;
+             eVar     :: TeVaro = nothing,
+             eVarMeth :: Function = searchsortedfirst,
+             simple   :: Bool = false)
+
+(2)
+function pca(X::Mat;
+             covEst   :: StatsBase.CovarianceEstimator = SCM,
+             dims     :: Into = ○,
+             meanX    :: Tmean = 0,
+             wX       :: Tw = ○,
+          eVar     :: TeVaro = ○,
+          eVarMeth :: Function = searchsortedfirst,
+          simple   :: Bool = false)
+
+(3)
+function pca(𝐗::VecMat;
+             covEst   :: StatsBase.CovarianceEstimator = SCM,
+             dims     :: Into = ○,
+             meanX    :: Into = 0,
+          eVar     :: TeVaro = ○,
+          eVarMeth :: Function = searchsortedfirst,
+          simple   :: Bool = false,
+       metric   :: Metric = Euclidean,
+       w        :: Vector = [],
+       ✓w       :: Bool = true,
+       init     :: SorHo = nothing,
+       tol      :: Real = 0.,
+       verbose  :: Bool = false)</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object:</p><p><strong>(1) Principal component analysis</strong> with real or complex covariance matrix <code>C</code> as input.</p><p><code>C</code> must be flagged as <code>Symmetric</code>, if real, or <code>Hermitian</code>, if either real or complex, see <a href="../Diagonalizations/#data-input-1">data input</a>.</p><p><code>eVar</code> and <code>evarMeth</code> are keyword optional arguments for defining the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the <code>.arev</code> vector given by Eq. [pca.6]. The default values are:</p><ul><li><code>eVar=0.999</code></li><li><code>evarMeth=searchsortedfirst</code></li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to <span>$n$</span> and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This option is provided for low-level work when you don&#39;t need to define a subspace dimension or you want to define it by your own methods.</p><p><strong>(2) Principal component analysis</strong> with a real or complex data matrix <code>X</code> as input.</p><p><code>CovEst</code>, <code>dims</code>, <code>meanX</code>, <code>wX</code> are optional keyword arguments to regulate the estimation of the covariance matrix of <code>X</code>. See <a href="../Diagonalizations/#covariance-matrix-estimations-1">covariance matrix estimations</a>.</p><p>Once the covariance matrix estimated, method (1) is invoked with optional keyword arguments <code>eVar</code>, <code>eVarMeth</code> and <code>simple</code>.</p><p><strong>(3) Principal component analysis</strong> with a vector of real or complex data matrices <code>𝐗</code> as input.</p><p><code>CovEst</code>, <code>dims</code> and <code>meanX</code> are optional keyword arguments to regulate the estimation of the covariance matrices for all data matrices in <code>𝐗</code>. See <a href="../Diagonalizations/#covariance-matrix-estimations-1">covariance matrix estimations</a>.</p><p>A mean of these covariance matrices is computed using optional keywords arguments <code>metric</code>, <code>w</code>, <code>✓w</code>, <code>init</code>, <code>tol</code> and <code>verbose</code>. See <a href="../Diagonalizations/#mean-covariance-matrix-estimations-1">mean covariance matrix estimations</a>. By default, the arithmetic mean is computed.</p><p>Once the mean covariance matrix estimated, method (1) is invoked with optional keyword arguments <code>eVar</code>, <code>eVarMeth</code> and <code>simple</code>.</p><p><strong>See also:</strong> <a href="../whitening/#Whitening-1">Whitening</a>, <a href="../csp/#CSP-1">CSP</a>, <a href="../mca/#MCA-1">MCA</a>, <a href="../ajd/#AJD-1">AJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+
+# Method (1) real
+n, t=10, 100
+X=genDataMatrix(n, t)
+C=(X*X&#39;)/t
+pC=pca(Hermitian(C); simple=true)
+# or, shortly
+pC=pca(ℍ(C); simple=true)
+
+# Method (1) complex
+Xc=genDataMatrix(ComplexF64, n, t)
+Cc=(Xc*Xc&#39;)/t
+pCc=pca(Hermitian(Cc); simple=true)
+
+
+# Method (2) real
+pX=pca(X; simple=true)
+@test C≈pC.F*pC.D*pC.iF
+@test C≈pC.F*pC.D*pC.F&#39;
+@test pX≈pC
+
+# Method (2) complex
+pXc=pca(Xc; simple=true)
+@test Cc≈pCc.F*pCc.D*pCc.iF
+@test Cc≈pCc.F*pCc.D*pCc.F&#39;
+@test pXc≈pCc
+
+
+# Method (3) real
+k=10
+Xset=[genDataMatrix(n, t) for i=1:k]
+
+# pca on the average covariance matrix
+p=pca(Xset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.5
+p=pca(Xset; eVar=0.5)
+
+# ... averaging the covariance matrices using the logEuclidean metric
+p=pca(Xset; metric=logEuclidean, eVar=0.5)
+
+# ... giving weights `w` to the covariance matrices
+p=pca(Xset; metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# ... subtracting the mean
+p=pca(Xset; meanX=nothing, metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# pca on the average of the covariance matrices computed along dims 1
+p=pca(Xset; dims=1)
+
+# explained variance
+p.eVar
+
+# name of the filter
+p.name
+
+using Plots
+# plot regularized accumulated eigenvalues
+plot(p.arev)
+
+# plot the original covariance matrix and the rotated covariance matrix
+ Cmax=maximum(abs.(C));
+ h1 = heatmap(C, clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;C&quot;);
+ D=pC.F&#39;*C*pC.F;
+ Dmax=maximum(abs.(D));
+ h2 = heatmap(D, clim=(0, Dmax), yflip=true, c=:amp, title=&quot;F&#39;*C*F&quot;);
+ 📈=plot(h1, h2, size=(700, 300))
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigPCA.png&quot;)</code></pre><p><img src="../assets/FigPCA.png" alt="Figure PCA"/></p><pre><code class="language-none"># Method (3) complex
+k=10
+Xcset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+
+# pca on the average covariance matrix
+pc=pca(Xcset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.5
+pc=pca(Xcset; eVar=0.5)
+
+# ... averaging the covariance matrices using the logEuclidean metric
+pc=pca(Xcset; metric=logEuclidean, eVar=0.5)
+
+# ... giving weights `w` to the covariance matrices
+pc=pca(Xcset; metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# ... subtracting the mean
+pc=pca(Xcset; meanX=nothing, metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# pca on the average of the covariance matrices computed along dims 1
+pc=pca(Xcset; dims=1)
+
+# explained variance
+pc.eVar
+
+# name of the filter
+pc.name</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/d32ae337e5efc897e32c079112ae033a339e836b/src/pca.jl#L12-L198">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Diagonalizations/">« Diagonalizations</a><a class="docs-footer-nextpage" href="../whitening/">Whitening »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 30 January 2020 17:35">Thursday 30 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
