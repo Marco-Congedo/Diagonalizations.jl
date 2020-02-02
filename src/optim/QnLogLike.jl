@@ -109,10 +109,10 @@ function qnLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 				lsmax       :: 	Int  = 10,
 				verbose     :: 	Bool = false,
 				threaded	:: 	Bool =
-								begin
-									thr = Threads.nthreads()
-									length(𝐂) ≥ 2*thr && thr>1
-								end,
+							begin
+								thr = Threads.nthreads()
+								length(𝐂) ≥ 2*thr && thr>1
+							end,
 			eVar     :: TeVaro = ○,
 			eVarMeth :: Function = searchsortedfirst)
 
