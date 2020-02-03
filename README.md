@@ -71,6 +71,9 @@ cXY=cca(X, Y)
 
 # etc., etc.
 
+For the benchmarking of *Approxiate Joint Diagonalization* algorithms see 
+[here](https://github.com/Marco-Congedo/STUDIES/tree/master/AJD-Algos-Benchmark)
+
 ```
 
 ## About the Authors
