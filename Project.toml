@@ -1,7 +1,7 @@
 name = "Diagonalizations"
 uuid = "9cd687f3-b62d-43f3-8fd3-ffcd9e581047"
 authors = ["Marco-Congedo <marco.congedo@gmail.com>"]
-version = "0.1.8"
+version = "0.1.9"
 
 [deps]
 CovarianceEstimation = "587fd27a-f159-11e8-2dae-1979310e6154"

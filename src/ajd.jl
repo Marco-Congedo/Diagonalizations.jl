@@ -403,7 +403,7 @@ function ajd(𝐂::ℍVector;
             eVar=eVarC, eVarMeth=eVarMeth,
             threaded=threaded)
    elseif algorithm==:JADEmax
-          U, V, λ, iter, conv=jade(𝐂;
+          U, V, λ, iter, conv=jademax(𝐂;
             trace1=trace1,
             w=w, preWhite=preWhite, sort=sort, init=init, tol=tol,
             maxiter=maxiter, verbose=verbose, eVar=eVarC, eVarMeth=eVarMeth)
