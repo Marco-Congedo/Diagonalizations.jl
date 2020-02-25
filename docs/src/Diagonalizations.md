@@ -265,7 +265,7 @@ The call
 p=pca(X; dims=2)
 ```
 
-uses the default SCM estimator and compute the PCA
+uses the default SCM estimator and computes the PCA
 from the ``100⋅100`` (rank-deficient) covariance matrix
 ``\frac{1}{30}XX^{T}``. The 'filter' `p.F` is in this case ``100⋅p``.
 
@@ -284,8 +284,8 @@ or `Hermitian` covariance matrices, the
 [mean](https://marco-congedo.github.io/PosDefManifold.jl/dev/riemannianGeometry/#Statistics.mean) function of package
 [PosDefManifold.jl](https://github.com/Marco-Congedo/PosDefManifold.jl)
 is used, since those matrices may be positive definite
-by construction, hence a mean using a metric acting on the Riemannian
-manifold of positive definite matrices may be used.
+by construction, hence a mean using a metric acting on the *Riemannian
+manifold of positive definite matrices* may be used.
 
 The constructors using this feature employ the following optional
 keyword arguments for regulating the computation of the mean:
@@ -462,15 +462,22 @@ upper case letters in order to allow reading in the REPL.
 - EEG: Electroencephalography
 - ERP: Event-Related Potentials
 - FOBI: Fourth-Order Blind Identification (Cardoso, 1989)
+- GAJD: Gauss AJD algorithm (Frobenius cost function), unpublished from the author of this package.
+- GLogLike: Gauss AJD algorithm (log-likelihood cost function), still experimental.
 - gCCA: generalized CCA
 - gMCA: generalized MCA
-- JADE: Joint Diagonalization of Eigenmatrices (Cardoso & Souloumiac, 1993)
+- JADE: Joint Diagonalization of Eigenmatrices AJD algorithm (Cardoso & Souloumiac, 1993)
+- JADEmax: JADE using the Riemannian gradient to order the rotations (Usevich et al., 2020)
+- LogLike: AJD algorithm optimizing the Log-Likelihood cost function (Pham, 2000)
+- LogLikeR: another implementation of LogLike for real data only.
 - LShrLW: Linear Shrinkage of Ledoit and Wolf (2004)
 - NShrLW: Non-linear Shrinkage of Ledoit and Wolf (2018)
+- mAJD: multiple AJD (jointly on several data sets)
 - MCA: Maximum Covariance Analysis
-- NoJoB: Non-orthogonal Joint BSS (Congedo et al., 2012)
-- OJoB: Orthogonal Joint BSS (Congedo et al., 2012)
+- NoJoB: Non-orthogonal mAJD algorithm (Congedo et al., 2012)
+- OJoB: Orthogonal mAJD algorithm (Congedo et al., 2012)
 - PCA: Principal Component Analysis (Pearson, 1901)
+- QNLogLike: Quasi-Newton LogLike (Ablin et al., 2019)
 - SCM: Sample Covariance Matrix
 - SOBI: Second-Order Blind Identification (Belouchrani et al., 1997)
 

@@ -45,7 +45,7 @@ end
 #  RETURN: B, the number of iterations and the convergence attained (a 3-tuple)
 function logLike(C::Matrix{T};
 	     		 tol 	 = 0.,
-				 maxiter = 60,
+				 maxiter = 1000,
 				 verbose = false) where T<:Union{Real, Complex}
 
 	@inline function phamSweep!()
@@ -128,7 +128,7 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 				 sort      	:: Bool = true,
 				 init		:: Union{Matrix, Nothing} = ○,
 				 tol     	:: Real = 0.,
-				 maxiter 	:: Int  = 60,
+				 maxiter 	:: Int  = 1000,
 				 verbose 	:: Bool = false,
 			  eVar 	   :: TeVaro = ○,
 			  eVarMeth :: Function = searchsortedfirst)
@@ -170,7 +170,7 @@ function logLikeR(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 				  sort      :: Bool = true,
 				  init 	 	:: Union{Matrix, Nothing} = ○,
 				  tol     	:: Real = 0.,
-				  maxiter 	:: Int  = 60,
+				  maxiter 	:: Int  = 1000,
 				  verbose 	:: Bool = false,
 			eVar 	  :: TeVaro = ○,
 			eVarMeth  :: Function = searchsortedfirst)

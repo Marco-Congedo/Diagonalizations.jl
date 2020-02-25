@@ -14,15 +14,17 @@ Solvers differ from one another in several fashions:
 - their initialization
 - whether they support multi-threading or not
 
-To date seven solvers are implemented:
+To date nine solvers are implemented:
 
 - **Orthogonal joint blind source separation** (OJOB: Congedo et al., 2012[🎓](@ref))
 - **Non-orthogonal joint blind source separation** (NoJOB: Congedo et al., 2012[🎓](@ref))
-- **Log-likelyhood** (LogLike: Pham, 2001[🎓](@ref))
-- **Log-likelyhood Real** (LogLikeR: Pham, 2001[🎓](@ref))
-- **Quasi-Newton Log-likelyhood** (QNLogLike: Ablin et **al.**, 2019[🎓](@ref))
+- **Log-likelihood** (LogLike: Pham, 2001[🎓](@ref))
+- **Log-likelihood Real** (LogLikeR: Pham, 2001[🎓](@ref))
+- **Quasi-Newton Log-likelihood** (QNLogLike: Ablin et **al.**, 2019[🎓](@ref))
 - **Joint Approximate Diagonalization of Eigenmatrices** (JADE: Cardoso and Souloumiac, 1996[🎓](@ref))
+- **Joint Approximate Diagonalization of Eigenmatrices max** (JADEmax: Usevich, Li and Comon, 2020[🎓](@ref))
 - **Gauss Approximate Joint Diagonalization** (GAJD, unpublished, from the author)
+- **Gauss Log-Likelihood** (GLogLike, unpublished, from the author, still experimental)
 
 
 Their main characteristics and domain of application are summarized in the following table:
@@ -35,7 +37,10 @@ Their main characteristics and domain of application are summarized in the follo
 | LogLikeR | non-singular| no        | yes| log-likelihood | no | AJD |
 | QNLogLike| non-singular| no        | yes| log-likelihood | no | AJD |
 | JADE     | Orthogonal/Unitary| yes | no | least-squares | no | AJD |
+| JADEmax  | Orthogonal/Unitary| yes | no | least-squares | no | AJD |
 | GAJD     | non-singular| no        | no | least-squares | no | AJD |
+| GLogLike | non-singular| no        | yes | log-likelihood | no | AJD |
+
 
 
 ## using solvers
@@ -61,21 +66,12 @@ the actual approximate joint diagonalizer will be given by `init*B`, where `B` i
 `tol` is the tolerance for convergence of the solver.
 By default it is set to the square root of `Base.eps` of the nearest real type of the data input. If the solver encounters difficulties in converging, try setting `tol` in between 1e-6 and 1e-3.
 
-Argument `maxiter` is the maximum number of iterations allowed to the solver. The default values are given in the following table:
-
-| Algorithm  | max iterations |
-|:-----------|:---------------|
-| OJoB       | 1000 for real data, 3000 for complex data |
-| NoJoB      | 1000 for real data, 3000 for complex data |
-| Log-Like   | 120 for real data, 369 for complex data |
-| Log-LikeR  | 120 (real data only) |
-| QNLogLike  | 1000 (real data only) |
-| JADE       | 120 for real data, 360 for complex data |
-| GAJD       | 1000 (real data only) |
-
+Argument `maxiter` is the maximum number of iterations allowed to the solver.
+For all algorithms, by default `maxiter` is set to 1000 for real data and to
+3000 for complex data.
 
 If the maximum number of iteration
-is attained, a warning will be printed in the REPL.
+is attained, a warning is printed in the REPL.
 In this case, try increasing `maxiter` and/or `tol`.
 
 ## Multi-threading
@@ -88,10 +84,14 @@ mode paralellising several comptations over the dimension of the
 input matrices ``n``, if `threaded` is true, ``2n>x`` and ``x>1``,
 where ``x`` is the number of threads Julia is instructed to use.
 For QNLogLike, the algorithms run in multi-threaded
-mode paralellising several comptations over the number of matrices ``k``, if `threaded` is true, ``2k>x`` and ``x>1``.
+mode paralellising several comptations over the number of matrices ``k``,
+if `threaded` is true, ``2k>x`` and ``x>1``.
 
 Before running these methods you may want to set the number of threades
-Julia is instructed to use to the number of logical CPUs of your machine. Besides being optionally multi-threaded, OJoB and NoJoB algorithms heavely use BLAS. Before using these methods you may want to
-set `BLAS.set_num_threads(Sys.CPU_THREADS)` to the number of logical CPUs of your machine. If you are `using` any of the
+Julia is instructed to use to the number of logical CPUs of your machine.
+Besides being optionally multi-threaded, OJoB and NoJoB algorithms heavely use BLAS.
+Before using these methods you may want to
+set `BLAS.set_num_threads(Sys.CPU_THREADS)` to the number of logical CPUs
+of your machine. If you are `using` any of the
 package written by the author, all this is done automatically. See
 [these notes](https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#Threads-1).

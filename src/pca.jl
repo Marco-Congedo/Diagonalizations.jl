@@ -463,7 +463,7 @@ function whitening(C :: SorH;
      if eltype(C)<:Real
 		  ispos(λ; tol=eps(eltype(C)), rev=true, 🔔=true,
 		  msg="negative or almost zero eigenvalue") || throw(ArgumentError("A `simple` linear filter cannot be created. See the warning that has been printed in Julia's REPL"))
-	  end
+	 end
      D=Diagonal(λ)
      LF(U*D^-0.5, D^0.5*Matrix(U'), D, ○, ○, ○, args...)
    else

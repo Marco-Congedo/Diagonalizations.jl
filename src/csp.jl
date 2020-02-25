@@ -290,7 +290,7 @@ function csp(C₁ :: SorH, C₂ :: SorH;
 
   if eVarC≠○ && eVarC≈0. # use gevd, which also actually whitens C1+C2
      λ, U = eig(C₁, C₁+C₂)
-     λ = _checkλ(λ) # make sure no imaginary noise is present (fro complex data)
+     λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
 
      simple ? LF(U, inv(U), Diagonal(λ), ○, ○, ○, args...) :
      begin
@@ -302,7 +302,7 @@ function csp(C₁ :: SorH, C₂ :: SorH;
 
      λ, U = eig(Hermitian(w.F'*C₁*w.F)) # get evd of whitened C1
      # Hermitian is necessary for complex data
-     λ = _checkλ(λ) # make sure no imaginary noise is present (fro complex data)
+     λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
 
      simple ? LF(w.F*U, U'*w.iF, Diagonal(λ), ○, ○, ○, args...) :
      begin
@@ -582,7 +582,7 @@ function cstp( X :: Mat, C₍₁₎ :: SorH, C₍₂₎ :: SorH;
    s=whitening(C₍₂₎; kwargs...)
 
    U, λ, V = svd(s.F'*X*t.F; full=true)
-   λ = _checkλ(λ) # make sure no imaginary noise is present (fro complex data)
+   λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
 
    simple ? LF([s.F*U, t.F*V], [U'*s.iF, V'*t.iF], Diagonal(λ), ○, ○, ○, args...) :
    begin

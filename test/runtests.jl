@@ -3,8 +3,12 @@ using LinearAlgebra, Statistics, PosDefManifold, Test,
 
 # for more tests see the `Examples` folder
 
+const err=1e-6
+
 # compare two matrices
-compare(a::AbstractArray, b::AbstractArray) = @test a≈b
+function compare(a::AbstractArray, b::AbstractArray)
+     @test norm(a-b)/length(a) < err
+end
 
 # check that cov(F'XX'F)=D arranging terms for the two possible values of `dims`
 function compare(d::Int, X::AbstractArray, F::AbstractArray, D::AbstractArray)
@@ -15,7 +19,7 @@ function compare(d::Int, X::AbstractArray, F::AbstractArray, D::AbstractArray)
 end
 
 # check that D is approximately diagonal
-isApproxD(D)=norm(D-Diagonal(D))+1.0≈1.
+isApproxD(D)=norm(D-Diagonal(D))<err
 
 ####  Create data for testing the case k=1, m>1
 # `t` is the number of samples, e.g.,
@@ -218,20 +222,52 @@ end
     𝐗 = [genDataMatrix(t, n) for i = 1:k]
     Xfixed=randn(t, n)./1
     for i=1:length(𝐗) 𝐗[i]+=Xfixed end
-    aX=ajd(𝐗)
     𝐂 = ℍVector([ℍ((𝐗[s]'*𝐗[s])/t) for s=1:k])
-    aC=ajd(𝐂)
+    aX=ajd(𝐗; simple=true)
+    aC=ajd(𝐂; simple=true)
     @test aX≈aC
 
+    # # # Test orthogonal AJD algorithms
     # create 20 random commuting matrices
     # they all have the same eigenvectors
     𝐂=randP(3, 20; eigvalsSNR=Inf, commuting=true)
-    # estimate the approximate joint diagonalizer (ajd) using the OJoB solver
-    a=ajd(𝐂; algorithm=:OJoB)
+    # estimate the approximate joint diagonalizer (ajd) using orthogonal solvers
     # the ajd must be equivalent to the eigenvector matrix of any of the matrices in 𝐂
-    @test spForm(a.F'*eigvecs(𝐂[1]))+1.0≈1.0
-end
+    a=ajd(𝐂; algorithm=:OJoB)
+    @test norm([spForm(a.F'*eigvecs(C)) for C ∈ 𝐂])/20<√err
+    a=ajd(𝐂; algorithm=:JADE)
+    @test norm([spForm(a.F'*eigvecs(C)) for C ∈ 𝐂])/20<√err
+    a=ajd(𝐂; algorithm=:JADEmax)
+    @test norm([spForm(a.F'*eigvecs(C)) for C ∈ 𝐂])/20<√err
 
+    # # # Test non-orthogonal AJD algorithms
+    # generate positive definite matrices with model A*D_κ*D, where A is an
+    # invertible mixing matrix and D_κ, for all κ=1:k, are diagonal matrices.
+    # The estimated AJD matrix must be the inverse of A
+    # and all transformed matrices bust be diagonal
+    n, k=3, 10
+    Dest=PosDefManifold.randΛ(eigvalsSNR=Inf, n, k)
+    # make the problem identifiable
+    for i=1:k Dest[k][1, 1]*=i/(k/2) end
+    for i=1:k Dest[k][3, 3]/=i/(k/2) end
+    A=randn(n, n) # non-singular mixing matrix
+    Cset3=Vector{Hermitian}([Hermitian(A*D*A') for D ∈ Dest])
+    a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
+    @test spForm(a.F'*A)<√err
+    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<err
+    a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
+    @test spForm(a.F'*A)<√err
+    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<err
+    a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
+    @test spForm(a.F'*A)<√err
+    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<err
+    a=ajd(Cset3; algorithm=:GAJD, eVarC=n)
+    @test spForm(a.F'*A)<√err*10 # GAJD has problems sometimes
+    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<err
+    a=ajd(Cset3; algorithm=:QNLogLike, eVarC=n)
+    @test spForm(a.F'*A)<√err
+    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<err
+end
 
 
 @testset "gMCA" begin
@@ -255,6 +291,12 @@ end
 
 
 @testset "gCCA" begin
+    t, m, n, noise = 200, 2, 6, 0.1
+    𝐗, 𝐕 = getData(t, m, n, noise)
+    Cx=(𝐗[1]*𝐗[1]')/t
+    Cy=(𝐗[2]*𝐗[2]')/t
+    Cxy=(𝐗[1]*𝐗[2]')/t
+
     # check that for the case m=2 GCCA gives the same result as CCA
     gc=gcca(𝐗; simple=true)
     gm=gmca(𝐗; simple=true)

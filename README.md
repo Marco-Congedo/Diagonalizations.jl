@@ -1,6 +1,6 @@
 # Diagonalizations.jl
 
-| **Documentation**  | 
+| **Documentation**  |
 |:---------------------------------------:|
 | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
 
@@ -31,6 +31,10 @@ this package supports :
 - facilities to set the subspace dimension upon construction
 - diagonalization procedures for the case *m≥2* and *k≥2*.
 
+This package implements state-of-the-art **approximate joint diagonalization** algorithms. For some benchmarking see
+[here](https://github.com/Marco-Congedo/STUDIES/tree/master/AJD-Algos-Benchmark).
+
+
 ## Installation
 
 To install the package execute the following command in Julia's REPL:
@@ -40,7 +44,9 @@ To install the package execute the following command in Julia's REPL:
 ## Examples
 
 ```
-using Diagonalizations, Test
+
+using Diagonalizations, PosDefManifold, Test
+
 n, t=10, 100
 
 # generate an nxt data matrix
@@ -58,23 +64,24 @@ pC=pca(Symmetric((X*X')/t))
 
 # get only the first p eigenvectors, where p is the smallest integer
 # explaining at least 75% of the variance
-
-pX=pca(X; eVar=0.75) 
+pX=pca(X; eVar=0.75)
 
 Y=genDataMatrix(n, t)
 
 # maximum covariance analysis
-mXY=mca(X, Y) 
+mXY=mca(X, Y)
 
 # canonical correlation analysis
 cXY=cca(X, Y)
 
+# approximate joint diagonalization
+Xset=randP(5, 20)
+aXset=ajd(Xset; algorithm=:JADE)
+aXset=ajd(Xset; algorithm=:LogLike)
+
 # etc., etc.
 
 ```
-
-For the benchmarking of *Approxiate Joint Diagonalization* algorithms see 
-[here](https://github.com/Marco-Congedo/STUDIES/tree/master/AJD-Algos-Benchmark).
 
 ## About the Authors
 
