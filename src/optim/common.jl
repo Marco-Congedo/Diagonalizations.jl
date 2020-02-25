@@ -13,17 +13,12 @@
 # get the maximum number of iterations for each algorithm depending on the
 # data input type if the algorithm supports both real and complex data input
 _maxiter(algorithm, type) =
-   if       algorithm ∈ (:OJoB, :NoJoB)
+   if       algorithm ∈ (:OJoB, :NoJoB, :LogLike, :JADE, :JADEmax)
             return type<:Real ? 1000 : 3000
-   elseif   algorithm ∈ (:LogLike, :LogLikeR, :JADE)
-            return type<:Real ? 120 : 360
-   elseif   algorithm ∈ (:GAJD, :QNLogLike, :GLogLike)
+   elseif   algorithm ∈ (:GAJD, :QNLogLike, :LogLikeR, :GLogLike)
             type<:Real ? (return 1000) :
-         throw(ArgumentError("The GAJD, QNLogLike and :GLogLike algorithms do not support complex data input"))
-   elseif   algorithm == :GLogLike_
-            type<:Real ? (return 12) :
-            throw(ArgumentError("The GLogLike_ algorithm does not support complex data input"))
-   else throw(ArgumentError("The `algorithm` keyword argument is uncorrect. Valid options are: :OJoB, :NoJoB, :LogLike, :LogLikeR, :QNLogLike, :JADE and :GAJD."))
+            throw(ArgumentError("The GAJD, QNLogLike, LogLikeR and GLogLike algorithms do not support complex data input"))
+   else     throw(ArgumentError("The `algorithm` keyword argument is uncorrect. Valid options are: :OJoB, :JADE, :JADEmax, :NoJoB, :GAJD, :LogLike, :LogLikeR, :GLogLike, :QNLogLike."))
    end
 
 
@@ -191,6 +186,8 @@ end
 function _checkλ(λ::Vec)
    rePart=sum(real(λ).^2)
    imPart=sum(imag(λ).^2)
+   #@show rePart
+   #@show imPart
    if imPart/rePart > 1e-6
       @warn "📌, internal function _checkλ: Be careful, the elements of fields `D`, `ev` and `arev` of the constructed LinearFilter will be complex"
       return λ

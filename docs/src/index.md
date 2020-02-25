@@ -18,7 +18,7 @@ and run the examples you will find there.
 
 ### Disclaimer
 
-This version is throughoutly tested for the case of real data input, not tested at all for the case of complex data input.
+This version is throughoutly tested for both the case of real and complex data input.
 Independent reviewers for both the code and the documentation are welcome.
 
 
@@ -101,7 +101,7 @@ this package supports :
 
 ## Code units
 
-**Diagonalizations.jl** includes ten code units (.jl files):
+**Diagonalizations.jl** includes twelve code units (.jl files):
 
 | Unit   | Description |
 |:----------|:----------|
@@ -112,9 +112,11 @@ this package supports :
 | csp.jl | Unit implementing the CSP and CSTP|
 | ajd.jl | Unit implementing the AJD and the mAJD |
 | tools.jl | Unit containing general tools and internal functions|
+| Gajd.jl | Unit implementing the GAJD and GLogLike iterative algorithms (in the 'optim' folder)|
+| Jade.jl | Unit implementing the JADE and JADEmax iterative algorithms (in the 'optim' folder)|
 | JoB.jl | Unit implementing the OJoB and NoJoB iterative algorithms (in the 'optim' folder)|
-| LogLike.jl | Unit implementing the Log-Likelyhood iterative algorithms (in the 'optim' folder)|
-| Jade.jl | Unit implementing the Givens rotation iterative algorithms (in the 'optim' folder)|
+| LogLike.jl | Unit implementing the Log-Likelihood iterative algorithms (in the 'optim' folder)|
+| QnLogLike.jl | Unit implementing the quasi-Newton Log-Likelihood iterative algorithm (in the 'optim' folder)|
 
 Furthermore, all examples given at the end of the documentation of the filter
 constructors are collected as .jl units in the 'examples' folder.
@@ -184,9 +186,12 @@ P. Tichavsky, A. Yeredor (2009), [Fast approximate joint diagonalization
 incorporating weight matrices](https://staff.utia.cas.cz/files/Soutez_09/Tichavsky/WEDGE09.pdf), IEEE Trans. Signal Process., 57(3), 878–891.
 https://staff.utia.cas.cz/files/Soutez_09/Tichavsky/WEDGE09.pdf
 
-L. Tong, V. Soon, Y. Huang, R.W. Liu (1991). A necessary and sufficient condition Waveform-Preserving Blind
+L. Tong, V. Soon, Y. Huang, R.W. Liu (1991), A necessary and sufficient condition Waveform-Preserving Blind
 Estimation of Multiple Independent Sources. IEEE Transactions on Signal Processing, 41(7), 2461-2470.
 
+K. Usevich, J. Li, P. Comon (2020), [Approximate matrix and tensor diagonalization by unitary transformations: convergence of Jacobi-type
+algorithms](https://hal.archives-ouvertes.fr/hal-01998900v3/document),
+preprint: hal-01998900v3f.
 
 ## Contents
 

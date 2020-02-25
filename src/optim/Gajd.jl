@@ -48,7 +48,10 @@ end
 #  if `verbose`=true, the convergence attained at each iteration and other
 #  information will be printed.
 #  RETURN: B, the number of iterations and the convergence attained (a 3-tuple)
-function gajd(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
+function gajd(𝐋::AbstractArray;
+               tol = 0.,
+               maxiter = 1000,
+               verbose = false)
 
    # find optimal theta and update convergence (∡)
    function _gauss!(𝑖, 𝑗, i) # 𝑖 must be < 𝑗
@@ -144,7 +147,7 @@ function gajd( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
                sort     :: Bool  = true,
                init     :: Union{Matrix, Nothing} = ○,
                tol      :: Real  = 0.,
-               maxiter  :: Int   = 120,
+               maxiter  :: Int   = 1000,
                verbose  :: Bool  = false,
             eVar     :: TeVaro = ○,
             eVarMeth :: Function = searchsortedfirst)
@@ -173,7 +176,10 @@ end
 
 
 
-function gLogLike(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
+function gLogLike(𝐋::AbstractArray;
+                  tol = 0.,
+                  maxiter = 1000,
+                  verbose = false)
 
    # find optimal theta and update convergence ∡
    function _gauss!(𝑖, 𝑗, i, j) # 𝑖 must be < 𝑗
@@ -229,7 +235,7 @@ function gLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
                sort     :: Bool  = true,
                init     :: Union{Matrix, Nothing} = ○,
                tol      :: Real  = 0.,
-               maxiter  :: Int   = 120,
+               maxiter  :: Int   = 1000,
                verbose  :: Bool  = false,
             eVar     :: TeVaro = ○,
             eVarMeth :: Function = searchsortedfirst)
@@ -243,84 +249,6 @@ function gLogLike( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
    𝐋 = _arrangeData!(T, n, 𝐆)
 
    B, iter, conv = gLogLike(𝐋; tol=tol, maxiter=maxiter, verbose=verbose)
-
-   # scale and permute the vectors of B
-   D=Diagonal([mean(𝐋[i, i]) for i=1:n])
-   λ = sort ? _permute!(_scale!(B, D, n)...) : diag(D)
-
-   return preWhite ? (W.F*B, pinv(B)*W.iF, λ, iter, conv) :
-                     (B, pinv(B), λ, iter, conv)
-end
-
-
-# approximation computing in the outer loop the products of the diagonal
-# elements discarding the ith elements. This does not discared the jth
-# element in the inner loop
-function gLogLike_(𝐋::AbstractArray; tol = 0., maxiter = 60, verbose = false)
-
-   # find optimal theta and update convergence ∡
-   function _gauss!(𝑖, 𝑗, i, j) # 𝑖 must be < 𝑗
-      θ  = sum(@.𝐋[𝑗, 𝑖]*lᵢᵢ) * ω
-      θ² = θ^2
-      ∡ += θ²
-   end
-
-   @inline function congedoSweep!()
-      ∡ = T(0.)
-      for i ∈ 1:n
-
-         # approximation
-         fill!(Π, T(1))
-         for l=1:i-1 Π.*=𝐋[l, l] end
-         for l=i+1:n Π.*=𝐋[l, l] end
-         lᵢᵢ=𝐋[i, i].*Π
-         ω=-inv(sum(𝐋[i, i].^2 .*Π))
-
-         for j = 1:i-1
-            _gauss!(j, i, i, j) # find θ, θ² and update ∡
-            _update1!(j, i, n, θ, θ², 𝐋, B) # update 𝐋 and B given θ and θ²
-         end
-         for j = i+1:n
-            _gauss!(i, j, i, j) # find θ, θ² and update ∡
-            _update2!(j, i, n, θ, θ², 𝐋, B) # update 𝐋 and B given θ and θ²
-         end
-      end
-      return ∡*e # convergence: average squared theta over all n(n-1) pairs
-   end
-
-   # declare variables
-   T, n = eltype(𝐋[1, 1]), size(𝐋, 1)
-   Π = Vector{T}(undef,  length(𝐋[1, 1]));
-   Π_, lᵢᵢ = similar(Π), similar(Π)
-   θ, θ², ∡, ω, e = T(0), T(0), T(0), T(0), inv(n*(n-1))
-   B = Matrix{T}(I, n, n) # initialization of the AJD matrix
-
-   iter, conv = _iterate!("GLogLike_", congedoSweep!, maxiter, T, tol, verbose)
-   return B, iter, conv
-end
-
-
-function gLogLike_( 𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
-               w        :: Twf   = ○,
-               preWhite :: Bool  = false,
-               sort     :: Bool  = true,
-               init     :: Union{Matrix, Nothing} = ○,
-               tol      :: Real  = 0.,
-               maxiter  :: Int   = 120,
-               verbose  :: Bool  = false,
-            eVar     :: TeVaro = ○,
-            eVarMeth :: Function = searchsortedfirst)
-
-   # pre-whiten or initialize or nothing
-   W, 𝐆 = _preWhiteOrInit(𝐂, preWhite, Jeffrey, eVar, eVarMeth, init, :Hvector)
-
-   T, n = eltype(𝐆[1]), size(𝐆[1], 1)
-
-   # arrange data in a LowerTriangular matrix of k-vectors
-   𝐋 = _arrangeData!(T, n, 𝐆)
-
-   # run AJD algorithm
-   B, iter, conv = gLogLike_(𝐋; tol=tol, maxiter=maxiter, verbose=verbose)
 
    # scale and permute the vectors of B
    D=Diagonal([mean(𝐋[i, i]) for i=1:n])

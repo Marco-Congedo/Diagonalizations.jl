@@ -165,7 +165,7 @@ function _getEVD(C :: Union{Hermitian, Symmetric, Mat}, eVar::TeVaro,
                  eVarMeth::Function, simple::Bool)
 
    λ, U = eig(C)
-   λ=_checkλ(λ) # make sure no imaginary noise is present (fro complex data)
+   λ=_checkλ(λ) # make sure no imaginary noise is present (for complex data)
    simple ? (U, Matrix(U'), Diagonal(λ), ○, ○, ○) :
    begin
      eVar===○ ? eVar=0.999 : ○
@@ -188,7 +188,7 @@ function _getWhi(C :: Union{Hermitian, Symmetric, Mat}, eVar::TeVaro,
   U, Uⁱ, D, eVar, λ, arev=_getEVD(C, eVar, eVarMeth, simple)
   if simple
      if eltype(C)<:Real
-        ispos(λ; tol=eps(eltype(C)), rev=true, 🔔=true,
+        ispos(diag(D); tol=eps(eltype(C)), rev=true, 🔔=true,
         msg="negative or almost zero eigenvalue") || throw(ArgumentError("A `simple` linear filter cannot be created. See the warning that has been printed in Julia's REPL"))
      end
      (U*D^-0.5, D^0.5*Uⁱ, D, ○, ○, ○)

@@ -21,6 +21,7 @@
 #  Upper case letter: a matrix, e.g., A
 #  Bold lover case letter: a vector of matrices, e.g., 𝐀
 #
+#  ADVANCED QnLogLike algorithm (no PRIMITIVE version is available):
 #  The algorithm takes as input a vector of k real symmetric matrices
 #  𝐂 and find a non-singular matrix B such that the congruences
 #  B'*𝐂_κ*B are as diagonal as possible for all κ=1:k.
