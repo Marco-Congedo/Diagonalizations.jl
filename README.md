@@ -34,6 +34,7 @@ this package supports :
 This package implements state-of-the-art **approximate joint diagonalization** algorithms. For some benchmarking see
 [here](https://github.com/Marco-Congedo/STUDIES/tree/master/AJD-Algos-Benchmark).
 
+
 ## Installation
 
 To install the package execute the following command in Julia's REPL:
@@ -43,7 +44,9 @@ To install the package execute the following command in Julia's REPL:
 ## Examples
 
 ```
+
 using Diagonalizations, PosDefManifold, Test
+
 n, t=10, 100
 
 # generate an nxt data matrix
@@ -61,7 +64,6 @@ pC=pca(Symmetric((X*X')/t))
 
 # get only the first p eigenvectors, where p is the smallest integer
 # explaining at least 75% of the variance
-
 pX=pca(X; eVar=0.75)
 
 Y=genDataMatrix(n, t)
@@ -85,6 +87,6 @@ aXset=ajd(Xset; algorithm=:LogLike)
 
 [Marco Congedo](https://sites.google.com/site/marcocongedo), is a research scientist of [CNRS](http://www.cnrs.fr/en) (Centre National de la Recherche Scientifique), working at [UGA](https://www.univ-grenoble-alpes.fr/english/) (University of Grenoble Alpes). **contact**: marco *dot* congedo *at* gmail *dot* com
 
-| **Documentation**  |
+| **Documentation**  | 
 |:---------------------------------------:|
 | [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
