@@ -516,9 +516,9 @@ function cca(Cx :: SorH, Cy :: SorH, Cxy :: Mat;
    kwargs=(eVarMeth=eVarMeth, simple=true);
    e=eVar
 
-   x=whitening(Cx; eVar=eVarCx, kwargs...)
-   y=whitening(Cy; eVar=eVarCy, kwargs...)
-   m=mca(x.F'*Cxy*y.F; eVar=e, kwargs...)
+   x=whitening(Cx; eVar=eVarCx, eVarMeth=eVarMeth)
+   y=whitening(Cy; eVar=eVarCy, eVarMeth=eVarMeth)
+   m=mca(x.F'*Cxy*y.F; eVar=e, eVarMeth=eVarMeth)
 
    if simple
       LF([x.F*m.F[1], y.F*m.F[2]], [m.iF[1]*x.iF, m.iF[2]*y.iF], m.D, ○, ○, ○, args...)
