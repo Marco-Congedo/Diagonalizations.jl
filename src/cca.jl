@@ -513,17 +513,15 @@ function cca(Cx :: SorH, Cy :: SorH, Cxy :: Mat;
    size(Cy, 2)==size(Cxy, 2) || throw(ArgumentError(📌*", cca function: Matrices `Cy` and `Cxy` must have the same number of rows"))
 
    args=("Canonical Correlation Analysis", false)
-   kwargs=(eVarMeth=eVarMeth, simple=true);
-   e=eVar
 
    x=whitening(Cx; eVar=eVarCx, eVarMeth=eVarMeth)
    y=whitening(Cy; eVar=eVarCy, eVarMeth=eVarMeth)
-   m=mca(x.F'*Cxy*y.F; eVar=e, eVarMeth=eVarMeth)
+   m=mca(x.F'*Cxy*y.F; eVar=eVar, eVarMeth=eVarMeth)
 
    if simple
       LF([x.F*m.F[1], y.F*m.F[2]], [m.iF[1]*x.iF, m.iF[2]*y.iF], m.D, ○, ○, ○, args...)
    else
-      e, D, U, V, p, arev=_ssdxy!(e, diag(m.D), m.F[1], m.F[2], _minDim(Cxy), eVarMeth)
+      e, D, U, V, p, arev=_ssdxy!(eVar, diag(m.D), m.F[1], m.F[2], _minDim(Cxy), eVarMeth)
       LF([x.F*U, y.F*V], [U'*x.iF, V'*y.iF], D, e, diag(m.D), arev, args...)
    end
 end
