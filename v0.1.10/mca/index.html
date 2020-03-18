@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>MCA · Diagonalizations</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Diagonalizations logo"/></a><div class="docs-package-name"><span class="docs-autofit">Diagonalizations</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Documentation</a></li><li><a class="tocitem" href="../Diagonalizations/">Diagonalizations</a></li><li><span class="tocitem">Filters</span><ul><li><input class="collapse-toggle" id="menuitem-3-1" type="checkbox"/><label class="tocitem" for="menuitem-3-1"><span class="docs-label">One dataset (m=1)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../pca/">PCA</a></li><li><a class="tocitem" href="../whitening/">Whitening</a></li><li><a class="tocitem" href="../csp/">CSP</a></li><li><a class="tocitem" href="../cstp/">CSTP</a></li><li><a class="tocitem" href="../ajd/">AJD</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-2" type="checkbox" checked/><label class="tocitem" for="menuitem-3-2"><span class="docs-label">Two datasets (m=2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>MCA</a></li><li><a class="tocitem" href="../cca/">CCA</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-3" type="checkbox"/><label class="tocitem" for="menuitem-3-3"><span class="docs-label">Several datasets (m&gt;2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../gmca/">gMCA</a></li><li><a class="tocitem" href="../gcca/">gCCA</a></li><li><a class="tocitem" href="../majd/">mAJD</a></li></ul></li></ul></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../algorithms/">Algorithms</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Filters</a></li><li><a class="is-disabled">Two datasets (m=2)</a></li><li class="is-active"><a href>MCA</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>MCA</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/master/docs/src/mca.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="MCA-1"><a class="docs-heading-anchor" href="#MCA-1">MCA</a><a class="docs-heading-anchor-permalink" href="#MCA-1" title="Permalink"></a></h1><p><em>Maximum Covariance Analysis</em> is obtained by <em>singular-value decomposition</em>. It can be conceived as the multivariate extension of covariance and as the bilinear version of <a href="../pca/#PCA-1">PCA</a>; if PCA diagonalizes the covariance matrix of a data set, MCA diagonalized the <em>cross-covariance matrix</em> of two data sets. It corresponds to the situation <span>$m=2$</span> (two datasets) and <span>$k=1$</span> (one observation).</p><p>Let <span>$X$</span> and <span>$Y$</span> be two <span>$n_x⋅t$</span> and <span>$n_y⋅t$</span> data matrices, where <span>$n_x$</span> and <span>$n_y$</span> are the number of variables in <span>$X$</span> and <span>$Y$</span>, respectively and <span>$t$</span> the number of samples. We assume that the samples in <span>$X$</span> and <span>$Y$</span> are synchronized. Let <span>$C_{xy}=\frac{1}{t}X^HY$</span> be the <span>$n_x⋅n_y$</span> <a href="https://en.wikipedia.org/wiki/Cross-covariance">cross-covariance matrix</a>. MCA seeks two orthogonal matrices <span>$U$</span> and <span>$V$</span> such that</p><p><span>$U_x^{H}C_{xy}U_y=Λ$</span>, <span>$\hspace{1cm}$</span> [mca.1]</p><p>where <span>$Λ$</span> is a <span>$n⋅n$</span> diagonal matrix, with <span>$n=min(n_x, n_y)$</span>. The first components (rows) of <span>$U_x^{H}X$</span> and <span>$U_y^{H}Y$</span> hold the linear combination of <span>$X$</span> and <span>$Y$</span> with maximal covariance, the second the linear combination with maximal residual covariance and so on, subject to constraint <span>$U_x^{H}U_x=I$</span> and <span>$U_y^{H}U_x=I$</span>. If <span>$n_x=n_y$</span>, <span>$U_x$</span> and <span>$U_y$</span> are both square, hence it holds also <span>$U_xU_x^{H}=I$</span> and <span>$U_yU_y^{H}=I$</span>, otherwise this holds only for one of them.</p><p>It should be kept in mind that MCA is sensitive to the amplitude of each process, since the covariance is maximized and not the correlation as in <a href="../cca/#CCA-1">CCA</a>. Threfore, if the amplitude of the two processes is not homegeneous, the covariance will be driven by the process with highest amplitude.</p><p>The <em>accumulated regularized eigenvalues</em> (arev) for the MCA are defined as</p><p><span>$σ_j=\sum_{i=1}^j{σ_i}$</span>, for <span>$j=[1 \ldots n]$</span>, <span>$\hspace{1cm}$</span> [mca.2]</p><p>where <span>$σ_i$</span> is given by</p><p><span>$σ_p=\frac{\sum_{i=1}^pλ_i}{σ_{TOT}}$</span>  <span>$\hspace{1cm}$</span> [mca.3]</p><p>and <span>$λ_i$</span> are the singular values in <span>$Λ$</span> of [mca.1].</p><p>For setting the subspace dimension <span>$p$</span> manually, set the <code>eVar</code> optional keyword argument of the MCA constructors either to an integer or to a real number, this latter establishing <span>$p$</span> in conjunction with argument <code>eVarMeth</code> using the <code>arev</code> vector (see <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a>). By default, <code>eVar</code> is set to 0.999.</p><p><strong>Solution</strong></p><p>The MCA solution is given by the <a href="https://en.wikipedia.org/wiki/Singular_value_decomposition">singular value decoposition</a> of <span>$C_{xy}$</span></p><p><span>$\textrm{SVD}(C_{xy})=U_xΛU_y^{H}$</span>.</p><p>It is worth mentioning that</p><p><span>$\widetilde{U}_x\widetilde{Λ}\widetilde{U}_y^H$</span>,</p><p>where <span>$\widetilde{U}_x=[u_{x1} \ldots u_{xp}]$</span> is the matrix holding the first <span>$p&lt;n_x$</span> left singular vectors, <span>$\widetilde{U}_y=[u_{y1} \ldots u_{yp}]$</span> is the matrix holding the first <span>$p&lt;n_y$</span> right singular vectors and <span>$\widetilde{Λ}$</span> is the leading <span>$p⋅p$</span> block of <span>$Λ$</span>, is the best approximant to <span>$C_{xy}$</span> with rank <span>$p$</span> in the least-squares sense (Good, 1969)<a href="../#-1">🎓</a>.</p><p><strong>Constructors</strong></p><p>Three constructors are available (see here below). The constructed <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object holding the MCA will have fields:</p><p><code>.F[1]</code>: matrix <span>$\widetilde{U}_x$</span> with orthonormal columns holding the first <span>$p$</span> left singular vectors in <span>$U_x$</span>.</p><p><code>.F[2]</code>: matrix <span>$\widetilde{U}_y$</span> with orthonormal columns holding the first <span>$p$</span> right singular vectors in <span>$U_y$</span>.</p><p><code>.iF[1]</code>: the (conjugate) transpose of <code>.F[1]</code></p><p><code>.iF[2]</code>: the (conjugate) transpose of <code>.F[2]</code></p><p><code>.D</code>: the leading <span>$p⋅p$</span> block of <span>$Λ$</span>, i.e., the singular values associated to <code>.F</code> in diagonal form.</p><p><code>.eVar</code>: the explained variance for the chosen value of <span>$p$</span>, defined in [mca.3].</p><p><code>.ev</code>: the vector <code>diag(Λ)</code> holding all <span>$n$</span> singular values.</p><p><code>.arev</code>: the accumulated regularized eigenvalues, defined in [mca.2].</p><article class="docstring"><header><a class="docstring-binding" id="Diagonalizations.mca" href="#Diagonalizations.mca"><code>Diagonalizations.mca</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">(1)
+function mca(Cxy :: Mat;
+             eVar      :: TeVaro = ○,
+             eVarMeth  :: Function = searchsortedfirst,
+             simple    :: Bool = false)
+
+(2)
+function mca(X::Mat, Y::Mat;
+             dims     :: Into = ○,
+             meanX    :: Tmean = 0,
+             meanY    :: Tmean = 0,
+             wXY      :: Tw = ○,
+          eVar     :: TeVaro = ○,
+          eVarMeth :: Function = searchsortedfirst,
+          simple   :: Bool = false)
+
+(3)
+function mca(𝐗::VecMat, 𝐘::VecMat;
+             dims     :: Into = ○,
+             meanX    :: Into = 0,
+             meanY    :: Into = 0,
+          eVar     :: TeVaro = ○,
+          eVarMeth :: Function = searchsortedfirst,
+          simple   :: Bool = false)</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter-1">LinearFilter</a> object:</p><p><strong>(1) Maximum covariance analysis</strong> with real or complex covariance matrix <code>Cxy</code> of dimension <span>$n_x⋅n_y$</span> as input.</p><p>Differently from <a href="../pca/#PCA-1">PCA</a> and <a href="../whitening/#Whitening-1">Whitening</a>, <code>Cxy</code> is a generic <code>Matrix</code> object since it is not symmetric/Hermitian, left alone square.</p><p><code>eVar</code> and <code>eVarMeth</code> are keyword optional arguments for defining the <a href="../Diagonalizations/#subspace-dimension-1">subspace dimension</a> <span>$p$</span> using the <code>.arev</code> vector given by Eq. [mca.2].</p><p>The default values are:</p><ul><li><code>eVar=0.999</code></li><li><code>eVarMeth=searchsortedfirst</code></li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to <span>$min(n_x, n_y)$</span> and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This option is provided for low-level work when you don&#39;t need to define a subspace dimension or you want to define it by your own methods.</p><p><strong>(2) Maximum covariance analysis</strong> with real or complex data matrices <code>X</code> and <code>Y</code> as input.</p><p><code>dims</code>, <code>meanX</code>, <code>meanY</code> and <code>wXY</code> are optional keyword arguments to regulate the estimation of the cross-covariance matrix <span>$C_{xy}$</span>. Particularly (see <a href="../Diagonalizations/#covariance-matrix-estimations-1">covariance matrix estimations</a>),</p><ul><li><code>meanX</code> is the <code>mean</code> argument for data matrix <code>X</code>.</li><li><code>meanY</code> is the <code>mean</code> argument for data matrix <code>Y</code>.</li><li><code>wXY</code> is the weight argument for estimating a weighted cross-covariance matrix <span>$C_{XY}$</span>.</li></ul><p>Once the cross-covariance matrix estimated, method (1) is invoked with optional keyword arguments <code>eVar</code>, <code>eVarMeth</code> and <code>simple</code>. See method (1) for details.</p><p><strong>(3) Maximum covariance analysis</strong> with two vectors of real or complex data matrices <code>𝐗</code> and <code>𝐘</code> as input. <code>𝐗</code> and <code>𝐘</code> must hold the same number of matrices and corresponding pairs of matrices therein must comprise the same number of samples.</p><p><code>dims</code>, <code>meanX</code> and <code>meanY</code> are optional keyword arguments to regulate the estimation of the cross-covariance matrices for all pairs of corresponding data matrices in <code>𝐗</code> and <code>𝐘</code>. See method (2) and <a href="../Diagonalizations/#covariance-matrix-estimations-1">covariance matrix estimations</a>.</p><p>The arithmetic mean of these cross-covariance matrices is computed and method (1) is invoked with optional keyword arguments <code>eVar</code>, <code>eVarMeth</code> and <code>simple</code>. See method (1) for details.</p><p><strong>See also:</strong> <a href="../pca/#PCA-1">PCA</a>, <a href="../cca/#CCA-1">CCA</a>, <a href="../gmca/#gMCA-1">gMCA</a>, <a href="../majd/#mAJD-1">mAJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-none">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+
+# Method (1) real
+n, t=10, 100
+X=genDataMatrix(n, t)
+Y=genDataMatrix(n, t)
+Cx=Symmetric((X*X&#39;)/t)
+Cy=Symmetric((Y*Y&#39;)/t)
+Cxy=(X*Y&#39;)/t
+mC=mca(Cxy, simple=true)
+@test Cxy≈mC.F[1]*mC.D*mC.F[2]&#39;
+D=mC.F[1]&#39;Cxy*mC.F[2]
+@test norm(D-Diagonal(D))+1. ≈ 1.
+
+# Method (1) complex
+Xc=genDataMatrix(ComplexF64, n, t)
+Yc=genDataMatrix(ComplexF64, n, t)
+Cxc=Symmetric((Xc*Xc&#39;)/t)
+Cyc=Symmetric((Yc*Yc&#39;)/t)
+Cxyc=(Xc*Yc&#39;)/t
+mCc=mca(Cxyc, simple=true)
+@test Cxyc≈mCc.F[1]*mCc.D*mCc.F[2]&#39;
+Dc=mCc.F[1]&#39;Cxyc*mCc.F[2]
+@test norm(Dc-Diagonal(Dc))+1. ≈ 1.
+
+
+# Method (2) real
+mXY=mca(X, Y, simple=true)
+D=mXY.F[1]&#39;*Cxy*mXY.F[2]
+@test norm(D-Diagonal(D))+1≈1.
+@test mXY==mC
+
+# Method (2) complex
+mXYc=mca(Xc, Yc, simple=true)
+Dc=mXYc.F[1]&#39;*Cxyc*mXYc.F[2]
+@test norm(Dc-Diagonal(Dc))+1. ≈ 1.
+@test mXYc==mCc
+
+
+# Method (3) real
+# maximum covariance analysis of the average covariance and cross-covariance
+k=10
+Xset=[genDataMatrix(n, t) for i=1:k]
+Yset=[genDataMatrix(n, t) for i=1:k]
+
+m=mca(Xset, Yset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.5
+m=mca(Xset, Yset; eVar=0.5)
+
+# ... subtracting the mean from the matrices in Xset and Yset
+m=mca(Xset, Yset; meanX=nothing, meanY=nothing, eVar=0.5)
+
+# mca on the average of the covariance and cross-covariance matrices
+# computed along dims 1
+m=mca(Xset, Yset; dims=1, eVar=0.5)
+
+# name of the filter
+m.name
+
+using Plots
+# plot regularized accumulated eigenvalues
+plot(m.arev)
+
+# plot the original cross-covariance matrix and the rotated
+# cross-covariance matrix
+ Cmax=maximum(abs.(Cxy));
+ h1 = heatmap(Cxy, clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;Cxy&quot;);
+ D=mC.F[1]&#39;*Cxy*mC.F[2];
+ Dmax=maximum(abs.(D));
+ h2 = heatmap(D, clim=(0, Dmax), yflip=true, c=:amp, title=&quot;F[1]&#39;*Cxy*F[2]&quot;);
+ 📈=plot(h1, h2, size=(700,300))
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigMCA.png&quot;)</code></pre><p><img src="../assets/FigMCA.png" alt="Figure MCA"/></p><pre><code class="language-none"># Method (3) complex
+# maximum covariance analysis of the average covariance and cross-covariance
+
+k=10
+Xcset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+Ycset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+
+mc=mca(Xcset, Ycset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.5
+mc=mca(Xcset, Ycset; eVar=0.5)
+
+# ... subtracting the mean from the matrices in Xset and Yset
+mc=mca(Xcset, Ycset; meanX=nothing, meanY=nothing, eVar=0.5)
+
+# mca on the average of the covariance and cross-covariance matrices
+# computed along dims 1
+mc=mca(Xcset, Ycset; dims=1, eVar=0.5)
+
+# name of the filter
+mc.name</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/5bc7e2e7723bad413745ba8c2a69eb407e28b30d/src/cca.jl#L14-L201">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ajd/">« AJD</a><a class="docs-footer-nextpage" href="../cca/">CCA »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 18 March 2020 11:03">Wednesday 18 March 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
