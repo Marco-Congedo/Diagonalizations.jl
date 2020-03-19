@@ -66,8 +66,9 @@ used to compute it (see above).
 for defining the [subspace dimension](@ref) ``p``. Particularly:
 -  By default, the two-step procedure described above is used to find the
    solution. In this case `eVarC` is used for defining the subspace dimension of
-   the whitening step. If `eVarC=0.` is passed,
-   the solution will be find by the generalized eigenvalue-eigenvector procedure.
+   the whitening step. If `eVarC=0.0` is passed (not to be confused with
+   `eVarC=0` ), the solution will be find by the generalized
+   eigenvalue-eigenvector procedure.
 - `eVar` is the keyword optional argument for defining the
    [subspace dimension](@ref) ``p`` using the `.arev` vector
    given by [csp.5].
@@ -281,10 +282,11 @@ function csp(C₁ :: SorH, C₂ :: SorH;
              selMeth  :: Symbol = :extremal,
              simple   :: Bool = false)
 
-  #println(eVar)
+  # checks
   size(C₁, 1)==size(C₁, 2) || throw(ArgumentError(📌*", csp function: Matrix `C₁` must be square"))
   size(C₂, 1)==size(C₂, 2) || throw(ArgumentError(📌*", csp function: Matrix `C₂` must be square"))
   size(C₁)==size(C₂) || throw(ArgumentError(📌*", csp function: Matrices `C₁` and `C₂` must have the same size"))
+  eVar isa Int && eVarC isa Int && eVar>eVarC && throw(ArgumentError(📌*", csp function: `eVar` cannot be larger than `eVarC`"))
 
   args=("Common Spatial Pattern", false)
 
@@ -298,7 +300,14 @@ function csp(C₁ :: SorH, C₂ :: SorH;
         LF(U, pinv(U), D, eVar, λ, arev, args...)
      end
   else
-     w=whitening(C₁+C₂; eVar=eVarC, eVarMeth=eVarMeth, simple=true)
+     w=whitening(C₁+C₂; eVar=eVarC, eVarMeth=eVarMeth)
+
+     # alert user if eVar passed as an integer exceeds the whitening dim
+     whiteDim=size(w.F, 2)
+     if eVar isa Int && eVar>whiteDim
+        @warn(📌*", csp function: the whitening step reduced the rank to $(whiteDim); `eVar` has been lowered to this value.")
+        eVar=whiteDim
+     end
 
      λ, U = eig(Hermitian(w.F'*C₁*w.F)) # get evd of whitened C1
      # Hermitian is necessary for complex data
@@ -575,19 +584,25 @@ function cstp( X :: Mat, C₍₁₎ :: SorH, C₍₂₎ :: SorH;
 
    d₍₂₎, d₍₁₎, dₓ=size(C₍₂₎, 1), size(C₍₁₎, 1), size(X)
    (d₍₁₎==dₓ[2] && d₍₂₎==dₓ[1]) || throw(ArgumentError(📌*", cstp function: For n⋅m matrix X, matrix C₍₁₎ must be m⋅m and matrix C₍₂₎ n⋅n"))
+   eVar isa Int && eVarC isa Int && eVar>eVarC && throw(ArgumentError(📌*", cstp function: `eVar` cannot be larger than `eVarC`"))
    args=("Common Spatio-Temporal Pattern", false)
-   kwargs=(eVar=eVarC, eVarMeth=eVarMeth, simple=false)
 
+   kwargs=(eVar=eVarC, eVarMeth=eVarMeth, simple=false)
    t=whitening(C₍₁₎; kwargs...)
    s=whitening(C₍₂₎; kwargs...)
+
+   # alert user if eVar passed as an integer exceeds the minimum whitening dim
+   whiteDim=min(size(t.F, 2), size(t.F, 2))
+   if eVar isa Int && eVar>whiteDim
+      @warn(📌*", cstp function: the whitening step reduced the rank to $(whiteDim); `eVar` has been lowered to this value.")
+      eVar=whiteDim
+   end
 
    U, λ, V = svd(s.F'*X*t.F; full=true)
    λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
 
    simple ? LF([s.F*U, t.F*V], [U'*s.iF, V'*t.iF], Diagonal(λ), ○, ○, ○, args...) :
    begin
-     #eVar===○ ? eVar=(2*norm(X)^2)/(tr(C₍₁₎)*size(X, 2)+tr(C₍₂₎)*size(X, 1)) : ○
-     #println(eVar)
      eVar, D, U, V, p, arev=_ssdcstp!(eVar, λ, U, Matrix(V), _minDim(X), eVarMeth) # subspace dimension
      LF([s.F*U, t.F*V], [U'*s.iF, V'*t.iF], D, eVar, λ, arev, args...)
    end
