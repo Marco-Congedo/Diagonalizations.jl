@@ -392,9 +392,10 @@ function ajd(𝐂::ℍVector;
         eVarMeth :: Function  = searchsortedfirst,
         simple   :: Bool      = false)
 
+   eVar isa Int && eVarC isa Int && eVar>eVarC && throw(ArgumentError(📌*", ajd function: `eVar` cannot be larger than `eVarC`"))
    args=("Approximate Joint Diagonalization", false)
    k, n=length(𝐂), size(𝐂[1], 1)
-   if simple whitening=false end
+   simple && (whitening=false)
 
    if    algorithm == :QNLogLike
          U, V, λ, iter, conv=qnLogLike(𝐂;
@@ -436,6 +437,13 @@ function ajd(𝐂::ℍVector;
             maxiter=maxiter, verbose=verbose, eVar=eVarC, eVarMeth=eVarMeth)
    else
       throw(ArgumentError(📌*", ajd constructor: invalid `algorithm` argument: $algorithm"))
+   end
+
+   # alert user if eVar passed as an integer exceeds the minimum whitening dim
+   whiteDim=size(U, 2)
+   if eVar isa Int && eVar>whiteDim
+     @warn(📌*", ajd function: the whitening step reduced the rank to $(whiteDim); `eVar` has been lowered to this value.")
+     eVar=whiteDim
    end
 
    λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)
@@ -696,6 +704,7 @@ function majd(𝑿::VecVecMat;
 
    if dims===○ dims=_set_dims(𝑿) end
    #TODO _check_data(𝑿, dims, covEst, meanX, ○)===○ && return
+   eVar isa Int && eVarC isa Int && eVar>eVarC && throw(ArgumentError(📌*", majd function: `eVar` cannot be larger than `eVarC`"))
    (n, t)=dims==1 ? reverse(size(𝑿[1][1])) : size(𝑿[1][1])
    k, m=length(𝑿), length(𝑿[1])
    args=("Multiple Approximate Joint Diagonalization", false)
@@ -709,6 +718,13 @@ function majd(𝑿::VecVecMat;
    # elseif...
    else
       throw(ArgumentError(📌*", majd constructor: invalid `algorithm` argument"))
+   end
+
+   # alert user if eVar passed as an integer exceeds the minimum whitening dim
+   whiteDim=size(𝐔[1], 2)
+   if eVar isa Int && eVar>whiteDim
+     @warn(📌*", majd function: the whitening step reduced the rank to $(whiteDim); `eVar` has been lowered to this value.")
+     eVar=whiteDim
    end
 
    λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)

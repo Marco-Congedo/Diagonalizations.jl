@@ -511,11 +511,23 @@ function cca(Cx :: SorH, Cy :: SorH, Cxy :: Mat;
 
    size(Cx, 1)==size(Cxy, 1) || throw(ArgumentError(📌*", cca function: Matrices `Cx` and `Cxy` must have the same number of columns"))
    size(Cy, 2)==size(Cxy, 2) || throw(ArgumentError(📌*", cca function: Matrices `Cy` and `Cxy` must have the same number of rows"))
+   if eVar isa Int
+      eVarCx isa Int && eVar>eVarCx && throw(ArgumentError(📌*", cca function: `eVar` cannot be larger than `eVarCx`"))
+      eVarCy isa Int && eVar>eVarCy && throw(ArgumentError(📌*", cca function: `eVar` cannot be larger than `eVarCy`"))
+   end
 
    args=("Canonical Correlation Analysis", false)
 
    x=whitening(Cx; eVar=eVarCx, eVarMeth=eVarMeth)
    y=whitening(Cy; eVar=eVarCy, eVarMeth=eVarMeth)
+
+   # alert user if eVar passed as an integer exceeds the minimum whitening dim
+   whiteDim=min(size(x.F, 2), size(y.F, 2))
+   if eVar isa Int && eVar>whiteDim
+      @warn(📌*", cca function: the whitening step reduced the rank to $(whiteDim); `eVar` has been lowered to this value.")
+      eVar=whiteDim
+   end
+
    m=mca(x.F'*Cxy*y.F; eVar=eVar, eVarMeth=eVarMeth)
 
    if simple
