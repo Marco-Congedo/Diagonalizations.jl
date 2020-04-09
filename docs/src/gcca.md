@@ -12,7 +12,7 @@ Let ``{X_1,...,X_m}`` be a set of ``m`` data matrices of dimension
 and ``t`` the number of samples, both common to all datasets. From these
 data matrices let us estimate
 
-``C_{ij}=\frac{1}{T}X_iX_j^H``, for all ``i,j∈[1...m]``, ``\hspace{1cm}`` [gcca.1]
+``C_{ij}=\frac{1}{t}X_iX_j^H``, for all ``i,j∈[1...m]``, ``\hspace{1cm}`` [gcca.1]
 
 i.e., all *covariance* (``i=j``) and *cross-covariance* (``i≠j``) matrices.
 

@@ -11,7 +11,7 @@ Let ``{X_{l1},...,X_{lm}}`` be ``k`` sets of ``m`` data matrices of dimension ``
 
 From these data matrices let us estimate
 
-``C_{lij}=\frac{1}{T}X_{li}X_{lj}^H``, for all ``l∈[1...k]`` and ``i,j∈[1...m]``, ``\hspace{1cm}`` [majd.1]
+``C_{lij}=\frac{1}{t}X_{li}X_{lj}^H``, for all ``l∈[1...k]`` and ``i,j∈[1...m]``, ``\hspace{1cm}`` [majd.1]
 
 i.e., all *covariance* (``i=j``) and *cross-covariance* (``i≠j``) matrices
 for all ``l∈[1...k]``.

@@ -8,7 +8,7 @@ Let ``{X_1,...,X_m}`` be a set of ``m`` data matrices of dimension
 and ``t`` the number of samples, both common to all datasets. From these
 data matrices let us estimate
 
-``C_{ij}=\frac{1}{T}X_iX_j^H``, for all ``i,j∈[1...m]``, ``\hspace{1cm}`` [gmca.1]
+``C_{ij}=\frac{1}{t}X_iX_j^H``, for all ``i,j∈[1...m]``, ``\hspace{1cm}`` [gmca.1]
 
 i.e., all *covariance* (``i=j``) and *cross-covariance* (``i≠j``) matrices.
 
@@ -33,7 +33,7 @@ matrices in addition to the cross-covariance matrices.
 #### permutation for gMCA
 
 As usual, the approximate diagonalizers ``F_1,...,F_m`` are arbitrary up to a
-[scale and permutation](@ref). In mGCA scaling is fixed by
+[scale and permutation](@ref). In gMCA scaling is fixed by
 appropriate constraints. For the remaining sign and permutation ambiguities,
 *Diagonalizations.jl* attempts to solve them by finding signed permutation
 matrices for ``F_1,...,F_m`` so as to make all diagonal elements of [gmca.2] or

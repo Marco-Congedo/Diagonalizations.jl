@@ -44,10 +44,8 @@ export
 
    _cov # temp
 
-   #OJoB,
-
 # Consts
-const 📌            = "Diagonalizations.jl"
+const 📌            = titleFont*"Diagonalizations.jl"*defaultFont
 const titleFont     = "\x1b[35m"
 const separatorFont = "\x1b[95m"
 const defaultFont   = "\x1b[0m"
@@ -155,7 +153,6 @@ end # Struct LinearFilter
 LF=LinearFilter # alias
 
 
-
 size(f::LF) = f.F isa Matrix ? size(f.F) : (size(f.F[i]) for i=1:length(f.F))
 
 length(f::LF) = f.F isa Matrix ? 1 : length(f.F)
@@ -242,7 +239,7 @@ function Base.show(io::IO, ::MIME{Symbol("text/plain")}, f::LinearFilter)
   println(io, greyFont,"ar=accumulated regularized ev")
 end
 
-println("\n⭐ "," Welcome to the", titleFont," ",📌," ",defaultFont,"package", " ⭐\n")
+println("\n⭐ "," Welcome to the ", 📌, " package", " ⭐\n")
 @info " "
 println(" Your Machine `",gethostname(),"` (",Sys.MACHINE, ")")
 println(" runs on kernel ",Sys.KERNEL," with word size ",Sys.WORD_SIZE,".")

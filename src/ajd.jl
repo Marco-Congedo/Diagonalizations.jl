@@ -662,7 +662,7 @@ Cset=[𝒞2Mat(𝒞, m, s) for s=1:k]
 
 In the bottom figures here above, the rotated cross-covariance matrices have the
 expected *strip-diagonal* form, that is, each block
-``F_i^T\\frac{1}{T}(X_{li}X_{lj}^T)F_j``,
+``F_i^T\\frac{1}{t}(X_{li}X_{lj}^T)F_j``,
 for ``l∈[1,...,k]``, ``i,j∈[1,...,m]``, is approximately diagonal.
 
 ```
