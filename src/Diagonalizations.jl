@@ -45,11 +45,12 @@ export
    _cov # temp
 
 # Consts
-const 📌            = titleFont*"Diagonalizations.jl"*defaultFont
 const titleFont     = "\x1b[35m"
 const separatorFont = "\x1b[95m"
 const defaultFont   = "\x1b[0m"
 const greyFont      = "\x1b[90m"
+const 📌            = titleFont*"Diagonalizations.jl"*defaultFont
+
 const SCM=SimpleCovariance()
 const LShr=LinearShrinkage
 const LShrLW=LShr(ConstantCorrelation())
