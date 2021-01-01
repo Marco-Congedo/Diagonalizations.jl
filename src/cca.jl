@@ -12,7 +12,7 @@
 
 
 """
-```
+```julia
 (1)
 function mca(Cxy :: Mat;
              eVar      :: TeVaro = ○,
@@ -96,7 +96,7 @@ See method (1) for details.
 
 **Examples:**
 
-```
+```julia
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 # Method (1) real
@@ -174,7 +174,7 @@ plot(m.arev)
 
  ![Figure MCA](assets/FigMCA.png)
 
-```
+```julia
 # Method (3) complex
 # maximum covariance analysis of the average covariance and cross-covariance
 
@@ -256,7 +256,7 @@ end
 
 
 """
-```
+```julia
 (1)
 function cca(Cx :: SorH, Cy :: SorH, Cxy :: Mat;
              eVarCx   :: TeVaro=○,
@@ -387,7 +387,7 @@ See method (1) for details.
 
 **Examples:**
 
-```
+```julia
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 # Method (1) real
@@ -478,7 +478,7 @@ plot(c.arev)
 
 ![Figure CCA](assets/FigCCA.png)
 
-```
+```julia
 # Method (3) complex
 # canonical correlation analysis of the average covariance and cross-covariance
 k=10

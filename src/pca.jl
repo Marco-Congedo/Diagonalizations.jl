@@ -10,7 +10,7 @@
 #   (sphering), that is, filters based on the eigendecomposition.
 
 """
-```
+```julia
 (1)
 function pca(C :: SorH;
              eVar     :: TeVaro = nothing,
@@ -90,7 +90,7 @@ with optional keyword arguments `eVar`, `eVarMeth` and `simple`.
 **See also:** [Whitening](@ref), [CSP](@ref), [MCA](@ref), [AJD](@ref).
 
 **Examples:**
-```
+```julia
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 # Method (1) real
@@ -164,7 +164,7 @@ plot(p.arev)
 
  ![Figure PCA](assets/FigPCA.png)
 
-```
+```julia
 # Method (3) complex
 k=10
 Xcset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
@@ -263,7 +263,7 @@ end
 
 
 """
-```
+```julia
 (1)
 function whitening(C :: SorH;
                    eVar     :: TeVaro=○,
@@ -345,7 +345,7 @@ with optional keyword arguments `eVar`, `eVarMeth` and `simple`.
 **See also:** [PCA](@ref), [CCA](@ref).
 
 **Examples:**
-```
+```julia
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 # Method (1) real
@@ -418,7 +418,7 @@ plot(w.arev)
 
  ![Figure Whitening](assets/FigWhitening.png)
 
-```
+```julia
 
 # Method (3) complex
 k=10

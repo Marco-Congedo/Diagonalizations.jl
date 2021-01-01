@@ -9,7 +9,7 @@
 #   This unit implements Approximate Joint Diagonalization.
 
 """
-```
+```julia
 (1)
 function ajd(𝐂::ℍVector;
              trace1    :: Bool   = false,
@@ -128,7 +128,7 @@ remaining arguments of method (2).
 
 **Examples:**
 
-```
+```julia
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 const err=1e-6
@@ -357,7 +357,7 @@ Dset=[a.F'*C*a.F for C ∈ Cset];
 
  ![Figure AJD2](assets/FigAJD2.png)
 
-```
+```julia
 
 # COMPLEX data:
 # normalize the trace of input matrices,
@@ -488,7 +488,7 @@ end
 
 
 """
-```
+```julia
 function majd(𝑿::VecVecMat;
               covEst     :: StatsBase.CovarianceEstimator = SCM,
               dims       :: Into    = ○,
@@ -562,7 +562,7 @@ on multi-threading.
 
 **Examples:**
 
-```
+```julia
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 ##  Create data for testing the case k>1, m>1 ##
@@ -665,7 +665,7 @@ expected *strip-diagonal* form, that is, each block
 ``F_i^T\\frac{1}{t}(X_{li}X_{lj}^T)F_j``,
 for ``l∈[1,...,k]``, ``i,j∈[1,...,m]``, is approximately diagonal.
 
-```
+```julia
 # COMPLEX data
 # do joint blind source separation of non-stationary data
 t, m, n, k, noise = 200, 5, 4, 6, 0.1

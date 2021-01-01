@@ -9,7 +9,7 @@
 #   This unit implements general tools and internal functions.
 
 """
-```
+```julia
 function eig(A)
 
 function eig(A, B)
@@ -30,7 +30,7 @@ end
 
 
 """
-```
+```julia
 function nonDiagonality(C::Union{Matrix, Diagonal, SorH})
 ```
 
@@ -43,7 +43,7 @@ It is equal to ``0`` if ``C`` is diagonal, equal to ``1`` if
 ``C`` is perfectly uniform.
 
 **Examples:**
-```
+```julia
 using Diagonalizations
 C=ones(10, 10)                   # uniform matrix
 nd=nonDiagonality(C)             # must be 1
@@ -61,7 +61,7 @@ nonD=nonDiagonality
 
 
 """
-```
+```julia
 function spForm(P::Union{Mat, Real, Complex})
 ```
 Measure of deviancy from scaled permutation form of ``n⋅n`` square matrix
@@ -89,7 +89,7 @@ Return 0.0 (zero) if `P` is a real of complex number.
 
 **Examples:**
 
-```
+```julia
 using Diagonalizations, PosDefManifold
 # create 20 random commuting matrices
 # they all have the same eigenvectors
@@ -113,7 +113,7 @@ end
 
 
 """
-```
+```julia
 (1)
 function genDataMatrix(t::Int, n::Int, A=nothing)
 
@@ -138,9 +138,10 @@ will be generated with entries randomly drawn from a uniform
 distribution ∈[-1-i1, 1+i1].
 
 **Examples:**
-
+```julia
 A=genDataMatrix(100, 20) # (1), real
 A=genDataMatrix(ComplexF64, 100, 20) # (2), complex
+```
 
 """
 function genDataMatrix(t::Int, n::Int, A=○)
