@@ -32,7 +32,7 @@ Independent reviewers for both the code and the documentation are welcome.
 ### About the Authors
 
 [Marco Congedo](https://sites.google.com/site/marcocongedo), corresponding
-author, is a research scientist of [CNRS](http://www.cnrs.fr/en)
+author, is a Research Director of [CNRS](http://www.cnrs.fr/en)
 (Centre National de la Recherche Scientifique), working at
 [UGA](https://www.univ-grenoble-alpes.fr/english/)
 (University of Grenoble Alpes).
