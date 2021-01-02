@@ -28,7 +28,7 @@
 #
 #  They take as input either the data matrices or the covariance and cross-
 #  covariance matrices. Argument `input` tells the algos to take as input
-#  data matrices (`input=:d`) or cov/cross-cov matrices (`input=:d`)
+#  data matrices (`input=:d`) or cov/cross-cov matrices (`input=:c`)
 #
 #                                   INPUT
 # ---------------------------------------------------------------------------
@@ -133,13 +133,12 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
       eVar     :: TeVaro = ○,
       eVarMeth :: Function = searchsortedfirst)
 
-    k<3 && m<2 && throw(ArgumentError("Either `k` must be equal to at least 3 or `m` must be equal to at least 2"))
+    k<3 && m<2 && throw(ArgumentError("Either `k` must be equal to at least 2 or `m` must be equal to at least 2"))
     #if m==1 fullModel=false end
 
     # if input ≠:d the input is supposed to be the cross-covariance matrices
     input==:d ? 𝒞=_crossCov(𝐗, m, k;
                             covEst=covEst, dims=dims, meanX=meanX) : 𝒞=𝐗
-
 
     𝒢=deepcopy(𝒞)
     if trace1 || w ≠ ○ _normalize!(𝒢, m, k, trace1, w) end
@@ -170,10 +169,12 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
                 𝒢[κ, 1, 1] = 𝑾[1].F' * 𝒢[κ, 1, 1] * 𝑾[1].F
             end
         else
+            # off-diagonal blocks
             @inbounds for κ=1:k, i=1:m-1, j=i+1:m
                 𝒢[κ, i, j] = 𝑾[i].F' * 𝒢[κ, i, j] * 𝑾[j].F
                 𝒢[κ, j, i] = 𝒢[κ, i, j]'
             end
+            # diagonal blocks
             @inbounds for κ=1:k, i=1:m
                 𝒢[κ, i, i] = 𝑾[i].F' * 𝒢[κ, i, i] * 𝑾[i].F
             end
@@ -181,11 +182,12 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
     end
     n=size(𝒢[1, 1, 1], 1)
 
+    # determie whether running in multi-threaded mode
     ⏩ = n>=Threads.nthreads() && Threads.nthreads()>1 && threaded
 
     # initialization of 𝐔[i], i=1:m, as the eigenvectors of sum_k,j(𝒢_k,i,j*𝒢_k,i,j')
-    # see Eq. 17 of Congedo, Phlypo and Pham, 2011, or with the provided matrices
-    # note: gemm supports complex matrices
+    # see Eq. 17 of Congedo, Phlypo & Pham(2011), or with the provided matrices
+    # note: BLAS.gemm supports complex matrices
     ggt(κ::Int, i::Int, j::Int) = BLAS.gemm('N', 'T', 𝒢[κ, i, j], 𝒢[κ, i, j])
     if m>1 # gmca, gcca, majd
         if init === nothing
@@ -213,7 +215,8 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
         end
     end
 
-    function updateR!(η, i, j)  # 𝐑[η] += (𝒢[κ, i, j] * 𝐔[j][:, η]) times its transpose
+    function updateR!(η, i, j)
+        # 𝐑[η] += (𝒢[κ, i, j] * 𝐔[j][:, η]) times its transpose
         # don't use BLAS for complex data
         if ⏩ # if threaded don't share memory for Ω but use 𝛀
             if type<:Real
@@ -280,7 +283,8 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
                 # do 1 power iteration, not worth threading here
                 for η=1:n 𝐔[i][:, η] = 𝐑[η] * 𝐔[i][:, η] end
 
-                conv_ += PosDefManifold.ss(𝐔[i]) # square of the norms of power iteration vectors
+                # sum of squares of the norm of power iteration vectors
+                conv_ += PosDefManifold.ss(𝐔[i])
 
                 # Lodwin Orthogonalization and update 𝐔[i]<-UV', with svd(𝐔[i])=UwV'
                 𝐔[i] = PosDefManifold.nearestOrth(𝐔[i])
@@ -296,7 +300,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
             oldconv=conv_
             iter += 1
         end # while
-    else
+    else # NoJoB
         verbose && @info("Iterating NoJoB algorithm...")
 
         # solve Lx=𝐑[η]*𝐔[i][:, η] for x and L'y=x for y

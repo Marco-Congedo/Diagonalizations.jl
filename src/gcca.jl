@@ -6,10 +6,11 @@
 #   https://sites.google.com/site/marcocongedo/home
 
 # ? CONTENTS :
-#   This unit implements the generalized canonical correlation analysis.
+#   This unit implements the generalized maximum covariance analysis
+#   and the generalized canonical correlation analysis.
 
 """
-```
+```julia
 function gmca(𝐗::VecMat;
               covEst     :: StatsBase.CovarianceEstimator = SCM,
               dims       :: Into    = ○,
@@ -74,7 +75,7 @@ on multi-threading.
 
 **Examples:**
 
-```
+```julia
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 
@@ -188,11 +189,11 @@ end
  ![Figure gMCA](assets/FiggMCA.png)
 
  In the figure here above, the rotated cross-covariance matrices have the expected
- *strip-diagonal* form, that is, each block ``F_i^T\\frac{1}{T}(X_iX_j^T)F_j``,
+ *strip-diagonal* form, that is, each block ``F_i^T\\frac{1}{t}(X_iX_j^T)F_j``,
  for ``i,j∈[1,...,m]``, is approximately diagonal. Each block is ``5⋅5`` because
  setting `eVar=0.9` the subspace dimension has been set to 5.
 
-```
+```julia
 # COMPLEX data: m>2 case
 t, m, n, noise = 20, 4, 6, 0.1
 Xcset=getData(ComplexF64, t, m, n, noise)
@@ -247,7 +248,7 @@ end
 
 
 """
-```
+```julia
 function gcca(𝐗::VecMat;
               covEst     :: StatsBase.CovarianceEstimator = SCM,
               dims       :: Into    = ○,
@@ -309,7 +310,7 @@ on multi-threading.
 
 **Examples:**
 
-```
+```julia
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 
@@ -430,13 +431,13 @@ end
   ![Figure gCCA](assets/FiggCCA.png)
 
   In the figure here above, the rotated cross-covariance matrices have the expected
-  *strip-diagonal* form, that is, each block ``F_i^T\\frac{1}{T}(X_iX_j^T)F_j``,
+  *strip-diagonal* form, that is, each block ``F_i^T\\frac{1}{t}(X_iX_j^T)F_j``,
   for ``i,j∈[1,...,m]``, is approximately diagonal. Each block is ``6⋅6`` because
   setting `eVar=0.9` has not reduced the original dimension.
   The solution is similar to the [gMCA](@ref), but here the diagonal
   of the rotated block matrix is the identity.
 
-```
+```julia
 # COMPLEX data: m>2 case
 t, m, n, noise = 20, 4, 6, 0.1
 Xcset=getData(ComplexF64, t, m, n, noise)
@@ -476,10 +477,8 @@ function gcca(𝐗::VecMat;
                eVar=eVar, eVarMeth=eVarMeth)
    # elseif...
    else
-      if algorithm == :NoJoB
-         @warn "The NoJoB algorithm does not suit gCCA."
-         throw(ArgumentError(📌*", gcca constructor: invalid `algorithm` argument"))
-      end
+      algorithm == :NoJoB && @warn "The NoJoB algorithm does not suit gCCA."
+      throw(ArgumentError(📌*", gcca constructor: invalid `algorithm` argument"))
    end
 
    λ = _checkλ(λ) # make sure no imaginary noise is present (for complex data)

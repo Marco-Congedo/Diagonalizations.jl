@@ -10,7 +10,7 @@
 
 ## types
 
-```
+```julia
 abstract type LinearFilters end
 ```
 
@@ -20,7 +20,7 @@ All filters are instances of the following immutable structure:
 
 ### LinearFilter
 
-```
+```julia
 struct LinearFilter <: LinearFilters
    F     :: AbstractArray
    iF    :: AbstractArray
@@ -78,26 +78,26 @@ see the documentation of each filter for details.
 
 The [LinearFilter](@ref) structure supports the following methods:
 
-```
+```julia
 size(f::LF)
 ```
 Return the size of `f.F` if it is a matrix, an iterator
 over the sizes of all matrices in `f.F` if it is a vector
 of matrices.
 
-```
+```julia
 length(f::LF)
 ```
 Return 1 if `f.F` is a matrix, the number of matrices in
 `f.F` if it is a vector of matrices. Referring to Table 1 and Fig. 1
 (see [Overview](@ref)), this is the number of datasets ``m``.
 
-```
+```julia
 eltype(f::LF)
 ```
 Return the element type of the matrix(ces) in `f.F`.
 
-```
+```julia
 ==(f::LF, g::LF), ≈(f::LF, g::LF)
 ```
 Return `true` if all fields of LinearFilter `f` and `g` are equivalent, `false`
@@ -109,12 +109,12 @@ in `f.iF` times the corresponding matrices in `g.F` and
 of the matrices in `g.iF` times the corresponding matrices in `f.F`
 is smaller then 0.05.
 
-```
+```julia
 ≠(f::LF, g::LF), ≉ (f::LF, g::LF)
 ```
 The negation of `==`.
 
-```
+```julia
 function cut(f::LinearFilter, p::Int64)
 ```
 Create another [LinearFilter](@ref) object with a smaller
@@ -132,7 +132,7 @@ if they are real, or
 [Hermitian](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/#LinearAlgebra.Hermitian),
 if they are real or complex, e.g.,
 
-```
+```julia
 X=randn(100, 30)
 C=(X'*X)/100
 p=pca(Symmetric(C))
@@ -141,7 +141,7 @@ p=pca(Symmetric(C))
 
 the above call to the pca constructor is equivalent to
 
-```
+```julia
 X=randn(100, 30)
 p=pca(X)
 ```
@@ -175,21 +175,21 @@ The following constants are provided to allow quick access
 to the most popular choices among the many estimators implemented
 therein:
 
-```
+```julia
 SCM=SimpleCovariance()
 ```
 
 This is the *default* for all constructors and corresponds to the standard
 *sample covariance matrix (SCM)* estimation.
 
-```
+```julia
 LShrLW=LShr(ConstantCorrelation())
 ```
 
 This corresponds to the SCM estimator shrinked by the linear method
 of Ledoit and Wolf (2004) [🎓](@ref).
 
-```
+```julia
 LShr=LinearShrinkage
 ```
 
@@ -197,7 +197,7 @@ This is a shortcut for requesting other types of linear Shrinkage.
 See the [CovarianceEstimation](https://github.com/mateuszbaran/CovarianceEstimation.jl)
 package for details.
 
-```
+```julia
 NShrLW=AnalyticalNonlinearShrinkage()
 ```
 
@@ -234,7 +234,7 @@ the mean ad weights of the several input data matrices.
 
 **Examples**:
 
-```
+```julia
 using Diagonalizations
 
 X=randn(100, 30) # X is 'tall'
@@ -245,7 +245,7 @@ The call here above uses the default SCM estimator and computes the PCA
 from the ``30⋅30`` covariance matrix ``\frac{1}{100}X^{T}X``.
 The 'filter' `p.F` is ``30⋅p``, where ``p`` is the [subspace dimension](@ref). For complex data the call is the same:
 
-```
+```julia
 Xc=randn(ComplexF64, 100, 30)
 pc=pca(Xc)
 ```
@@ -253,7 +253,7 @@ pc=pca(Xc)
 
 This call
 
-```
+```julia
 p=pca(X; covEst=LShrLW)
 ```
 
@@ -261,7 +261,7 @@ uses the linear shrinked estimator of Ledoit and Wolf (2004).
 
 The call
 
-```
+```julia
 p=pca(X; dims=2)
 ```
 

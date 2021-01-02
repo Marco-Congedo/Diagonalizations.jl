@@ -11,7 +11,7 @@
 
 
 """
-```
+```julia
 (1)
 function csp(C₁ :: SorH, C₂ :: SorH;
              eVar     :: TeVaro = ○,
@@ -134,7 +134,7 @@ By default, the arithmetic mean is computed.
 
 **Examples:**
 
-```
+```julia
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 # Method (1) real
@@ -233,7 +233,7 @@ plot(c.arev)
 
  ![Figure CSP1](assets/FigCSP1.png)
 
-```
+```julia
 # example when argument `selMeth` is different from `extremal`: enhance snr
  cC=csp(Cx1, Cx2; selMeth=:enhaceSNR)
  Cx1Max=maximum(abs.(Cx1));
@@ -252,7 +252,7 @@ plot(c.arev)
 
  ![Figure CSP2](assets/FigCSP2.png)
 
-```
+```julia
 # Method (3) complex
 # CSP of the average covariance matrices
 k=10
@@ -390,7 +390,7 @@ end
 
 
 """
-```
+```julia
 (1)
 function cstp( X :: Mat, C₍₁₎ :: SorH, C₍₂₎ :: SorH;
                eVar     :: TeVaro = ○,
@@ -470,7 +470,7 @@ See method (1) for details.
 
 **Examples:**
 
-```
+```julia
 using Diagonalizations, LinearAlgebra, PosDefManifold, Test
 
 # Method (1) real
@@ -552,7 +552,7 @@ XbarMax=maximum(abs.(Xbar));
 
  ![Figure CSTP](assets/FigCSTP.png)
 
-```
+```julia
 
 # Method (2) complex
 cc=cstp(Xcset)
