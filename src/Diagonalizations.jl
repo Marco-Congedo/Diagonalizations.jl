@@ -2,7 +2,7 @@
 #   v 0.1.9 - last update 25th of February 2020
 
 #   MIT License
-#   Copyright (c) 2019, 2020
+#   Copyright (c) 2019-2021,
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 
