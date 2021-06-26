@@ -133,6 +133,8 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 			  eVar 	   :: TeVaro = ○,
 			  eVarMeth :: Function = searchsortedfirst)
 
+	w===○ && @warn 📌*" package - `loglike` function: argument `w` is not taken into consideration for this AJD algorithm. Uniform weights will be applied."
+
 	# pre-whiten or initialize and stack matrices horizontally
 	W, C = _preWhiteOrInit(𝐂, preWhite, Jeffrey, eVar, eVarMeth, init, :stacked)
 
