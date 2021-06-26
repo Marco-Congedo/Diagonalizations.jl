@@ -1,7 +1,7 @@
 #  Unit "QnLogLike.jl" of the Diagonalization.jl Package for Julia language
 #
 #  MIT License
-#  Copyright (c) 2020,
+#  Copyright (c) 2020-2021,
 #  Marco Congedo°, Ronald Phlypo, CNRS, UGA, Grenoble-INP, France
 #  Alexandre Gramfort¨, INRIA, U. Paris Saclay, France
 #  ° https://sites.google.com/site/marcocongedo/

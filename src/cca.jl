@@ -1,7 +1,7 @@
 #   Unit "cca.jl" of the Diagonalization.jl Package for Julia language
 #
 #   MIT License
-#   Copyright (c) 2019, 2020
+#   Copyright (c) 2019-2021,
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 

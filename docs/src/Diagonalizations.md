@@ -420,7 +420,7 @@ i.e.,
 
 and let ``D`` be a diagonal matrix, then it is easy to verify that any
 matrix ``FPD`` is an *equivalent* approximate joint diagonalizer of the set
-``C``. To check if two diagonalizers are equivaent, you can use the
+``C``. To check if two diagonalizers are equivalent, you can use the
 [`spForm`](@ref) function.
 
 ## notation & nomenclature

@@ -1,8 +1,8 @@
 #   Main Module of the Diagonalization.jl Package for Julia language
-#   v 0.1.9 - last update 25th of February 2020
+#   v 0.2.1 - last update 25th of June 2021.
 
 #   MIT License
-#   Copyright (c) 2019, 2020
+#   Copyright (c) 2019-2021,
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 
@@ -239,6 +239,8 @@ function Base.show(io::IO, ::MIME{Symbol("text/plain")}, f::LinearFilter)
   println(io, greyFont,"D=Diagonal eigenvalues associated with F")
   println(io, greyFont,"ar=accumulated regularized ev")
 end
+
+##
 
 println("\n⭐ "," Welcome to the ", 📌, " package", " ⭐\n")
 @info " "
