@@ -1,7 +1,7 @@
 #  Unit "Gajd.jl" of the Diagonalization.jl Package for Julia language
 #
 #  MIT License
-#  Copyright (c) 2020-2021,
+#  Copyright (c) 2020-2022,
 #  Marco Congedo, CNRS, Grenoble, France:
 #  https://sites.google.com/site/marcocongedo/home
 
