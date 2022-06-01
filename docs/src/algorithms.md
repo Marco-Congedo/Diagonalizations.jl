@@ -48,14 +48,14 @@ Their main characteristics and domain of application are summarized in the follo
 A solver is to find ``m`` matrices, where ``m`` depends on the
 sought diagonalization method (see [Overview](@ref)).
 All algorithms by default are initialized by ``m`` identity
-matrices, with the exception of *NoJoB*,
+matrices, with the exception of *OJoB*,
 for which, following Congedo et al. (2011)[🎓](@ref), the ``m^{th}`` solution
 matrix is initalized by the eigenvectors of
 
-``\frac{1}{mk}\sum_{j=1}^m\sum_{l=1}^k C_{mjk}C_{mjk}^H``,
+``\frac{1}{mk}\sum_{j=1}^m\sum_{l=1}^k C_{mjl}C_{mjl}^H``,
 
-where ``C_{mjk}`` is the cross-covariance matrix between dataset
-``m`` and dataset ``j`` for observation ``k``. When ``m=1``,
+where ``C_{mjl}`` is the cross-covariance matrix between dataset
+``m`` (fixed) and dataset ``j`` for observation ``l``. When ``m=1``,
 for instance in the case of *AJD*, those are just the ``k`` covariance matrices
 to be jointly diagonalized.
 
