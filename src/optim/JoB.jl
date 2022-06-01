@@ -6,7 +6,7 @@
 #   https://sites.google.com/site/marcocongedo/home
 
 # ? CONTENTS :
-#   This unit implements a very general form of the OJoB algoithm
+#   This unit implements a very general form of the OJoB and NoJoB algoithms
 #   (Congedo et al., 2012)
 
 # """
