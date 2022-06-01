@@ -84,7 +84,7 @@ mode paralellising several comptations over the dimension of the
 input matrices ``n``, if `threaded` is true, ``2n>x`` and ``x>1``,
 where ``x`` is the number of threads Julia is instructed to use.
 For QNLogLike, the algorithms run in multi-threaded
-mode paralellising several comptations over the number of matrices ``k``,
+mode paralellising several computations over the number of matrices ``k``,
 if `threaded` is true, ``2k>x`` and ``x>1``.
 
 Before running these methods you may want to set the number of threades
