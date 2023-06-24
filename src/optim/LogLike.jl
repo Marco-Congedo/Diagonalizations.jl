@@ -1,7 +1,7 @@
 #  Unit "LogLike.jl" of the Diagonalization.jl package for Julia language
 #
 #  MIT License
-#  Copyright (c) 2019-2022,
+#  Copyright (c) 2019-2023,
 #  Marco Congedo, CNRS, Grenoble, France:
 #  https://sites.google.com/site/marcocongedo/home
 
@@ -133,7 +133,7 @@ function logLike(𝐂::Union{Vector{Hermitian}, Vector{Symmetric}};
 			  eVar 	   :: TeVaro = ○,
 			  eVarMeth :: Function = searchsortedfirst)
 
-	w===○ && @warn 📌*" package - `loglike` function: argument `w` is not taken into consideration for this AJD algorithm. Uniform weights will be applied."
+	w===○ || @warn 📌*" package - `loglike` function: argument `w` is not taken into consideration for this AJD algorithm. Uniform weights will be applied."
 
 	# pre-whiten or initialize and stack matrices horizontally
 	W, C = _preWhiteOrInit(𝐂, preWhite, Jeffrey, eVar, eVarMeth, init, :stacked)
