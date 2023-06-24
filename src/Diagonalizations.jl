@@ -1,8 +1,8 @@
 #   Main Module of the Diagonalization.jl Package for Julia language
-#   v 0.2.1 - last update 25th of June 2021.
+#   v 0.2.3 - last update June 2023.
 
 #   MIT License
-#   Copyright (c) 2019-2022,
+#   Copyright (c) 2019-2023,
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 
