@@ -22,15 +22,9 @@
 
 begin
     # change the 'projectDir' path to the folder where your project is
-    projectDir = homedir()*"\\Documents\\Code\\julia\\Diagonalizations"
+    projectDir = homedir()*"\\Documents\\Documenti\\Code\\julia\\Diagonalizations"
     push!(LOAD_PATH, projectDir*"\\src\\")
     using LinearAlgebra, Statistics, Revise, Diagonalizations
-
-    # add other local moduls to be used, e.g.,
-    # Modules = homedir()*"\\Documents\\Code\\julia\\"*"Modules"
-    # push!(LOAD_PATH, Modules)
-    # using IOtxt
-
 end
 
 # for compiling the documentation

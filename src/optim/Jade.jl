@@ -1,7 +1,7 @@
 #  Unit "Jade.jl" of the Diagonalization.jl Package for Julia language
 #
 #  MIT License
-#  Copyright (c) 2019-2023
+#  Copyright (c) 2019-2025
 #  Marco Congedo, CNRS, Grenoble, France:
 #  https://sites.google.com/site/marcocongedo/home
 #  Konstantin Usevich, CNRS, Nancy, France
@@ -186,10 +186,10 @@ end
 #  `maxiter` is the maximum number of iterations allowed.
 #  if `updateRule`=`:angle` (default), the max abs of the sin of the angle
 #  across all pairs is used as stopping criterion, otherwise (any other symbol)
-#  the mas abs of the Riemannian gradient entry is used.
+#  the max abs of the Riemannian gradient entry is used.
 #  The former is the usual choice of the JADE algorithm, the latter allows to
 #  compare directly the execution speed of JADE and JADEmax as JADEmax uses
-#  that stopping criterion. Note that the Riemannian gradient criterion for J
+#  that stopping criterion. Note that the Riemannian gradient criterion for 
 #  JADE can be obtained at virtually no extra-cost from the computation of
 #  the angle.
 #  if `verbose`=true, the convergence attained at each iteration and other

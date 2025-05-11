@@ -1,7 +1,7 @@
 #  Unit "Gajd.jl" of the Diagonalization.jl Package for Julia language
 #
 #  MIT License
-#  Copyright (c) 2020-2023,
+#  Copyright (c) 2020-2025,
 #  Marco Congedo, CNRS, Grenoble, France:
 #  https://sites.google.com/site/marcocongedo/home
 
@@ -19,20 +19,20 @@
 # the update of C is done only on the lower triangular part
 # 𝐋 is a lower triangular matrix of k-length vectors : 𝐋[i, j][k]=C[k][i, j]
 @inline function _update1!(j, i, n, θ, θ², 𝐋, B) # i>j
-   for p = 1:j-1 𝐋[j, p] += θ*𝐋[i, p] end     # update 𝐂 :
-   𝐋[j, j] += θ²*𝐋[i, i] + 2θ*𝐋[i, j]         # write jth row and column
-   for p = j+1:i 𝐋[p, j] += θ*𝐋[i, p] end     # only on the lower
-   for p = i+1:n 𝐋[p, j] += θ*𝐋[p, i] end     # triangular part.
-   B[:, j] += θ*B[:, i]                       # update B
+   @inbounds for p = 1:j-1 𝐋[j, p] += θ*𝐋[i, p] end   # update 𝐂 :
+   𝐋[j, j] += θ²*𝐋[i, i] + 2θ*𝐋[i, j]                 # write jth row and column
+   @inbounds for p = j+1:i 𝐋[p, j] += θ*𝐋[i, p] end   # only on the lower
+   @inbounds for p = i+1:n 𝐋[p, j] += θ*𝐋[p, i] end   # triangular part.
+   B[:, j] += θ*B[:, i]                               # update B
 end
 
 # update1! takes care of the udpate if i>j, update2! if j≥i
 @inline function _update2!(j, i, n, θ, θ², 𝐋, B) # j>i
-   for p = 1:i-1 𝐋[j, p] += θ*𝐋[i, p] end     # update 𝐂 :
-   𝐋[j, j] += θ²*𝐋[i, i] + 2θ*𝐋[j, i]         # write jth row and column
-   for p = i:j-1 𝐋[j, p] += θ*𝐋[p, i] end     # only on the lower
-   for p = j+1:n 𝐋[p, j] += θ*𝐋[p, i] end     # triangular part.
-   B[:, j] += θ*B[:, i]                       # update B
+   @inbounds for p = 1:i-1 𝐋[j, p] += θ*𝐋[i, p] end   # update 𝐂 :
+   𝐋[j, j] += θ²*𝐋[i, i] + 2θ*𝐋[j, i]                 # write jth row and column
+   @inbounds for p = i:j-1 𝐋[j, p] += θ*𝐋[p, i] end   # only on the lower
+   @inbounds  for p = j+1:n 𝐋[p, j] += θ*𝐋[p, i] end  # triangular part.
+   B[:, j] += θ*B[:, i]                               # update B
 end
 
 
@@ -202,8 +202,8 @@ function gLogLike(𝐋::AbstractArray;
       for i = 1:n
          # product of the diagonal elements excluding the ith one (for each k)
          fill!(Π, T(1))
-         for l = 1:i-1 Π .*= 𝐋[l, l] end
-         for l = i+1:n Π .*= 𝐋[l, l] end
+         @inbounds for l = 1:i-1 Π .*= 𝐋[l, l] end
+         @inbounds for l = i+1:n Π .*= 𝐋[l, l] end
 
          # transform all j≠i columns of B with respect to its ith column:
          for j = 1:i-1

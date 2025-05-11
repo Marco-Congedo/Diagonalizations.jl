@@ -1,7 +1,7 @@
 #  Unit "LogLike.jl" of the Diagonalization.jl package for Julia language
 #
 #  MIT License
-#  Copyright (c) 2019-2023,
+#  Copyright (c) 2019-2025,
 #  Marco Congedo, CNRS, Grenoble, France:
 #  https://sites.google.com/site/marcocongedo/home
 

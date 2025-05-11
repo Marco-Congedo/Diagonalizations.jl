@@ -1,7 +1,7 @@
 #  Unit "common.jl" of the Diagonalization.jl Package for Julia language
 #
 #  MIT License
-#  Copyright (c) 2019-2023,
+#  Copyright (c) 2019-2025,
 #  Marco Congedo, CNRS, Grenoble, France:
 #  https://sites.google.com/site/marcocongedo/home
 
@@ -214,7 +214,7 @@ end
 # for the case m=1
 # return a vector holding the n 'average eigenvalues' λ1,...,λn,
 # arranging them in average descending order,
-# where λη=𝛍_i=1:k(Di[η, η])
+# where λη=mean_i=1:k(Di[η, η])
 function _permute!(U::AbstractArray, D::Diagonal, n::Int)
    type=eltype(D)
 
@@ -259,7 +259,7 @@ function _permute!(U::AbstractArray, 𝐗::AbstractArray,
                 𝒞=𝐗
     n=size(𝒞[1, 1, 1], 1)
 
-    D=𝛍(𝔻([U[:, η]'*𝒞[l, 1, 1]*U[:, η] for η=1:n]) for l=1:k)
+    D=mean(𝔻([U[:, η]'*𝒞[l, 1, 1]*U[:, η] for η=1:n]) for l=1:k)
 
     return _permute!(U, D, n)
 end # function _Permute!
@@ -270,7 +270,7 @@ end # function _Permute!
 # for the case m>1
 # return a vector holding the n 'average eigenvalues' λ1,...,λn,
 # trying to make them all positive and in descending order as much as possible,
-# where λη=𝛍_i≠j=1:m(Dij[η, η])
+# where λη=mean_i≠j=1:m(Dij[η, η])
 function _flipAndPermute!( 𝐔::AbstractArray, 𝐗::AbstractArray,
                             m::Int, k::Int, input::Symbol;
                             covEst   :: StatsBase.CovarianceEstimator=SCM,
@@ -284,7 +284,7 @@ function _flipAndPermute!( 𝐔::AbstractArray, 𝐗::AbstractArray,
     n=size(𝒞[1, 1, 1], 1)
 
     𝑫=𝔻Vector₂(undef, m)
-    for i=1:m 𝑫[i]=𝔻Vector([𝛍(𝔻([𝐔[i][:, η]'*𝒞[l, i, j]*𝐔[j][:, η] for η=1:n]) for l=1:k) for j=1:m]) end
+    for i=1:m 𝑫[i]=𝔻Vector([mean(𝔻([𝐔[i][:, η]'*𝒞[l, i, j]*𝐔[j][:, η] for η=1:n]) for l=1:k) for j=1:m]) end
     p, type=(1, 1, 1), eltype(𝑫[1][1])
 
     function flipcol!(𝐔::AbstractArray, m::Int, η::Int, e::Int)
@@ -325,8 +325,8 @@ function _flipAndPermute!( 𝐔::AbstractArray, 𝐗::AbstractArray,
         if η≠e flipcol!(𝐔, m, η, e) end
 
         # compute 𝑫 again
-        for i=1:m 𝑫[i]=𝔻Vector([𝛍(𝔻([𝐔[i][:, η]'*𝒞[l, i, j]*𝐔[j][:, η] for η=1:n]) for l=1:k) for j=1:m]) end
+        for i=1:m 𝑫[i]=𝔻Vector([mean(𝔻([𝐔[i][:, η]'*𝒞[l, i, j]*𝐔[j][:, η] for η=1:n]) for l=1:k) for j=1:m]) end
     end
 
-    return diag(𝛍(𝑫[i][j] for i=1:m for j=1:m if i≠j))
+    return diag(mean(𝑫[i][j] for i=1:m for j=1:m if i≠j))
 end # function _flipAndPermute!

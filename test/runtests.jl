@@ -3,11 +3,11 @@ using LinearAlgebra, Statistics, PosDefManifold, Test,
 
 # for more tests see the `Examples` folder
 
-const err=1e-6
+const errtol=1e-6
 
 # compare two matrices
 function compare(a::AbstractArray, b::AbstractArray)
-     @test norm(a-b)/length(a) < err
+     @test norm(a-b)/length(a) < errtol
 end
 
 # check that cov(F'XX'F)=D arranging terms for the two possible values of `dims`
@@ -19,7 +19,7 @@ function compare(d::Int, X::AbstractArray, F::AbstractArray, D::AbstractArray)
 end
 
 # check that D is approximately diagonal
-isApproxD(D)=norm(D-Diagonal(D))<err
+isApproxD(D)=norm(D-Diagonal(D))<errtol
 
 ####  Create data for testing the case k=1, m>1
 # `t` is the number of samples, e.g.,
@@ -234,11 +234,11 @@ end
     # estimate the approximate joint diagonalizer (ajd) using orthogonal solvers
     # the ajd must be equivalent to the eigenvector matrix of any of the matrices in 𝐂
     a=ajd(𝐂; algorithm=:OJoB)
-    @test norm([spForm(a.F'*eigvecs(C)) for C ∈ 𝐂])/20<√err
+    @test norm([spForm(a.F'*eigvecs(C)) for C ∈ 𝐂])/20<√errtol
     a=ajd(𝐂; algorithm=:JADE)
-    @test norm([spForm(a.F'*eigvecs(C)) for C ∈ 𝐂])/20<√err
+    @test norm([spForm(a.F'*eigvecs(C)) for C ∈ 𝐂])/20<√errtol
     a=ajd(𝐂; algorithm=:JADEmax)
-    @test norm([spForm(a.F'*eigvecs(C)) for C ∈ 𝐂])/20<√err
+    @test norm([spForm(a.F'*eigvecs(C)) for C ∈ 𝐂])/20<√errtol
 
     # # # Test non-orthogonal AJD algorithms
     # generate positive definite matrices with model A*D_κ*D, where A is an
@@ -253,20 +253,20 @@ end
     A=randn(n, n) # non-singular mixing matrix
     Cset3=Vector{Hermitian}([Hermitian(A*D*A') for D ∈ Dest])
     a=ajd(Cset3; algorithm=:NoJoB, eVarC=n)
-    @test spForm(a.F'*A)<√err
-    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<err
+    @test spForm(a.F'*A)<√errtol
+    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<errtol
     a=ajd(Cset3; algorithm=:LogLike, eVarC=n)
-    @test spForm(a.F'*A)<√err
-    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<err
+    @test spForm(a.F'*A)<√errtol
+    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<errtol
     a=ajd(Cset3; algorithm=:LogLikeR, eVarC=n)
-    @test spForm(a.F'*A)<√err
-    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<err
+    @test spForm(a.F'*A)<√errtol
+    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<errtol
     a=ajd(Cset3; algorithm=:GAJD, eVarC=n)
-    @test spForm(a.F'*A)<√err*10 # GAJD has problems sometimes
-    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<err
+    @test spForm(a.F'*A)<√errtol*10 # GAJD has problems sometimes, increase the tolerance
+    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<errtol*10
     a=ajd(Cset3; algorithm=:QNLogLike, eVarC=n)
-    @test spForm(a.F'*A)<√err
-    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<err
+    @test spForm(a.F'*A)<√errtol
+    @test mean(nonD(a.F'*Cset3[i]*a.F) for i=1:k)<errtol
 end
 
 

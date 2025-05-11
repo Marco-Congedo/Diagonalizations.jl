@@ -1,8 +1,8 @@
 #   Main Module of the Diagonalization.jl Package for Julia language
-#   v 0.2.3 - last update June 2023.
+#   v 0.2.4 - last update May 2025.
 
 #   MIT License
-#   Copyright (c) 2019-2023,
+#   Copyright (c) 2019-2025,
 #   Marco Congedo, CNRS, Grenoble, France:
 #   https://sites.google.com/site/marcocongedo/home
 
@@ -244,10 +244,10 @@ end
 
 println("\n⭐ "," Welcome to the ", 📌, " package", " ⭐\n")
 @info " "
-println(" Your Machine `",gethostname(),"` (",Sys.MACHINE, ")")
+println(" Your Machine `", separatorFont, gethostname(), defaultFont, "` (",Sys.MACHINE, ")")
 println(" runs on kernel ",Sys.KERNEL," with word size ",Sys.WORD_SIZE,".")
-println(" CPU  Threads: ", Sys.CPU_THREADS)
-println(" Base.Threads: ", "$(Threads.nthreads())")
-println(" BLAS Threads: ", "$(Sys.CPU_THREADS)", "\n")
+println(" CPU  Threads: ", separatorFont, Sys.CPU_THREADS, defaultFont)
+println(" Base.Threads: ", separatorFont, "$(Threads.nthreads())", defaultFont)
+println(" BLAS Threads: ", separatorFont, "$(BLAS.get_num_threads())", "\n", defaultFont)
 
 end # module

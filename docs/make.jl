@@ -32,6 +32,7 @@ makedocs(
    ]
 )
 
+
 deploydocs(
    # root
    # target = "build", # add this folder to .gitignore!
