@@ -1,5 +1,6 @@
 name: TagBot
 on:
+<<<<<<< HEAD
   issue_comment:
     types:
       - created
@@ -23,11 +24,26 @@ permissions:
 jobs:
   TagBot:
     if: github.event_name == 'workflow_dispatch' || github.actor == 'JuliaTagBot'
+=======
+  issue_comment:  # THIS BIT IS NEW
+    types:
+      - created
+  workflow_dispatch:
+jobs:
+  TagBot:
+    # THIS 'if' LINE IS NEW
+    if: github.event_name == 'workflow_dispatch' || github.actor == 'JuliaTagBot'
+    # NOTHING BELOW HAS CHANGED
+>>>>>>> 2ac37e4342941c6744838327373017a2e5b90fc4
     runs-on: ubuntu-latest
     steps:
       - uses: JuliaRegistries/TagBot@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+<<<<<<< HEAD
           # Edit the following line to reflect the actual name of the GitHub Secret containing your private key
           ssh: ${{ secrets.DOCUMENTER_KEY }}
           # ssh: ${{ secrets.NAME_OF_MY_SSH_PRIVATE_KEY_SECRET }}
+=======
+          ssh: ${{ secrets.DOCUMENTER_KEY }}
+>>>>>>> 2ac37e4342941c6744838327373017a2e5b90fc4
