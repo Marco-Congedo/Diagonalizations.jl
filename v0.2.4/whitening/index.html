@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Whitening · Diagonalizations</title><meta name="title" content="Whitening · Diagonalizations"/><meta property="og:title" content="Whitening · Diagonalizations"/><meta property="twitter:title" content="Whitening · Diagonalizations"/><meta name="description" content="Documentation for Diagonalizations."/><meta property="og:description" content="Documentation for Diagonalizations."/><meta property="twitter:description" content="Documentation for Diagonalizations."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.png" alt="Diagonalizations logo"/><img class="docs-dark-only" src="../assets/logo-dark.png" alt="Diagonalizations logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">Diagonalizations</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Documentation</a></li><li><a class="tocitem" href="../Diagonalizations/">Diagonalizations</a></li><li><span class="tocitem">Filters</span><ul><li><input class="collapse-toggle" id="menuitem-3-1" type="checkbox" checked/><label class="tocitem" for="menuitem-3-1"><span class="docs-label">One dataset (m=1)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../pca/">PCA</a></li><li class="is-active"><a class="tocitem" href>Whitening</a></li><li><a class="tocitem" href="../csp/">CSP</a></li><li><a class="tocitem" href="../cstp/">CSTP</a></li><li><a class="tocitem" href="../ajd/">AJD</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-2" type="checkbox"/><label class="tocitem" for="menuitem-3-2"><span class="docs-label">Two datasets (m=2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../mca/">MCA</a></li><li><a class="tocitem" href="../cca/">CCA</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-3" type="checkbox"/><label class="tocitem" for="menuitem-3-3"><span class="docs-label">Several datasets (m&gt;2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../gmca/">gMCA</a></li><li><a class="tocitem" href="../gcca/">gCCA</a></li><li><a class="tocitem" href="../majd/">mAJD</a></li></ul></li></ul></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../algorithms/">Algorithms</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Filters</a></li><li><a class="is-disabled">One dataset (m=1)</a></li><li class="is-active"><a href>Whitening</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Whitening</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/master/docs/src/whitening.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Whitening"><a class="docs-heading-anchor" href="#Whitening">Whitening</a><a id="Whitening-1"></a><a class="docs-heading-anchor-permalink" href="#Whitening" title="Permalink"></a></h1><p><em>Whitening</em> (also named <em>Sphering</em>) is a standardized version of <a href="../pca/#PCA">PCA</a>. Possibly it is the most used diagonalization procedure among all. Like PCA, it corresponds to the situation <span>$m=1$</span> (one dataset) and <span>$k=1$</span> (one observation).</p><p>Let <span>$X$</span> be a <span>$n⋅t$</span> data matrix, where <span>$n$</span> is the number of variables and <span>$t$</span> the number of samples and let <span>$C$</span> be its <span>$n⋅n$</span> covariance matrix. Being <span>$C$</span> a positive semi-definite matrix, its eigenvector matrix <span>$U$</span> diagonalizes <span>$C$</span> by rotation, as</p><p><span>$U^{H}CU=Λ$</span>. <span>$\hspace{1cm}$</span> [whitening.1]</p><p>The eigenvalues in the diagonal matrix <span>$Λ$</span> are all non-negative. They are all real and positive if <span>$C$</span> is positive definite, which is assumed in the remaining of this exposition. The linear transformation <span>$Λ^{-1/2}U^{H}X$</span> yields uncorrelated data with unit variance at all <span>$n$</span> components, that is,</p><p><span>$\frac{1}{T}Λ^{-1/2}U^{H}XX^{H}UΛ^{-1/2}=I$</span>. <span>$\hspace{1cm}$</span> [whitening.2]</p><p>Whitened data remains whitened after whatever further rotation. That is, for <em>any</em> orthogonal matrix <span>$V$</span>, it holds</p><p><span>$V^H\big(\frac{1}{T}Λ^{-1/2}U^{H}XX^{H}UΛ^{-1/2}\big)V=I$</span>. <span>$\hspace{1cm}$</span> [whitening.3]</p><p>Hence there exist an infinite number of possible whitening matrices with general form <span>$V^HΛ^{-1/2}U^{H}$</span>. Because of this property whitening plays a fundamental role as a first step in many two-steps diagonalization procedures (e.g., for the <a href="../csp/#CSP">CSP</a>, <a href="../cstp/#CSTP">CSTP</a> and <a href="../cca/#CCA">CCA</a>). Particularly important among the infinite family of whitening matrices is the only symmetric one (or Hermitian, if complex), which is the inverse of the <em>principal square root</em> of <span>$C$</span> and is found repeatedly in computations on the manifold of positive definite matrices (see for example <a href="https://marco-congedo.github.io/PosDefManifold.jl/dev/introToRiemannianGeometry/">intro to Riemannian geometry</a>).</p><p>For setting the subspace dimension <span>$p$</span> manually, set the <code>eVar</code> optional keyword argument of the Whitening constructors either to an integer or to a real number, this latter establishing <span>$p$</span> in conjunction with argument <code>eVarMeth</code> using the <code>arev</code> vector, which is defined as for the <a href="../pca/#PCA">PCA</a> filter, see Eq. [pca.6] therein and <a href="../Diagonalizations/#subspace-dimension">subspace dimension</a> for details. By default, <code>eVar</code> is set to 0.999.</p><p><strong>Solution</strong></p><p>As for PCA, the solution is given by the <a href="https://en.wikipedia.org/wiki/Eigendecomposition_of_a_matrix">eigenvalue-eigenvector decoposition</a> of <span>$C$</span></p><p><span>$\textrm{EVD}(C)=UΛU^{H}$</span>.</p><p><strong>Constructors</strong></p><p>Three constructors are available (see here below), which use exactly the same syntax as for <a href="../pca/#PCA">PCA</a>. The constructed <a href="../Diagonalizations/#LinearFilter">LinearFilter</a> object holding the Whitening will have fields:</p><p><code>.F</code>: matrix <span>$\widetilde{U}\widetilde{Λ}^{-1/2}$</span> with scaled orthonormal columns, where <span>$\widetilde{Λ}$</span> is the leading <span>$p⋅p$</span> block of <span>$Λ$</span> and  <span>$\widetilde{U}=[u_1 \ldots u_p]$</span> holds the first <span>$p$</span> eigenvectors in <span>$U$</span>. If <span>$p=n$</span>, <code>.F</code> is just <span>$UΛ^{-1/2}$</span>.</p><p><code>.iF</code>: <span>$\widetilde{Λ}^{1/2}\widetilde{U}^H$</span>, the left-inverse of <code>.F</code>.</p><p><code>.D</code>: <span>$\widetilde{Λ}$</span>, i.e., the eigenvalues associated to <code>.F</code> in diagonal form.</p><p><code>.eVar</code>: the explained variance for the chosen value of <span>$p$</span>. This is the same as for the <a href="../pca/#PCA">PCA</a>, see Eq. [pca.4] therein.</p><p><code>.ev</code>: the vector <code>diag(Λ)</code> holding all <span>$n$</span> eigenvalues.</p><p><code>.arev</code>: the <em>accumulated regularized eigenvalues</em>. This is the same as for the <a href="../pca/#PCA">PCA</a>, see Eq. [pca.6] therein.</p><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Diagonalizations.whitening" href="#Diagonalizations.whitening"><code>Diagonalizations.whitening</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">(1)
+function whitening(C :: SorH;
+                   eVar     :: TeVaro=○,
+                   eVarMeth :: Function=searchsortedfirst,
+                   simple   :: Bool=false)
+
+(2)
+function whitening(X::Mat;
+                   covEst   :: StatsBase.CovarianceEstimator = SCM,
+                   dims     :: Into = ○,
+                   meanX    :: Tmean = 0,
+                   wX       :: Tw = ○,
+                eVar     :: TeVaro = ○,
+                eVarMeth :: Function = searchsortedfirst,
+                simple   :: Bool = false)
+
+(3)
+function whitening(𝐗::VecMat;
+                   covEst   :: StatsBase.CovarianceEstimator = SCM,
+                   dims     :: Into = ○,
+                   meanX    :: Into = 0,
+                eVar     :: TeVaro = ○,
+                eVarMeth :: Function = searchsortedfirst,
+                simple   :: Bool = false,
+             metric   :: Metric = Euclidean,
+             w        :: Vector = [],
+             ✓w       :: Bool = true,
+             init     :: SorHo = nothing,
+             tol      :: Real = 0.,
+             verbose  :: Bool = false)
+</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter">LinearFilter</a> object:</p><p><strong>(1) Whitening</strong> with real or complex covariance matrix <code>C</code> as input.</p><p><code>C</code> must be flagged as <code>Symmetric</code>, if real or <code>Hermitian</code>, if real or complex, see <a href="../Diagonalizations/#data-input">data input</a>.</p><p><code>eVar</code> and <code>evarMeth</code> are keyword optional arguments for defining the <a href="../Diagonalizations/#subspace-dimension">subspace dimension</a> <span>$p$</span> using the <code>.arev</code> vector given by Eq. [pca.6], see <a href="../pca/#PCA">PCA</a>. The default values are:</p><ul><li><code>eVar=0.999</code></li><li><code>evarMeth=searchsortedfirst</code></li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to <span>$n$</span> and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This option is provided for low-level work when you don&#39;t need to define a subspace dimension or you want to define it by your own methods.</p><p><strong>(2) Whitening</strong> with a real or complex data matrix <code>X</code> as input.</p><p><code>CovEst</code>, <code>dims</code>, <code>meanX</code>, <code>wX</code> are optional keyword arguments to regulate the estimation of the covariance matrix of <code>X</code>. See <a href="../Diagonalizations/#covariance-matrix-estimations">covariance matrix estimations</a>.</p><p>Once the covariance matrix estimated, method (1) is invoked with optional keyword arguments <code>eVar</code>, <code>eVarMeth</code> and <code>simple</code>.</p><p><strong>(3) Whitening</strong> with a vector of real or complex data matrices <code>𝐗</code> as input.</p><p><code>CovEst</code>, <code>dims</code> and <code>meanX</code> are optional keyword arguments to regulate the estimation of the covariance matrices for all data matrices in <code>𝐗</code>. See <a href="../Diagonalizations/#covariance-matrix-estimations">covariance matrix estimations</a>.</p><p>A mean of these covariance matrices is computed using optional keywords arguments <code>metric</code>, <code>w</code>, <code>✓w</code>, <code>init</code>, <code>tol</code> and <code>verbose</code>. See <a href="../Diagonalizations/#mean-covariance-matrix-estimations">mean covariance matrix estimations</a>. By default, the arithmetic mean is computed.</p><p>Once the mean covariance matrix estimated, method (1) is invoked with optional keyword arguments <code>eVar</code>, <code>eVarMeth</code> and <code>simple</code>.</p><p><strong>See also:</strong> <a href="../pca/#PCA">PCA</a>, <a href="../cca/#CCA">CCA</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-julia hljs">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+
+# Method (1) real
+n, t=10, 100
+X=genDataMatrix(n, t)
+C=(X*X&#39;)/t
+wC=whitening(Hermitian(C); simple=true)
+# or, shortly
+wC=whitening(ℍ(C); simple=true)
+
+# Method (1) complex
+Xc=genDataMatrix(ComplexF64, n, t)
+Cc=(Xc*Xc&#39;)/t
+wCc=whitening(Hermitian(Cc); simple=true)
+
+
+# Method (2) real
+wX=whitening(X; simple=true)
+@test wC.F&#39;*C*wC.F≈I
+@test wX.F&#39;*C*wX.F≈I
+@test wX≈wC
+
+# Method (2) complex
+wXc=whitening(Xc; simple=true)
+@test wCc.F&#39;*Cc*wCc.F≈I
+@test wXc.F&#39;*Cc*wXc.F≈I
+@test wXc≈wCc
+
+
+# Method (3) real
+k=10
+Xset=[genDataMatrix(n, t) for i=1:k]
+
+# whitening on the average covariance matrix
+w=whitening(Xset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.5
+w=whitening(Xset; eVar=0.5)
+
+# ... averaging the covariance matrices using the logEuclidean metric
+w=whitening(Xset; metric=logEuclidean, eVar=0.5)
+
+# ... giving weights `w` to the covariance matrices
+w=whitening(Xset; metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# ... subtracting the mean
+w=whitening(Xset; meanX=nothing, metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# whitening on the average of the covariance matrices computed along dims 1
+w=whitening(Xset; dims=1)
+
+# explained variance
+w.eVar
+
+# name of the filter
+w.name
+
+using Plots
+# plot regularized accumulated eigenvalues
+plot(w.arev)
+
+# plot the original covariance matrix and the whitened covariance matrix
+ Cmax=maximum(abs.(C));
+ h1 = heatmap(C, clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;C&quot;);
+ D=wC.F&#39;*C*wC.F;
+ h2 = heatmap(D, clim=(0, 1), yflip=true, c=:amp, title=&quot;F&#39;*C*F&quot;);
+ 📈=plot(h1, h2, size=(700, 300))
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigWhitening.png&quot;)</code></pre><p><img src="../assets/FigWhitening.png" alt="Figure Whitening"/></p><pre><code class="language-julia hljs">
+# Method (3) complex
+k=10
+Xcset=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+
+# whitening on the average covariance matrix
+wc=whitening(Xcset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.5
+wc=whitening(Xcset; eVar=0.5)
+
+# ... averaging the covariance matrices using the logEuclidean metric
+wc=whitening(Xcset; metric=logEuclidean, eVar=0.5)
+
+# ... giving weights `w` to the covariance matrices
+wc=whitening(Xset; metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# ... subtracting the mean
+wc=whitening(Xcset; meanX=nothing, metric=logEuclidean, w=abs2.(randn(k)), eVar=0.5)
+
+# whitening on the average of the covariance matrices computed along dims 1
+wc=whitening(Xcset; dims=1)
+
+# explained variance
+wc.eVar
+
+# name of the filter
+wc.name</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/fc70ce6873cd6daa61b89d0723b7ad1fe370a876/src/pca.jl#L265-L452">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../pca/">« PCA</a><a class="docs-footer-nextpage" href="../csp/">CSP »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.0 on <span class="colophon-date" title="Sunday 11 May 2025 15:01">Sunday 11 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

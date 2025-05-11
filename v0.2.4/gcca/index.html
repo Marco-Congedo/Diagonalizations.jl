@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>gCCA · Diagonalizations</title><meta name="title" content="gCCA · Diagonalizations"/><meta property="og:title" content="gCCA · Diagonalizations"/><meta property="twitter:title" content="gCCA · Diagonalizations"/><meta name="description" content="Documentation for Diagonalizations."/><meta property="og:description" content="Documentation for Diagonalizations."/><meta property="twitter:description" content="Documentation for Diagonalizations."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.png" alt="Diagonalizations logo"/><img class="docs-dark-only" src="../assets/logo-dark.png" alt="Diagonalizations logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">Diagonalizations</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Documentation</a></li><li><a class="tocitem" href="../Diagonalizations/">Diagonalizations</a></li><li><span class="tocitem">Filters</span><ul><li><input class="collapse-toggle" id="menuitem-3-1" type="checkbox"/><label class="tocitem" for="menuitem-3-1"><span class="docs-label">One dataset (m=1)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../pca/">PCA</a></li><li><a class="tocitem" href="../whitening/">Whitening</a></li><li><a class="tocitem" href="../csp/">CSP</a></li><li><a class="tocitem" href="../cstp/">CSTP</a></li><li><a class="tocitem" href="../ajd/">AJD</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-2" type="checkbox"/><label class="tocitem" for="menuitem-3-2"><span class="docs-label">Two datasets (m=2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../mca/">MCA</a></li><li><a class="tocitem" href="../cca/">CCA</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-3" type="checkbox" checked/><label class="tocitem" for="menuitem-3-3"><span class="docs-label">Several datasets (m&gt;2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../gmca/">gMCA</a></li><li class="is-active"><a class="tocitem" href>gCCA</a></li><li><a class="tocitem" href="../majd/">mAJD</a></li></ul></li></ul></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../algorithms/">Algorithms</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Filters</a></li><li><a class="is-disabled">Several datasets (m&gt;2)</a></li><li class="is-active"><a href>gCCA</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>gCCA</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/master/docs/src/gcca.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="gCCA"><a class="docs-heading-anchor" href="#gCCA">gCCA</a><a id="gCCA-1"></a><a class="docs-heading-anchor-permalink" href="#gCCA" title="Permalink"></a></h1><p><em>Generalized Canonical Correlation Analysis</em> (gCCA) is a mutiple approximate joint diagonalization prodedure generalizing the canonical correlation analysis (<a href="../cca/#CCA">CCA</a>) to the situation <span>$m&gt;2$</span> (number of datasets), as for CCA with <span>$k=1$</span> (one observation). As the CCA is an <a href="../mca/#MCA">MCA</a> carried out on whitened data, so the gCCA is a <a href="../gmca/#gMCA">gMCA</a> carried out on whitened data.</p><p>Let <span>${X_1,...,X_m}$</span> be a set of <span>$m$</span> data matrices of dimension <span>$n⋅t$</span>, where <span>$n$</span> is the number of variables and <span>$t$</span> the number of samples, both common to all datasets. From these data matrices let us estimate</p><p><span>$C_{ij}=\frac{1}{t}X_iX_j^H$</span>, for all <span>$i,j∈[1...m]$</span>, <span>$\hspace{1cm}$</span> [gcca.1]</p><p>i.e., all <em>covariance</em> (<span>$i=j$</span>) and <em>cross-covariance</em> (<span>$i≠j$</span>) matrices.</p><p>The gMCA seeks <span>$m$</span> matrices <span>$F_1,...,F_m$</span> diagonalizing as much as possible all products</p><p><span>$F_i^H C_{ij} F_j$</span>, for all <span>$i≠j∈[1...m]$</span>. <span>$\hspace{1cm}$</span> [gcca.2]</p><p>under costraint</p><p><span>$F_i^H C_{ii} F_i=I$</span>, for all <span>$i∈[1...m]$</span>. <span>$\hspace{1cm}$</span> [gcca.3]</p><h4 id="permutation-for-gCCA"><a class="docs-heading-anchor" href="#permutation-for-gCCA">permutation for gCCA</a><a id="permutation-for-gCCA-1"></a><a class="docs-heading-anchor-permalink" href="#permutation-for-gCCA" title="Permalink"></a></h4><p>Given constraint [gcca.3], the scaling of approximate diagonalizers <span>$F_1,...,F_m$</span> are fixed, however there is still a sign and permutation ambiguity (see <a href="../Diagonalizations/#scale-and-permutation">scale and permutation</a>). <em>Diagonalizations.jl</em> attempts to solve them by finding signed permutation matrices for <span>$F_1,...,F_m$</span> so as to make all diagonal elements of [gcca.2] positive and sorted in descending order.</p><p>Let</p><p><span>$λ=[λ_1...λ_n]$</span>  <span>$\hspace{1cm}$</span> [gcca.4]</p><p>be the diagonal elements of</p><p><span>$\frac{1}{m^2-m}\sum_{i≠j=1}^m(F_i^H C_{ij} F_j)$</span> <span>$\hspace{1cm}$</span> [gcca.5]</p><p>and <span>$σ_{TOT}=\sum_{i=1}^nλ_i$</span> be the total correlation.</p><p>We denote <span>$\widetilde{F}_i=[f_{i1} \ldots f_{ip}]$</span> the matrix holding the first <span>$p&lt;n$</span> column vectors of <span>$F_i$</span>, where <span>$p$</span> is the <a href="../Diagonalizations/#subspace-dimension">subspace dimension</a>. The <em>explained variance</em> is given by</p><p><span>$σ_p=\frac{\sum_{i=1}^pλ_i}{σ_{TOT}}$</span> <span>$\hspace{1cm}$</span> [gcca.6]</p><p>and the <em>accumulated regularized eigenvalues</em> (arev) by</p><p><span>$σ_j=\sum_{i=1}^j{σ_i}$</span>, for <span>$j=[1 \ldots n]$</span>, <span>$\hspace{1cm}$</span> [gcca.7]</p><p>where <span>$σ_i$</span> is given by Eq. [gcca.6].</p><p>For setting the subspace dimension <span>$p$</span> manually, set the <code>eVar</code> optional keyword argument of the gCCA constructors either to an integer or to a real number, this latter establishing <span>$p$</span> in conjunction with argument <code>eVarMeth</code> using the <code>arev</code> vector (see <a href="../Diagonalizations/#subspace-dimension">subspace dimension</a>). By default, <code>eVar</code> is set to 0.999.</p><p><strong>Solution</strong></p><p>There is no closed-form solution to the AJD problem in general. See <a href="../algorithms/#Algorithms">Algorithms</a>.</p><p>Note that solving algorithms constraining the solution to the general linear group, like <em>NoJoB</em>, do not suit gCCA as they do not ensure constraint [gcca.2].</p><p><strong>Constructors</strong></p><p>One constructor is available (see here below). The constructed <a href="../Diagonalizations/#LinearFilter">LinearFilter</a> object holding the gCCA will have fields:</p><p><code>.F</code>: vector of matrices <span>$\widetilde{F}_1,...,\widetilde{F}_m$</span> with columns holding the first <span>$p$</span> eigenvectors in <span>$F_1,...,F_m$</span>, or just <span>$F_1,...,F_m$</span> if <span>$p=n$</span></p><p><code>.iF</code>: the vector of the left-inverses of the matrices in <code>.F</code></p><p><code>.D</code>: the leading <span>$p⋅p$</span> block of <span>$Λ$</span>, i.e., the elements [gcca.4] associated to the matrices in <code>.F</code> in diagonal form.</p><p><code>.eVar</code>: the explained variance [gcca.6] for the chosen value of <span>$p$</span>.</p><p><code>.ev</code>: the vector <span>$λ$</span> [gcca.4].</p><p><code>.arev</code>: the accumulated regularized eigenvalues, defined by [gcca.7]</p><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Diagonalizations.gcca" href="#Diagonalizations.gcca"><code>Diagonalizations.gcca</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">function gcca(𝐗::VecMat;
+              covEst     :: StatsBase.CovarianceEstimator = SCM,
+              dims       :: Into    = ○,
+              meanX      :: Into    = 0,
+          algorithm :: Symbol    = :OJoB,
+          sort      :: Bool      = true,
+          init      :: VecMato   = ○,
+          tol       :: Real      = 0.,
+          maxiter   :: Int       = _maxiter(algorithm, eltype(𝐗[1])),
+          verbose   :: Bool      = false,
+          threaded  :: Bool      = true,
+        eVar     :: TeVaro   = _minDim(𝐗),
+        eVarMeth :: Function = searchsortedfirst,
+        simple   :: Bool     = false)
+</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter">LinearFilter</a> object.</p><p><strong>Generalized Canonical Correlation Analysis</strong> of the set of <span>$m$</span> data matrices <code>𝐗</code> using the given solving <code>algorithm</code> (<em>OJoB</em> by default).</p><p>If <code>sort</code> is true (default), the column vectors of the matrices <span>$F_1,...,F_m$</span> are signed and permuted as explained here above in <a href="#permutation-for-gCCA">permutation for gCCA</a>, otherwise they will have arbitrary sign and will be in arbitrary order.</p><p>Regarding arguments <code>init</code>, <code>tol</code> and <code>maxiter</code>, see <a href="../algorithms/#Algorithms">Algorithms</a>.</p><p>If <code>verbose</code> is true (false by default), the convergence attained at each iteration will be printed in the REPL.</p><p><code>eVar</code> and <code>eVarMeth</code> are used to define a <a href="../Diagonalizations/#subspace-dimension">subspace dimension</a> <span>$p$</span> using the accumulated regularized eigenvalues in Eq. [gcca.7]</p><p>The default values are:</p><ul><li><code>eVar</code> is set to the minimum dimension of the matrices in <code>𝐗</code></li><li><code>eVarMeth=searchsortedfirst</code></li></ul><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to the dimension of the covariance matrices that are computed on the matrices in <code>𝐗</code>, which depends on the choice of <code>dims</code>, and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This corresponds to the typical output of approximate diagonalization algorithms.</p><p>if <code>threaded</code>=true (default) and the number of threads Julia is instructed to use (the output of Threads.nthreads()), is higher than 1, solving algorithms supporting multi-threading run in multi-threaded mode. See <a href="../algorithms/#Algorithms">Algorithms</a> and <a href="https://marco-congedo.github.io/PosDefManifold.jl/dev/MainModule/#Threads-1">these notes</a> on multi-threading.</p><p><strong>See also:</strong> <a href="../mca/#MCA">MCA</a>, <a href="#gCCA">gCCA</a>, <a href="../majd/#mAJD">mAJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-julia hljs">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+
+
+####  Create data for testing the case k=1, m&gt;1
+# `t` is the number of samples,
+# `m` is the number of datasets,
+# `n` is the number of variables,
+# `noise` must be smaller than 1.0. The smaller the noise,
+#  the more data are correlated.
+function getData(t, m, n, noise)
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(n) for i=1:m] # random orthogonal matrices
+    X=randn(n, t)  # data common to all subjects
+    # each subject has this common part plus a random part
+    𝐗=[𝐕[i]&#39;*((1-noise)*X + noise*randn(n, t)) for i=1:m]
+    return 𝐗
+end
+
+function getData(::Type{Complex{T}}, t, m, n, noise) where {T&lt;:AbstractFloat}
+    # create m identical data matrices and rotate them by different
+    # random orthogonal matrices V_1,...,V_m
+    𝐕=[randU(ComplexF64, n) for i=1:m] # random orthogonal matrices
+    X=randn(ComplexF64, n, t)  # data common to all subjects
+    # each subject has this common part plus a random part
+    𝐗=[𝐕[i]&#39;*((1-noise)*X + noise*randn(ComplexF64, n, t)) for i=1:m]
+    return 𝐗
+end
+
+# REAL data: check that for the case m=2 gCCA gives the same result as CCA
+t, m, n, noise = 20, 2, 6, 0.1
+Xset=getData(t, m, n, noise)
+Cx=(Xset[1]*Xset[1]&#39;)/t
+Cy=(Xset[2]*Xset[2]&#39;)/t
+Cxy=(Xset[1]*Xset[2]&#39;)/t
+
+gc=gcca(Xset; simple=true)
+
+c=cca(Hermitian(Cx), Hermitian(Cy), Cxy; simple=true)
+
+@test (c.F[1]&#39;*Cxy*c.F[2]) ≈ (gc.F[1]&#39;*Cxy*gc.F[2])
+@test gc.F[1]&#39;*Cx*gc.F[1]≈I
+@test gc.F[2]&#39;*Cy*gc.F[2]≈I
+D=gc.F[1]&#39;*Cxy*gc.F[2]
+@test norm(D-Diagonal(D))+1≈1.
+
+
+# COMPLEX data: check that for the case m=2 gCCA gives the same result as CCA
+t, m, n, noise = 20, 2, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+Ccx=(Xcset[1]*Xcset[1]&#39;)/t
+Ccy=(Xcset[2]*Xcset[2]&#39;)/t
+Ccxy=(Xcset[1]*Xcset[2]&#39;)/t
+
+gcc=gcca(Xcset; simple=true)
+cc=cca(Hermitian(Ccx), Hermitian(Ccy), Ccxy; simple=true)
+
+# for complex data just do a sanity check as the order of vectors
+# is arbitrary. The following two tests currently fail
+# @test spForm(cc.F[1]&#39;gcc.F[1])&lt;0.001
+# @test spForm(cc.F[2]&#39;gcc.F[2])&lt;0.001
+
+@test gcc.F[1]&#39;*Ccx*gcc.F[1]≈I
+@test gcc.F[2]&#39;*Ccy*gcc.F[2]≈I
+# sanity check only as there is noise in the complex case
+D=gcc.F[1]&#39;*Ccxy*gcc.F[2]
+@test norm(D-Diagonal(D))/(n^2-n)&lt;0.001
+
+
+# REAL data: m&gt;2 case
+t, m, n, noise = 20, 4, 6, 0.1
+Xset=getData(t, m, n, noise)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+gc=gcca(Xset, eVar=0.9)
+
+# name of the filter
+gc.name
+
+𝒞=Array{Matrix}(undef, 1, m, m)
+for i=1:m, j=1:m 𝒞[1, i, j]=(Xset[i]*Xset[j]&#39;)/t end
+
+using Plots
+# plot regularized accumulated eigenvalues
+plot(gc.arev)
+
+
+# plot the original cross-covariance matrices and the rotated
+# cross-covariance matrices
+
+# Get all products 𝐔[i]&#39; * 𝒞[l, i, j] * 𝐔[j]
+function _rotate_crossCov(𝐔, 𝒞, m, k)
+    𝒮=Array{Matrix}(undef, k, m, m)
+    @inbounds for l=1:k, i=1:m, j=1:m 𝒮[l, i, j]=𝐔[i]&#39;*𝒞[l, i, j]*𝐔[j] end
+    return 𝒮
+end
+
+
+# Put all cross-covariances in a single matrix of dimension m*n x m*n for visualization
+function 𝒞2Mat(𝒞::AbstractArray, m, k)
+    n=size(𝒞[1, 1, 1], 1)
+    C=Matrix{Float64}(undef, m*n, m*n)
+    for i=1:m, j=1:m, x=1:n, y=1:n C[i*n-n+x, j*n-n+y]=𝒞[k, i, j][x, y] end
+    return C
+end
+
+ C=𝒞2Mat(𝒞, m, 1)
+ Cmax=maximum(abs.(C));
+ h1 = heatmap(C, clim=(-Cmax, Cmax), yflip=true, c=:bluesreds, title=&quot;all cross-covariances&quot;)
+ 𝒮=_rotate_crossCov(gc.F, 𝒞, m, 1)
+ S=𝒞2Mat(𝒮, m, 1)
+ h2 = heatmap(S, clim=(0, 1), yflip=true, c=:amp, title=&quot;all rotated cross-covariances&quot;)
+ 📈=plot(h1, h2, size=(700,300))
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FiggCCA.png&quot;)
+</code></pre><p><img src="../assets/FiggCCA.png" alt="Figure gCCA"/></p><p>In the figure here above, the rotated cross-covariance matrices have the expected   <em>strip-diagonal</em> form, that is, each block <span>$F_i^T\frac{1}{t}(X_iX_j^T)F_j$</span>,   for <span>$i,j∈[1,...,m]$</span>, is approximately diagonal. Each block is <span>$6⋅6$</span> because   setting <code>eVar=0.9</code> has not reduced the original dimension.   The solution is similar to the <a href="../gmca/#gMCA">gMCA</a>, but here the diagonal   of the rotated block matrix is the identity.</p><pre><code class="language-julia hljs"># COMPLEX data: m&gt;2 case
+t, m, n, noise = 20, 4, 6, 0.1
+Xcset=getData(ComplexF64, t, m, n, noise)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+gcc=gcca(Xcset, eVar=0.9)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/fc70ce6873cd6daa61b89d0723b7ad1fe370a876/src/gcca.jl#L250-L449">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../gmca/">« gMCA</a><a class="docs-footer-nextpage" href="../majd/">mAJD »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.0 on <span class="colophon-date" title="Sunday 11 May 2025 15:01">Sunday 11 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
