@@ -2,7 +2,7 @@
 
 | **Documentation**  |
 |:---------------------------------------:|
-| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
+| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/stable) |
 
 **Diagonalizations.jl** is a [**Julia**](https://julialang.org/) signal processing package implementing several *closed form* and *iterative* diagonalization procedures for both *real* and *complex* data input:
 
@@ -89,4 +89,4 @@ aXset=ajd(Xset; algorithm=:LogLike)
 
 | **Documentation**  | 
 |:---------------------------------------:|
-| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
+| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/stable) |
