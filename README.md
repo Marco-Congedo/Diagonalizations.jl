@@ -2,7 +2,7 @@
 
 | **Documentation**  |
 |:---------------------------------------:|
-| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
+| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/stable) |
 
 **Diagonalizations.jl** is a [**Julia**](https://julialang.org/) signal processing package implementing several *closed form* and *iterative* diagonalization procedures for both *real* and *complex* data input:
 
@@ -85,8 +85,8 @@ aXset=ajd(Xset; algorithm=:LogLike)
 
 ## About the Authors
 
-[Marco Congedo](https://sites.google.com/site/marcocongedo), is a research scientist of [CNRS](http://www.cnrs.fr/en) (Centre National de la Recherche Scientifique), working at [UGA](https://www.univ-grenoble-alpes.fr/english/) (University of Grenoble Alpes). **contact**: marco *dot* congedo *at* gmail *dot* com
+[Marco Congedo](https://sites.google.com/site/marcocongedo), is a Research Director of [CNRS](http://www.cnrs.fr/en) (Centre National de la Recherche Scientifique), working at [UGA](https://www.univ-grenoble-alpes.fr/english/) (University of Grenoble Alpes). **contact**: marco *dot* congedo *at* gmail *dot* com
 
 | **Documentation**  | 
 |:---------------------------------------:|
-| [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/dev) |
+| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://Marco-Congedo.github.io/Diagonalizations.jl/stable) |
