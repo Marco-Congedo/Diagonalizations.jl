@@ -157,11 +157,11 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
         # This way for all i=1:m the dimensionality reduction is fixed
         # for the case m=1 this is the classical whitening
         if !(eVar isa Int)
-            G=ℍ(𝛍(𝒢[κ, i, i] for κ=1:k, i=1:m))
+            G=ℍ(mean(𝒢[κ, i, i] for κ=1:k, i=1:m))
             p, arev = _getssd!(eVar, eigvals(G), size(𝒢[1, 1, 1], 1), eVarMeth)
-            𝑾=[whitening(ℍ(𝛍(𝒢[κ, i, i] for κ=1:k)); eVar=p) for i=1:m]
+            𝑾=[whitening(ℍ(mean(𝒢[κ, i, i] for κ=1:k)); eVar=p) for i=1:m]
         else
-            𝑾=[whitening(ℍ(𝛍(𝒢[κ, i, i] for κ=1:k)); eVar=eVar) for i=1:m]
+            𝑾=[whitening(ℍ(mean(𝒢[κ, i, i] for κ=1:k)); eVar=eVar) for i=1:m]
         end
 
         if m==1
@@ -195,9 +195,9 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
                 𝐔 = [Matrix{type}(I, n, n) for i=1:m]
             else
                 if fullModel
-                    𝐔 = [eigvecs(𝛍(ggt(κ, i, j) for j=1:m, κ=1:k)) for i=1:m]
+                    𝐔 = [eigvecs(mean(ggt(κ, i, j) for j=1:m, κ=1:k)) for i=1:m]
                 else
-                    𝐔 = [eigvecs(𝛍(ggt(κ, i, j) for j=1:m, κ=1:k if j≠i)) for i=1:m]
+                    𝐔 = [eigvecs(mean(ggt(κ, i, j) for j=1:m, κ=1:k if j≠i)) for i=1:m]
                 end
             end
         else
@@ -208,7 +208,7 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
             if algo==:NoJoB
                 𝐔 = [Matrix{type}(I, n, n)]
             else
-                𝐔 = [eigvecs(𝛍(ggt(κ, 1, 1) for κ=1:k))]
+                𝐔 = [eigvecs(mean(ggt(κ, 1, 1) for κ=1:k))]
             end
         else
             𝐔 = [init]
@@ -350,8 +350,8 @@ function JoB(𝐗::AbstractArray, m::Int, k::Int, input::Symbol, algo::Symbol, t
         λ = m==1 ? _permute!(𝐔[1], 𝒢, k, :c) :
                    _flipAndPermute!(𝐔, 𝒢, m, k, :c)
     else
-        λ = m==1 ? 𝛍([𝐔[1][:, η]'*𝒢[l, 1, 1]*𝐔[1][:, η] for η=1:n] for l=1:k) :
-                   𝛍([𝐔[i][:, η]'*𝒢[l, i, j]*𝐔[j][:, η] for η=1:n] for l=1:k, j=1:m, i=1:m if i≠j)
+        λ = m==1 ? mean([𝐔[1][:, η]'*𝒢[l, 1, 1]*𝐔[1][:, η] for η=1:n] for l=1:k) :
+                   mean([𝐔[i][:, η]'*𝒢[l, i, j]*𝐔[j][:, η] for η=1:n] for l=1:k, j=1:m, i=1:m if i≠j)
     end
 
     if preWhite

@@ -40,4 +40,5 @@ deploydocs(
     repo = "github.com/Marco-Congedo/Diagonalizations.jl.git",
     target = "build",
     devurl = "dev",
+    push_preview = true,
 )

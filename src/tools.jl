@@ -412,14 +412,14 @@ function _getssd!(eVar::TeVaro, λ::Vec, r::Int64, eVarMeth::Function)
    return (eVar isa Int64 ? clamp(eVar, 1, r) : clamp(eVarMeth(arev, eVar), 1, r), arev)
 end
 
-#see PCA and Whitening
+# see PCA and Whitening
 function _ssd!(eVar::TeVaro, λ::Vec, U::Mat, r::Int64, eVarMeth::Function)
    eltype(λ)<:Complex && @warn "📌, internal function `_ssd!`: the `λ` vector is complex, subspace dimension is based on its absolute values."
    p, arev = _getssd!(eVar, λ, r, eVarMeth)
    return p==r ? 1. : arev[p], Diagonal(λ[1:p]), U[:, 1:p], p, arev
 end
 
-#see PMCA and CCA
+#see MCA and CCA
 function _ssdxy!(eVar::TeVaro, λ::Vec, U1::Mat, U2::Mat, r::Int64, eVarMeth::Function)
    eltype(λ)<:Complex && @warn "📌, internal function `_ssdxy!`: the `λ` vector is complex, subspace dimension  is based on its absolute values."
    p, arev = _getssd!(eVar, λ, r, eVarMeth)

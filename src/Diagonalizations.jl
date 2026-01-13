@@ -11,6 +11,8 @@
 
 module Diagonalizations
 
+using PrecompileSignatures: @precompile_signatures
+
 using LinearAlgebra, Statistics, StatsBase, CovarianceEstimation,
       Base.Threads, PosDefManifold
 
@@ -249,5 +251,8 @@ println(" runs on kernel ",Sys.KERNEL," with word size ",Sys.WORD_SIZE,".")
 println(" CPU  Threads: ", separatorFont, Sys.CPU_THREADS, defaultFont)
 println(" Base.Threads: ", separatorFont, "$(Threads.nthreads())", defaultFont)
 println(" BLAS Threads: ", separatorFont, "$(BLAS.get_num_threads())", "\n", defaultFont)
+
+# Generate and run `precompile` directives.
+@precompile_signatures(Diagonalizations)
 
 end # module
