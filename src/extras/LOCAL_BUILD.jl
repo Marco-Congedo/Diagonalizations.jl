@@ -22,15 +22,8 @@
 
 begin
     # change the 'projectDir' path to the folder where your project is
-    projectDir = homedir()*"\\Documents\\Documenti\\Code\\julia\\Diagonalizations"
+    projectDir = homedir()*"\\Documents\\Code\\julia\\Diagonalizations"
     push!(LOAD_PATH, projectDir*"\\src\\")
-    using LinearAlgebra, Statistics, Revise, Diagonalizations
+    using Revise, Diagonalizations
 end
 
-# for compiling the documentation
-begin
-    using Documenter
-    cd(projectDir*"\\docs\\");
-    clipboard("""makedocs(sitename="Diagonalizations", modules=[Diagonalizations])""")
-    @info("\nhit CTRL+V+ENTER on the REPL for building the documentation.");
-end

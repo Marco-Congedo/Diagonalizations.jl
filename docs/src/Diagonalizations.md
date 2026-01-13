@@ -341,22 +341,24 @@ dimension. The user may set ``p``:
 
 - **manually**,
 
- either setting `eVar` explicitly to an integer ``∈[1, n]``, or
- setting `eVar` to the desired explained variance in the subspace filtered
- data, as a float ``∈(0, 1]``, where ``1`` corresponds to the total variance.
+setting `eVar` explicitly to an integer ``∈[1, n]`` to determine the subspace dimension ``p``
 
-- **automatically** (default),
+- **automatically** (default, with `eVar` set to 0.999),
 
- according to the `.arev` (accumulated regularized eigenvalues) vector
- that is computed by the filter constructors. This vector is
- non-decreasing and the last element is always ``1.0``. The way it is
- computed depends on the filter. Please refer to the documentation of
- each filter for details on how the `.arev` vector is defined.
+setting `eVar` to the desired explained variance in the subspace filtered
+data, as a real number ``∈(0, 1.0]``, where ``1.0`` corresponds to the total variance,
+such that setting `eVar`=1.0 forces ``p=n``, while positive values `eVar`<1 automatically
+determine the appropriate value ``p≤n``.
 
-When `eVar` is given as a float or when such float ia allowed to be chosen
-automatically (default), the function passed as the `eVarMeth` argument
+The desired explained variance is found according to the `.arev` (accumulated regularized eigenvalues) vector
+that is computed by the filter constructors. This vector is
+non-decreasing and the last element is always ``1.0``. The way it is
+computed depends on the filter. Please refer to the documentation of
+each filter for details on how the `.arev` vector is defined.
+
+When `eVar` is given as a float (default, set to 0.999), the function passed as the `eVarMeth` argument
 determines the subspace dimension ``p`` so as to explain an amount of
-variance as close as possible to the desierd `eVar`.
+variance as close as possible to the desired `eVar` value.
 In fact `.arev` holds only ``n`` discrete possible values of explained variance.
 Therefore, the `.arev` vector is passed to the `eVarMeth` function.
 By default, `eVarMeth` is set to the Julia standard
@@ -368,20 +370,22 @@ Another useful choice is the Julia standard
 allowing at most `eVar` explained variance.
 This amounts to rounding down the desired `eVar` variance.  
 
-You can pass a user-defined function as `eVarMeth`.
-The function you define will take the `.arev` vector computed by the
-filter constructor as input and will return an integer,
-which will be automatically clamped to be ``∈[1, n]``.
+!!! tip "User-defined subspace dimension" 
+    You can pass a user-defined function as `eVarMeth`.
+    The function you define will take the `.arev` vector computed by the
+    filter constructor as input and will return an integer,
+    which will be automatically clamped to be ``∈[1, n]``.
 
-Note that once the filter has been constructed, its `.eVar` field
-will hold the actual explained variance, not the desired one
-that has been passed to the constructor using the `eVar` argument.
+!!! note "Field .eVar stored upon construction"
+    Once the filter has been constructed, its `.eVar` field
+    will hold the actual explained variance, not the desired one
+    that has been passed to the constructor using the `eVar` argument.
 
-Note also that for some filter constructors you will find the
+Note that for some filter constructors you will find the
 `eVar` optional keyword argument and also other arguments with
-simialr name, such as `eVarCx` and `eVarCy`. These arguments act in a similar
+similar names, such as `eVarCx` and `eVarCy`. These arguments act in a similar
 way as the main `eVar` argument, but apply to determine the subspace dimension
-of intermediate diagonalization procedures, typically, pre-whitening procedures. See also [notation & nomenclature](@ref) and [covariance matrix estimations](@ref).
+of intermediate diagonalization steps, for example, pre-whitening steps. See also [notation & nomenclature](@ref) and [covariance matrix estimations](@ref).
 
 ## scale and permutation
 

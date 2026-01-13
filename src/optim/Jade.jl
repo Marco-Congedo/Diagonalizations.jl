@@ -122,7 +122,7 @@ end
 end
 
 
-# Compute and return the Riemannian gradient (real data)
+# Compute and return the Riemannian gradient (Complex data)
 @inline function jadeRiemannian∇(C::Matrix{T}, D, n, k, 𝓹₁, 𝓹₂) where T <:Complex
 	∇=zeros(T, n, n)
 	@inbounds @simd for i=1:k
