@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>CSP · Diagonalizations</title><meta name="title" content="CSP · Diagonalizations"/><meta property="og:title" content="CSP · Diagonalizations"/><meta property="twitter:title" content="CSP · Diagonalizations"/><meta name="description" content="Documentation for Diagonalizations."/><meta property="og:description" content="Documentation for Diagonalizations."/><meta property="twitter:description" content="Documentation for Diagonalizations."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.png" alt="Diagonalizations logo"/><img class="docs-dark-only" src="../assets/logo-dark.png" alt="Diagonalizations logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">Diagonalizations</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Documentation</a></li><li><a class="tocitem" href="../Diagonalizations/">Diagonalizations</a></li><li><span class="tocitem">Filters</span><ul><li><input class="collapse-toggle" id="menuitem-3-1" type="checkbox" checked/><label class="tocitem" for="menuitem-3-1"><span class="docs-label">One dataset (m=1)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../pca/">PCA</a></li><li><a class="tocitem" href="../whitening/">Whitening</a></li><li class="is-active"><a class="tocitem" href>CSP</a></li><li><a class="tocitem" href="../cstp/">CSTP</a></li><li><a class="tocitem" href="../ajd/">AJD</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-2" type="checkbox"/><label class="tocitem" for="menuitem-3-2"><span class="docs-label">Two datasets (m=2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../mca/">MCA</a></li><li><a class="tocitem" href="../cca/">CCA</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-3" type="checkbox"/><label class="tocitem" for="menuitem-3-3"><span class="docs-label">Several datasets (m&gt;2)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../gmca/">gMCA</a></li><li><a class="tocitem" href="../gcca/">gCCA</a></li><li><a class="tocitem" href="../majd/">mAJD</a></li></ul></li></ul></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../algorithms/">Algorithms</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Filters</a></li><li><a class="is-disabled">One dataset (m=1)</a></li><li class="is-active"><a href>CSP</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>CSP</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/master/docs/src/csp.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="CSP"><a class="docs-heading-anchor" href="#CSP">CSP</a><a id="CSP-1"></a><a class="docs-heading-anchor-permalink" href="#CSP" title="Permalink"></a></h1><p>The <em>Common Spatial Pattern</em> (CSP) are filters obtained by <strong>generalized eigenvalue-eigenvector decomposition</strong>. They corresponds to the situation <span>$m=1$</span> (one dataset) and <span>$k=2$</span> (two observation). The goal of a CSP filter is to maximize a variance ratio. Let <span>$(X_1, X_2)$</span> be <span>$(n⋅t_1, n⋅t_2)$</span> data matrices, where <span>$n$</span> is their number of variables and <span>$(t_1, t_2)$</span> their number of samples. Let <span>$(C_1, C_2)$</span> be the <span>$n⋅n$</span> covariance matrices of data matrices <span>$(X_1, X_2)$</span> and <span>$C=C_1+C_2$</span>. The CSP consists in the joint diagonalization of <span>$C$</span> and <span>$C_1$</span> or, equivalently, of <span>$C$</span> and <span>$C_2$</span> (Fukunaga, 1990, p. 31-33 <a href="../">🎓</a>). The joint diagonalizer <span>$B$</span> is scaled such as to verify (see <a href="../Diagonalizations/#scale-and-permutation">scale and permutation</a>)</p><p><span>$\left \{ \begin{array}{rl}B^TCB=I\\B^TC_1B=Λ\\B^TC_2B=I-Λ \end{array} \right.$</span>, <span>$\hspace{1cm}$</span> [csp.1]</p><p>That is to say, <span>$λ_1≥\ldots≥λ_n$</span> are the diagonal elements of <span>$B^TC_1B$</span> and <span>$1-λ_1≤\ldots≤1-λ_n$</span> the diagonal elements of <span>$B^TC_2B$</span>. The CSP maximizes the ratio between the variance of the corresponding components of transformed processes <span>$B^TX_1$</span> and <span>$B^TX_2$</span>, constraining their sum to unity. The ratio is ordered by descending order such as</p><p><span>$σ=[λ_1/(1-λ_1)≥\ldots≥λ_n/(1-λ_n)]$</span>, <span>$\hspace{1cm}$</span> [csp.2]</p><p>The CSP has two use cases, which can be selected using the <code>selMeth</code> optional keyword argument of its constructors:</p><ul><li><strong>a) Separating two classes</strong>.   In this case <span>$C_1$</span> and <span>$C_2$</span> are   covariance matrices of two distinct classes. The constructors will   retain a filter with form   <span>$\widetilde{B}=[B_1 B_2]$</span>, where we have defined partitions   <span>$B=[B_1 B_0 B_2]$</span>. <span>$B_1$</span> and <span>$B_2$</span> are the first <span>$p_1$</span> and last <span>$p_2$</span> vectors of <span>$B$</span> corresponding to high and low values of   the variance ratio [csp.2], that is, explaining variance   that is useful for separating the classes, while <span>$B_0$</span> corresponds   to components corresponding to variance ratios close to <span>$1$</span>,   meaning that are not useful for separating the classes.   The subspace dimension in this use case will be given by <span>$p=p_1+p_2$</span>.   Notice that in <em>Diagonalizations.jl</em> we allow <span>$p_1≠p_2$</span>.</li><li><strong>b) Enhance the signal-to-noise ratio</strong>.   In this case <span>$C_1$</span> and <span>$C_2$</span> are   covariance matrices of the &#39;signal&#39; and of the &#39;noise&#39;, respectively.   The constructors will retain a filter <span>$\widetilde{B}=[b_1 \ldots b_p]$</span> holding the first <span>$p$</span> vectors of <span>$B$</span> corresponding to the highest   values of the variance ratio [csp.2]. The discared <span>$n-p$</span> vectors   correspond to components that explains progressively more and more   variance related to the noise process. In this case we have   a natural landmark for selecting automatically the   <a href="../Diagonalizations/#subspace-dimension">subspace dimension</a> <span>$p$</span>, as the larger dimension   whose variance ratio is greater then <span>$1$</span>.</li></ul><p>In order to retrive the appropriate partitions of <span>$B$</span> to construct a filter given a subspace dimension <span>$p$</span>, we need a way to measure the distance of the ratios [csp.2] from <span>$1$</span>. For this purpose we will make use of the Fisher distance adopted on the Riemannian manifold of positive definite matrices, in its scalar form, yielding</p><p><span>$δ_i=\textrm{log}^2(σ_i)$</span>, for <span>$i=[1 \ldots n]$</span>. <span>$\hspace{1cm}$</span> [csp.3]</p><p>After this transformation, extreme values of the ratio becomes high, that is, the function <span>$δ_i$</span> assumes the shape of a (non-symmetric) wine cup and has a minimum close to zero.</p><p>Now let <span>$δ_{TOT}=\sum_{i=1}^nδ_i$</span> be the total distance and define the <em>explained variance</em> of the CSP for dimension <span>$p$</span> such as</p><p><span>$v_p=\frac{\sum_{j=1}^pδ_j}{δ_{TOT}}$</span>, <span>$\hspace{1cm}$</span> [csp.4]</p><p>where the <span>$δ_j$</span>&#39;s are given by [csp.3]. Note that for use case <strong>a)</strong> described here above the accumulated sums in [csp.4] are computed after sorting the <span>$δ_i$</span> values in descending order.</p><p>The <span>$.arev$</span> field of CSP filter is defined as the accumulated variance ratio given by</p><p><span>$[v_1≤\ldots≤v_n]$</span>, <span>$\hspace{1cm}$</span> [csp.5]</p><p>where the <span>$v_i$</span>&#39;s&#39; are defined in [csp.4].</p><p>For setting the subspace dimension <span>$p$</span> manually, set the <code>eVar</code> optional keyword argument of the CSP constructors either to an integer or to a real number (see <a href="../Diagonalizations/#subspace-dimension">subspace dimension</a>). If you don&#39;t, by default <span>$p$</span> is chosen (see Fig. 2)</p><ul><li>in <strong>use case a)</strong> as the larger dimension <span>$p$</span> whose sorted <span>$δ_p$</span> value [csp.3]  is larger then the geometric mean of <span>$δ$</span> <span>$1$</span>. <span>$n÷2$</span> is taken as upper bound.</li><li>in <strong>use case b)</strong> as the larger dimension <span>$p$</span> whose <span>$σ_p$</span> value [csp.2] is larger then <span>$1$</span>.</li></ul><p>In both cases the dimension corresponding to the munimum of [csp.3] is taken  as an upper bound and <span>$p$</span> can be equal to at most <span>$n-1$</span>.</p><p><img src="../assets/Fig2.jpg" alt="Figure 2"/>  <strong>Figure 2</strong> <em>Illustration of the way CSP constrcuctors determines  automatically the subspace dimension <span>$p$</span> under use case a) and b).  On the left, we are interested in the <span>$p_1$</span> and <span>$p_2$</span> vectors of <span>$B$</span>  associated with extremal values of the variance ratios [csp.2],  which are the high values of <span>$δ$</span> [csp.3] enclosed in the shaded boxes  of the figure. The threshold is set to the geometric mean  of <span>$δ$</span>. Since Diagonalizations.jl always sorts the explained variance  in descending order, <span>$\widetilde{B}$</span> is defined as  <span>$[b_1, b_{10}, b_9, b_2, b_8, b_3]$</span>.  On the right, we are interested in the first <span>$p$</span> vectors of  <span>$B$</span> associated with positive values of the variance ratios [csp.2],  which are the high values on the left of the minimum of <span>$δ$</span> enclosed  in the shaded box of the figure.  The threshold is set in this case to the first value of <span>$σ$</span> [csp.2]  smaller then <span>$1$</span>, which roughly coincides with the minimum of <span>$δ$</span>  reported in the figure. Assuming in this example they do coincide,  <span>$\widetilde{B}$</span> would be defined as <span>$[b_1 \ldots b_5]$</span>.</em></p><p><strong>Solution</strong></p><p>The CSP solution <span>$B$</span> is given by the <a href="https://en.wikipedia.org/wiki/Eigendecomposition_of_a_matrix#Generalized_eigenvalue_problem">generalized eigenvalue-eigenvector decomposition</a> of the pair <span>$(C, C_1)$</span>.</p><p>A numerically preferable solution is the following two-step procedure:</p><ol><li>get a whitening matrix <span>$\hspace{0.1cm}W\hspace{0.1cm}$</span> such that <span>$\hspace{0.1cm}W^TCW=I\hspace{0.1cm}$</span>.</li><li>do <span>$\hspace{0.1cm}\textrm{EVD}(W^TC_{1}W)=UΛU^{T}$</span></li></ol><p>The solution is <span>$\hspace{0.1cm}B=WU$</span>.</p><p><strong>Constructors</strong></p><p>Three constructors are available (see here below). The constructed <a href="../Diagonalizations/#LinearFilter">LinearFilter</a> object holding the CSP will have fields:</p><p><code>.F</code>: matrix <span>$\widetilde{B}$</span> as defined above. This is just <span>$B$</span> of [csp.1] if optional keyword argument <code>simple=true</code> is passed to the constructors (see below).</p><p><code>.iF</code>: the left-inverse of <code>.F</code></p><p><code>.D</code>: the <span>$p⋅p$</span> diagonal matrix with the elements of <span>$Λ$</span> [csp.1] corresponding to the vectors of <span>$\widetilde{B}$</span>.</p><p><code>.eVar</code>: the explained variance for the chosen value of <span>$p$</span>, given by the <span>$p^{th}$</span> value of [csp.5]</p><p><code>.ev</code>: the vector holding all <span>$n$</span> generalized eigenvalues, i.e., the diagonal elements of matrix <span>$Λ$</span> [csp.1]. Notice that if <code>selMeth</code>=<code>:extremal</code> these elements are sorted differently than in <code>.D</code> and their position do not correspond to the vectors of <code>.F</code>.</p><p><code>.arev</code>: the <em>accumulated regularized eigenvalues</em>, defined in [csp.5].</p><div class="admonition is-info" id="Nota-Bene-e6978227b84209af"><header class="admonition-header">Nota Bene<a class="admonition-anchor" href="#Nota-Bene-e6978227b84209af" title="Permalink"></a></header><div class="admonition-body"><p><code>.eVar</code> and <code>.arev</code> are computed on sorted <span>$δ_i$</span> values in use case <strong>a)</strong>, see [csp.5], [csp.4] and Fig. 2.</p></div></div><article><details class="docstring" open="true"><summary id="Diagonalizations.csp"><a class="docstring-binding" href="#Diagonalizations.csp"><code>Diagonalizations.csp</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">(1)
+function csp(C₁ :: SorH, C₂ :: SorH;
+             eVar     :: TeVaro = ○,
+             eVarC    :: TeVaro = ○,
+             eVarMeth :: Function = searchsortedfirst,
+             selMeth  :: Symbol = :extremal,
+             simple   :: Bool = false)
+
+(2)
+function csp(X₁ :: Mat, X₂ :: Mat;
+             covEst   :: StatsBase.CovarianceEstimator = SCM,
+             dims     :: Into = ○,
+             meanX₁   :: Tmean = 0,
+             meanX₂   :: Tmean = 0,
+             wX₁      :: Tw = ○,
+             wX₂      :: Tw = ○,
+          eVar     :: TeVaro = ○,
+          eVarC    :: TeVaro = ○,
+          eVarMeth :: Function = searchsortedfirst,
+          selMeth  :: Symbol = :extremal,
+          simple   :: Bool = false)
+
+(3)
+function csp(𝐗₁::VecMat, 𝐗₂::VecMat;
+             covEst   :: StatsBase.CovarianceEstimator = SCM,
+             dims     :: Into = ○,
+             meanX₁   :: Into = 0,
+             meanX₂   :: Into = 0,
+          eVar     :: TeVaro = ○,
+          eVarC    :: TeVaro = ○,
+          eVarMeth :: Function = searchsortedfirst,
+          selMeth  :: Symbol = :extremal,
+          simple   :: Bool = false,
+       metric   :: Metric = Euclidean,
+       w₁       :: Vector = [],
+       w₂       :: Vector = [],
+       ✓w       :: Bool = true,
+       init₁    :: SorHo = nothing,
+       init₂    :: SorHo = nothing,
+       tol      :: Real = 0.,
+       verbose  :: Bool = false)</code></pre><p>Return a <a href="../Diagonalizations/#LinearFilter">LinearFilter</a> object:</p><p><strong>(1) Common spatial pattern</strong> with covariance matrices <code>C_1</code> and <code>C_2</code> of dimension <span>$n⋅n$</span> as input. The subscript of the covariance matrices refers to the <code>dims</code> used to compute it (see above).</p><p><code>eVar</code>, <code>eVarC</code> and <code>eVarMeth</code> are keyword optional arguments for defining the <a href="../Diagonalizations/#subspace-dimension">subspace dimension</a> <span>$p$</span>. Particularly:</p><ul><li>By default, the two-step procedure described above is used to find the  solution. In this case <code>eVarC</code> is used for defining the subspace dimension of  the whitening step. If <code>eVarC=0.0</code> is passed (not to be confused with  <code>eVarC=0</code> ), the solution will be find by the generalized  eigenvalue-eigenvector procedure.</li><li><code>eVar</code> is the keyword optional argument for defining the  <a href="../Diagonalizations/#subspace-dimension">subspace dimension</a> <span>$p$</span> using the <code>.arev</code> vector  given by [csp.5].</li><li><code>eVarMeth</code> applies to both <code>eVarC</code> and <code>eVar</code>. The default value is  <code>evarMeth=searchsortedfirst</code>.</li></ul><p>if <code>selMeth=:extremal</code> (default) use case <strong>a) Separating two classes</strong> described above is considered. Any other symbol for <code>selMeth</code> will instruct to consider instead the use case <strong>b) Enhance the signal-to-noise ratio</strong>.</p><p>If <code>simple</code> is set to <code>true</code>, <span>$p$</span> is set equal to <span>$n$</span> and only the fields <code>.F</code> and <code>.iF</code> are written in the constructed object. This option is provided for low-level work when you don&#39;t need to define a subspace dimension or you want to define it by your own methods.</p><p><strong>(2) Common spatial pattern</strong> with data matrices <code>X₁</code> and <code>X₂</code> as input.</p><p><code>X₁</code> and <code>X₂</code> are real or complex data matrices.</p><p><code>covEst</code>, <code>dims</code>, <code>meanX₁</code>, <code>meanX₂</code>,  <code>wX₁</code> and <code>wX₂</code> are optional keyword arguments to regulate the estimation of the covariance matrices <span>$(C_1, C_2)$</span> of (<code>X₁</code>, <code>X₂</code>). Particularly (See <a href="../Diagonalizations/#covariance-matrix-estimations">covariance matrix estimations</a>),</p><ul><li><code>meanX₁</code> is the <code>mean</code> argument for data matrix <code>X₁</code>.</li><li><code>meanX₂</code> is the <code>mean</code> argument for data matrix <code>X₂</code>.</li><li><code>wX₁</code> is the <code>w</code> argument for estimating a weighted covariance matrix for <code>X₁</code>.</li><li><code>wX₂</code> is the <code>w</code> argument for estimating a weighted covariance matrix for <code>X₂</code>.</li><li><code>covEst</code> applies to the estimations of both covariance matrices.</li></ul><p>Once the two covariance matrices <span>$C_1$</span> and <span>$C_2$</span> estimated, method (1) is invoked with optional keyword arguments <code>eVar</code>, <code>eVarC</code>, <code>eVarMeth</code>, <code>selMeth</code> and <code>simple</code>. See method (1) for details.</p><p><strong>(3) Common spatial pattern</strong> with two vectors of data matrices <code>𝐗₁</code> and <code>𝐗₂</code> as input.</p><p><code>𝐗₁</code> and <code>𝐗₂</code> do not need to hold the same number of matrices and the number of samples in the matrices they contain is arbitrary.</p><p><code>covEst</code>, <code>dims</code>, <code>meanX₁</code> and <code>meanX₂</code> are optional keyword arguments to regulate the estimation of the covariance matrices for all matrices in <code>𝐗₁</code> and <code>𝐗₂</code>. See method (2) and <a href="../Diagonalizations/#covariance-matrix-estimations">covariance matrix estimations</a>.</p><p>A mean covariance matrix is computed separatedly from the covariance matrices computed from the data matrices in <code>𝐗₁</code> and <code>𝐗₂</code>, using optional keywords arguments <code>metric</code>, <code>w₁</code>, <code>w₂</code>, <code>✓w</code>, <code>init₁</code>, <code>init₂</code>, <code>tol</code> and <code>verbose</code>. Particularly (see <a href="../Diagonalizations/#mean-covariance-matrix-estimations">mean covariance matrix estimations</a>),</p><ul><li><code>w₁</code> are the weights for the covariance matrices computed from <code>𝐗₁</code>,</li><li><code>w₂</code> are the weights for the covariance matrices computed from <code>𝐗₂</code>,</li><li><code>init₁</code> is the initialization for the mean of the covariance matrices computed from <code>𝐗₁</code>,</li><li><code>init₂</code> is the initialization for the mean of the covariance matrices computed from <code>𝐗₂</code>.</li></ul><p>By default, the arithmetic mean is computed.</p><p><strong>See also:</strong> <a href="../cstp/#CSTP">CSTP</a>, <a href="../pca/#PCA">PCA</a>, <a href="../ajd/#AJD">AJD</a>, <a href="../majd/#mAJD">mAJD</a>.</p><p><strong>Examples:</strong></p><pre><code class="language-julia hljs">using Diagonalizations, LinearAlgebra, PosDefManifold, Test
+
+# Method (1) real
+t, n=50, 10
+X1=genDataMatrix(n, t)
+X2=genDataMatrix(n, t)
+Cx1=Symmetric((X1*X1&#39;)/t)
+Cx2=Symmetric((X2*X2&#39;)/t)
+C=Cx1+Cx2
+cC=csp(Cx1, Cx2; simple=true)
+Dx1=cC.F&#39;*Cx1*cC.F
+@test norm(Dx1-Diagonal(Dx1))+1≈1.
+Dx2=cC.F&#39;*Cx2*cC.F
+@test norm(Dx2-Diagonal(Dx2))+1≈1.
+@test cC.F&#39;*C*cC.F≈I
+@test norm(Dx1-(I-Dx2))+1≈1.
+
+# Method (1) complex
+t, n=50, 10
+X1c=genDataMatrix(ComplexF64, n, t)
+X2c=genDataMatrix(ComplexF64, n, t)
+Cx1c=Hermitian((X1c*X1c&#39;)/t)
+Cx2c=Hermitian((X2c*X2c&#39;)/t)
+Cc=Cx1c+Cx2c
+cCc=csp(Cx1c, Cx2c; simple=true)
+Dx1c=cCc.F&#39;*Cx1c*cCc.F
+@test norm(Dx1c-Diagonal(Dx1c))+1. ≈ 1.
+Dx2c=cCc.F&#39;*Cx2c*cCc.F
+@test norm(Dx2c-Diagonal(Dx2c))+1. ≈ 1.
+@test cCc.F&#39;*Cc*cCc.F≈I
+@test norm(Dx1c-(I-Dx2c))+1. ≈ 1.
+
+
+# Method (2) real
+c12=csp(X1, X2, simple=true)
+Dx1=c12.F&#39;*Cx1*c12.F
+@test norm(Dx1-Diagonal(Dx1))+1≈1.
+Dx2=c12.F&#39;*Cx2*c12.F
+@test norm(Dx2-Diagonal(Dx2))+1≈1.
+@test c12.F&#39;*C*c12.F≈I
+@test norm(Dx1-(I-Dx2))+1≈1.
+@test cC==c12
+
+# Method (2) complex
+c12c=csp(X1c, X2c, simple=true)
+Dx1c=c12c.F&#39;*Cx1c*c12c.F
+@test norm(Dx1c-Diagonal(Dx1c))+1. ≈ 1.
+Dx2c=c12c.F&#39;*Cx2c*c12c.F
+@test norm(Dx2c-Diagonal(Dx2c))+1. ≈ 1.
+@test c12c.F&#39;*Cc*c12c.F≈I
+@test norm(Dx1c-(I-Dx2c))+1. ≈ 1.
+@test cCc==c12c
+
+
+# Method (3) real
+# CSP of the average covariance matrices
+k=10
+Xset=[genDataMatrix(n, t) for i=1:k]
+Yset=[genDataMatrix(n, t) for i=1:k]
+
+c=csp(Xset, Yset)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+c=csp(Xset, Yset; eVar=0.9)
+
+# ... subtracting the mean from the matrices in Xset and Yset
+c=csp(Xset, Yset; meanX₁=nothing, meanX₂=nothing, eVar=0.9)
+
+# csp on the average of the covariance and cross-covariance matrices
+# computed along dims 1
+c=csp(Xset, Yset; dims=1, eVar=0.9)
+
+# name of the filter
+c.name
+
+using Plots
+# plot regularized accumulated eigenvalues
+plot(c.arev)
+
+
+# plot the original covariance matrices and the transformed counterpart
+# example when argument `selMeth` is `extremal` (default): 2-class separation
+ cC=csp(Cx1, Cx2)
+ Cx1Max=maximum(abs.(Cx1));
+ h1 = heatmap(Cx1, clim=(-Cx1Max, Cx1Max), title=&quot;Cx1&quot;, yflip=true, c=:bluesreds);
+ h2 = heatmap(cC.F&#39;*Cx1*cC.F, clim=(0, 1), title=&quot;F&#39;*Cx1*F&quot;, yflip=true, c=:amp);
+ Cx2Max=maximum(abs.(Cx2));
+ h3 = heatmap(Cx2, clim=(-Cx2Max, Cx2Max), title=&quot;Cx2&quot;, yflip=true, c=:bluesreds);
+ h4 = heatmap(cC.F&#39;*Cx2*cC.F, clim=(0, 1), title=&quot;F&#39;*Cx2*F&quot;, yflip=true, c=:amp);
+ CMax=maximum(abs.(C));
+ h5 = heatmap(C, clim=(-CMax, CMax), title=&quot;Cx1+Cx2&quot;, yflip=true, c=:bluesreds);
+ h6 = heatmap(cC.F&#39;*C*cC.F, clim=(0, 1), title=&quot;F&#39;*(Cx1+Cx2)*F&quot;, yflip=true, c=:amp);
+ 📈=plot(h1, h3, h5, h2, h4, h6, size=(800,400))
+# savefig(📈, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigCSP1.png&quot;)</code></pre><p><img src="../assets/FigCSP1.png" alt="Figure CSP1"/></p><pre><code class="language-julia hljs"># example when argument `selMeth` is different from `extremal`: enhance snr
+ cC=csp(Cx1, Cx2; selMeth=:enhaceSNR)
+ Cx1Max=maximum(abs.(Cx1));
+ h1 = heatmap(Cx1, clim=(-Cx1Max, Cx1Max), title=&quot;Cx1&quot;, yflip=true, c=:bluesreds);
+ h2 = heatmap(cC.F&#39;*Cx1*cC.F, clim=(0, 1), title=&quot;F&#39;*Cx1*F&quot;, yflip=true, c=:amp);
+ Cx2Max=maximum(abs.(Cx2));
+ h3 = heatmap(Cx2, clim=(-Cx2Max, Cx2Max), title=&quot;Cx2&quot;, yflip=true, c=:bluesreds);
+ h4 = heatmap(cC.F&#39;*Cx2*cC.F, clim=(0, 1), title=&quot;F&#39;*Cx2*F&quot;, yflip=true, c=:amp);
+ CMax=maximum(abs.(C));
+ h5 = heatmap(C, clim=(-CMax, CMax), title=&quot;Cx1+Cx2&quot;, yflip=true, c=:bluesreds);
+ h6 = heatmap(cC.F&#39;*C*cC.F, clim=(0, 1), title=&quot;F&#39;*(Cx1+Cx2)*F&quot;, yflip=true, c=:amp);
+ 📉=plot(h1, h3, h5, h2, h4, h6, size=(800,400))
+# savefig(📉, homedir()*&quot;\Documents\Code\julia\Diagonalizations\docs\src\assets\FigCSP2.png&quot;)
+</code></pre><p><img src="../assets/FigCSP2.png" alt="Figure CSP2"/></p><pre><code class="language-julia hljs"># Method (3) complex
+# CSP of the average covariance matrices
+k=10
+Xsetc=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+Ysetc=[genDataMatrix(ComplexF64, n, t) for i=1:k]
+
+cc=csp(Xsetc, Ysetc)
+
+# ... selecting subspace dimension allowing an explained variance = 0.9
+cc=csp(Xsetc, Ysetc; eVar=0.9)
+
+# ... subtracting the mean from the matrices in Xset and Yset
+cc=csp(Xsetc, Ysetc; meanX₁=nothing, meanX₂=nothing, eVar=0.9)
+
+# csp on the average of the covariance and cross-covariance matrices
+# computed along dims 1
+cc=csp(Xsetc, Ysetc; dims=1, eVar=0.9)
+
+# name of the filter
+cc.name</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/Marco-Congedo/Diagonalizations.jl/blob/825b7933e5745995eeae5cc2732df3b051ad45bf/src/csp.jl#L13-L277">source</a></section></details></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../whitening/">« Whitening</a><a class="docs-footer-nextpage" href="../cstp/">CSTP »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Tuesday 13 January 2026 21:33">Tuesday 13 January 2026</span>. Using Julia version 1.11.8.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
