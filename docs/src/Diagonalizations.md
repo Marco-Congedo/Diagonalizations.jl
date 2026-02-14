@@ -120,7 +120,8 @@ function cut(f::LinearFilter, p::Int64)
 Create another [LinearFilter](@ref) object with a smaller
 [subspace dimension](@ref) given by argument `p`.
 This applies to the matrix(ces) in fields `.F`, `.iF` and `.D`.
-All other fields remain the same.
+All other fields remain the same, with the exxecption of `.eVar`,
+which is set to `.arev[p]`.
 
 
 ## data input

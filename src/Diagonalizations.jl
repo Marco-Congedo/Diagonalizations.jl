@@ -190,10 +190,10 @@ function cut(f::LinearFilter, p::Int64)
    h=1:p
    if f.F isa Matrix
       LF(f.F[:, h], f.iF[h, :], f.D===○ ? ○ : Diagonal(diag(f.D)[h]),
-         f.eVar===○ ? ○ : f.eVar[p], f.ev, f.arev, f.name*"($p)", false)
+         f.eVar===○ ? ○ : f.arev[p], f.ev, f.arev, f.name*"($p)", false)
    else
       LF([X[:, h] for X ∈ f.F], [X[h, :] for X ∈ f.iF],
-          f.D===○ ? ○ : Diagonal(diag(f.D)[h]), f.eVar===○ ? ○ : f.eVar[p],
+          f.D===○ ? ○ : Diagonal(diag(f.D)[h]), f.eVar===○ ? ○ : f.arev[p],
           f.ev, f.arev, f.name*"($p)", false)
    end
 end
